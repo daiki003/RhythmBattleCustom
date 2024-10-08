@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
@@ -9,25 +10,15 @@ public class Ball : MonoBehaviour
 {
     [SerializeField] private Image _ballImage;
 
-    private const float beforeActiveTime = 1.65f;
-    private const float activeTime = 0.1f;
-    public bool IsActive;
     public bool IsLeft;
+    public float CriticalTime;
     public CancellationTokenSource Cts;
 
-    public void Init(bool isleft, CancellationTokenSource cts)
+    public void Init(bool isleft, float criticalTime, CancellationTokenSource cts)
     {
         _ballImage.color = Color.red;
+        CriticalTime = criticalTime;
         IsLeft = isleft;
         Cts = cts;
-        CountDown().Forget();
-    }
-
-    public async UniTask CountDown()
-    {
-        await UniTask.WaitForSeconds(beforeActiveTime);
-        IsActive = true;
-        await UniTask.WaitForSeconds(activeTime);
-        IsActive = false;
     }
 }

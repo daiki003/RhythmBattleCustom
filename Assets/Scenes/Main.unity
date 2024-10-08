@@ -150,7 +150,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 7334046914125351264, guid: 6bf5b22cd5dce11429622d260b131b27, type: 2}
   m_audioClip: {fileID: 8300000, guid: 0ad001547f419a941b6b774ac0852e90, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -622,6 +622,7 @@ MonoBehaviour:
   _countText: {fileID: 1748746689}
   _seSource: {fileID: 2008326553}
   _beatSe: {fileID: 8300000, guid: 63aa56cd853f84a428dfa377bc197de5, type: 3}
+  _bgmSource: {fileID: 295915817}
 --- !u!1 &1078148498
 GameObject:
   m_ObjectHideFlags: 0
