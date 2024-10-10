@@ -8,6 +8,17 @@ using System.Linq;
 using System.Threading;
 using R3;
 using System;
+using PlayFab.Json;
+
+public class SettingMaster
+{
+    public float NoteTimeOffset;
+    public float NoteTimeBuffer;
+    public float BallTimeOffset;
+    public bool IsTestMode;
+    public float TestNoteTimeBuffer;
+    public List<float> NoteList = new List<float>();
+}
 
 public class GameManager : MonoBehaviour
 {
@@ -29,16 +40,35 @@ public class GameManager : MonoBehaviour
     private const int _ballCount = 300;
 
     private List<float> _noteList = new List<float>();
-    // {
-    //     8f, 9f, 10f, 11f, 12f, 16f, 20f, 24f, 28f, 32f, 36f, 40f, 44f, 48f,
-    //     52f, 56f, 60f, 64f, 68f, 72f, 76f, 80f, 84f, 88f, 92f, 96f,
-    //     100f, 104f, 108f, 112f, 116f, 120f, 124f, 128f, 132f, 136f, 140f, 144f,
-    // };
     private const float _noteTimeOffset = 0.46f;
     private const float _noteTimeBuffer = 0.04f;
     private const float _ballTimeOffset = 1.68f;
+    private SettingMaster _settingMaster;
+    private bool _finishGetMaster;
+    private float _justBeforeTime;
+    private float _justBeforeRealTime;
 
     private ClickHandler _clickHandler;
+
+    public static GameManager instance;
+	public void Awake()
+	{
+		if (instance == null)
+		{
+			instance = this;
+		}
+	}
+
+    public void GetAllMasterData()
+	{
+		PlayFabController.GetTitleData(SetMasterData);
+	}
+
+    public void SetMasterData(SettingMaster settingMaster)
+	{
+		_settingMaster = settingMaster;
+		_finishGetMaster = true;
+	}
 
     void Start()
     {
@@ -55,21 +85,33 @@ public class GameManager : MonoBehaviour
         {
             _noteList.Add(i * 2);
         }
-        _bgmSource.Play();
+        PlayFabController.login();
+        GameStart().Forget();
     }
+
+    // ゲームスタート時の処理
+	private async UniTask GameStart()
+	{
+		await UniTask.WaitWhile(() => !_finishGetMaster);
+		_bgmSource.Play();
+	}
 
     void Update()
     {
-        if (_noteList.Count > 0)
+        if (!_finishGetMaster)
         {
-            float noteTime = (_noteList[0] + _noteTimeOffset) * (60f / 130f);
-            if (_bgmSource.time >= noteTime - _ballTimeOffset)
+            return;
+        }
+        if (_settingMaster.NoteList.Count > 0)
+        {
+            float noteTime = (_settingMaster.NoteList[0] + _settingMaster.NoteTimeOffset) * (60f / 130f);
+            if (_bgmSource.time >= noteTime - _settingMaster.BallTimeOffset)
             {
                 var newBall = Instantiate(_ballPrefab, _startTransform.parent);
                 var cts = new CancellationTokenSource();  
                 bool isLeft = UnityEngine.Random.Range(0, 2) == 0;
                 newBall.Init(isLeft, noteTime, cts);
-                _noteList.RemoveAt(0);
+                _settingMaster.NoteList.RemoveAt(0);
                 if (isLeft)
                 {
                     _leftBallList.Add(newBall);
@@ -94,12 +136,28 @@ public class GameManager : MonoBehaviour
                 newBall.SetTween(tween);
             }
         }
+        if (_settingMaster.IsTestMode)
+        {
+            if (_leftBallList.Count > 0 && _leftBallList[0].CriticalTime > _bgmSource.time - _settingMaster.NoteTimeBuffer && _leftBallList[0].CriticalTime < _bgmSource.time + _settingMaster.NoteTimeBuffer)
+            {
+                OnClickLeftButton();
+            }
+            if (_rightBallList.Count > 0 && _rightBallList[0].CriticalTime > _bgmSource.time - _settingMaster.NoteTimeBuffer && _rightBallList[0].CriticalTime < _bgmSource.time + _settingMaster.NoteTimeBuffer)
+            {
+                OnClickRightButton();
+            }
+        }
         _clickHandler.Update();
     }
 
     private void OnClickLeftButton()
     {
-        var firstActiveBall = _leftBallList.FirstOrDefault(b => b.CriticalTime > _bgmSource.time - _noteTimeBuffer && b.CriticalTime < _bgmSource.time + _noteTimeBuffer);
+        float time = _bgmSource.time;
+        float realTime = _leftBallList[0].CriticalTime;
+        Debug.Log("BGM：" + (time - _justBeforeTime) + "実時間：" +  (realTime - _justBeforeRealTime));
+        _justBeforeTime = time;
+        _justBeforeRealTime = realTime;
+        var firstActiveBall = _leftBallList.FirstOrDefault(b => b.CriticalTime > _bgmSource.time - _settingMaster.NoteTimeBuffer && b.CriticalTime < _bgmSource.time + _settingMaster.NoteTimeBuffer);
         if (firstActiveBall != null)
         {
             _count++;
@@ -113,7 +171,12 @@ public class GameManager : MonoBehaviour
 
     private void OnClickRightButton()
     {
-        var firstActiveBall = _rightBallList.FirstOrDefault(b => b.CriticalTime > _bgmSource.time - _noteTimeBuffer && b.CriticalTime < _bgmSource.time + _noteTimeBuffer);
+        float time = _bgmSource.time;
+        float realTime = _rightBallList[0].CriticalTime;
+        Debug.Log("BGM：" + (time - _justBeforeTime) + "実時間：" +  (realTime - _justBeforeRealTime));
+        _justBeforeTime = time;
+        _justBeforeRealTime = realTime;
+        var firstActiveBall = _rightBallList.FirstOrDefault(b => b.CriticalTime > _bgmSource.time - _settingMaster.NoteTimeBuffer && b.CriticalTime < _bgmSource.time + _settingMaster.NoteTimeBuffer);
         if (firstActiveBall != null)
         {
             _count++;
