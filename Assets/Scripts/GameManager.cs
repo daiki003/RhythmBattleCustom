@@ -28,13 +28,13 @@ public class GameManager : MonoBehaviour
     private int _count = 0;
     private const int _ballCount = 300;
 
-    private List<float> _noteList = new List<float>()
-    {
-        8f, 12f, 16f, 20f, 24f, 28f, 32f, 36f, 40f, 44f, 48f, 52f, 
-        52f, 56f, 60f, 64f, 68f, 72f, 76f, 80f, 84f, 88f, 92f, 96f,
-        100f, 104f, 108f, 112f, 116f, 120f, 124f, 128f, 132f, 136f, 140f, 144f,
-    };
-    private const float _noteTimeOffset = 0.5f;
+    private List<float> _noteList = new List<float>();
+    // {
+    //     8f, 9f, 10f, 11f, 12f, 16f, 20f, 24f, 28f, 32f, 36f, 40f, 44f, 48f,
+    //     52f, 56f, 60f, 64f, 68f, 72f, 76f, 80f, 84f, 88f, 92f, 96f,
+    //     100f, 104f, 108f, 112f, 116f, 120f, 124f, 128f, 132f, 136f, 140f, 144f,
+    // };
+    private const float _noteTimeOffset = 0.46f;
     private const float _noteTimeBuffer = 0.04f;
     private const float _ballTimeOffset = 1.68f;
 
@@ -51,6 +51,10 @@ public class GameManager : MonoBehaviour
         {
             OnClickRightButton();
         });
+        for (int i = 4; i < 100; i++)
+        {
+            _noteList.Add(i * 2);
+        }
         _bgmSource.Play();
     }
 
@@ -75,7 +79,7 @@ public class GameManager : MonoBehaviour
                     _rightBallList.Add(newBall);
                 }
 
-                newBall.transform.DOMove(newBall.IsLeft ? _leftButton.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.InQuad).OnComplete(() =>
+                var tween = newBall.transform.DOMove(newBall.IsLeft ? _leftButton.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.InQuad).OnComplete(() =>
                 {
                     if (newBall.IsLeft)
                     {
@@ -87,6 +91,7 @@ public class GameManager : MonoBehaviour
                     }
                     Destroy(newBall.gameObject);
                 });
+                newBall.SetTween(tween);
             }
         }
         _clickHandler.Update();
