@@ -15,6 +15,7 @@ public class SettingMaster
     public float NoteTimeOffset;
     public float NoteTimeBuffer;
     public float BallTimeOffset;
+    public float BPM;
     public bool IsTestMode;
     public float TestNoteTimeBuffer;
     public List<float> NoteList = new List<float>();
@@ -104,7 +105,7 @@ public class GameManager : MonoBehaviour
         }
         if (_settingMaster.NoteList.Count > 0)
         {
-            float noteTime = (_settingMaster.NoteList[0] + _settingMaster.NoteTimeOffset) * (60f / 130f);
+            float noteTime = (_settingMaster.NoteList[0] + _settingMaster.NoteTimeOffset) * (60f / _settingMaster.BPM);
             if (_bgmSource.time >= noteTime - _settingMaster.BallTimeOffset)
             {
                 var newBall = Instantiate(_ballPrefab, _startTransform.parent);
@@ -121,7 +122,7 @@ public class GameManager : MonoBehaviour
                     _rightBallList.Add(newBall);
                 }
 
-                var tween = newBall.transform.DOMove(newBall.IsLeft ? _leftButton.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.InQuad).OnComplete(() =>
+                var tween = newBall.transform.DOMove(newBall.IsLeft ? _leftButton.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.Linear).OnComplete(() =>
                 {
                     if (newBall.IsLeft)
                     {
