@@ -38,6 +38,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Ball _ballPrefab;
 
     [SerializeField] private Text _countText;
+    [SerializeField] private Button _resetButton;
 
     [SerializeField] private AudioSource _seSource;
     [SerializeField] private AudioClip _beatSe;
@@ -48,7 +49,7 @@ public class GameManager : MonoBehaviour
     private int _count = 0;
     private const int _ballCount = 300;
 
-    private List<float> _noteList = new List<float>();
+    private List<NoteMaster> _currentNoteList = new List<NoteMaster>();
     private const float _noteTimeOffset = 0.46f;
     private const float _noteTimeBuffer = 0.04f;
     private const float _ballTimeOffset = 1.68f;
@@ -66,6 +67,8 @@ public class GameManager : MonoBehaviour
 		{
 			instance = this;
 		}
+        // フレームレート設定（FPS60にしたい場合）
+        Application.targetFrameRate = 60;
 	}
 
     public void GetAllMasterData()
@@ -90,19 +93,39 @@ public class GameManager : MonoBehaviour
         {
             OnClickRightButton();
         });
-        for (int i = 4; i < 100; i++)
+        _resetButton.OnClickAsObservable().Subscribe(_ =>
         {
-            _noteList.Add(i * 2);
-        }
+            Reset();
+        });
         PlayFabController.login();
         GameStart().Forget();
+    }
+
+    public void Reset()
+    {
+        _currentNoteList = new List<NoteMaster>(_settingMaster.notes);
+        while (_leftBallList.Count > 0)
+        {
+            var ball = _leftBallList[0];
+            _leftBallList.RemoveAt(0);
+            Destroy(ball.gameObject);
+        }
+        while (_rightBallList.Count > 0)
+        {
+            var ball = _rightBallList[0];
+            _rightBallList.RemoveAt(0);
+            Destroy(ball.gameObject);
+        }
+        _bgmSource.Stop();
+        _bgmSource.Play();
     }
 
     // ゲームスタート時の処理
 	private async UniTask GameStart()
 	{
 		await UniTask.WaitWhile(() => !_finishGetMaster);
-		_bgmSource.Play();
+		_currentNoteList = new List<NoteMaster>(_settingMaster.notes);
+        _bgmSource.Play();
 	}
 
     void Update()
@@ -111,9 +134,9 @@ public class GameManager : MonoBehaviour
         {
             return;
         }
-        if (_settingMaster.notes.Count > 0)
+        if (_currentNoteList.Count > 0)
         {
-            var firstNote = _settingMaster.notes[0];
+            var firstNote = _currentNoteList[0];
             float noteTime = (firstNote.num * (4 / firstNote.lpb) + _settingMaster.NoteTimeOffset) * (60f / _settingMaster.BPM);
             if (_bgmSource.time >= noteTime - _settingMaster.BallTimeOffset)
             {
@@ -121,7 +144,7 @@ public class GameManager : MonoBehaviour
                 var cts = new CancellationTokenSource();  
                 bool isLeft = firstNote.block <= 3;
                 newBall.Init(isLeft, noteTime, cts);
-                _settingMaster.notes.RemoveAt(0);
+                _currentNoteList.RemoveAt(0);
                 if (isLeft)
                 {
                     _leftBallList.Add(newBall);
@@ -164,7 +187,6 @@ public class GameManager : MonoBehaviour
     {
         float time = _bgmSource.time;
         float realTime = _leftBallList[0].CriticalTime;
-        Debug.Log("BGM：" + (time - _justBeforeTime) + "実時間：" +  (realTime - _justBeforeRealTime));
         _justBeforeTime = time;
         _justBeforeRealTime = realTime;
         var firstActiveBall = _leftBallList.FirstOrDefault(b => b.CriticalTime > _bgmSource.time - _settingMaster.NoteTimeBuffer && b.CriticalTime < _bgmSource.time + _settingMaster.NoteTimeBuffer);
@@ -183,7 +205,6 @@ public class GameManager : MonoBehaviour
     {
         float time = _bgmSource.time;
         float realTime = _rightBallList[0].CriticalTime;
-        Debug.Log("BGM：" + (time - _justBeforeTime) + "実時間：" +  (realTime - _justBeforeRealTime));
         _justBeforeTime = time;
         _justBeforeRealTime = realTime;
         var firstActiveBall = _rightBallList.FirstOrDefault(b => b.CriticalTime > _bgmSource.time - _settingMaster.NoteTimeBuffer && b.CriticalTime < _bgmSource.time + _settingMaster.NoteTimeBuffer);
