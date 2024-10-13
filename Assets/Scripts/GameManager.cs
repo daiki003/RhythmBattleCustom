@@ -39,6 +39,8 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private Text _countText;
     [SerializeField] private Button _resetButton;
+    [SerializeField] private Button _testButton;
+    [SerializeField] private Image _testButtonImage;
 
     [SerializeField] private AudioSource _seSource;
     [SerializeField] private AudioClip _beatSe;
@@ -50,13 +52,11 @@ public class GameManager : MonoBehaviour
     private const int _ballCount = 300;
 
     private List<NoteMaster> _currentNoteList = new List<NoteMaster>();
-    private const float _noteTimeOffset = 0.46f;
-    private const float _noteTimeBuffer = 0.04f;
-    private const float _ballTimeOffset = 1.68f;
     private SettingMaster _settingMaster;
     private bool _finishGetMaster;
     private float _justBeforeTime;
     private float _justBeforeRealTime;
+    private bool _isTest;
 
     private ClickHandler _clickHandler;
 
@@ -97,6 +97,10 @@ public class GameManager : MonoBehaviour
         {
             Reset();
         });
+        _testButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            ChangeTest();
+        });
         PlayFabController.login();
         GameStart().Forget();
     }
@@ -120,11 +124,19 @@ public class GameManager : MonoBehaviour
         _bgmSource.Play();
     }
 
+    public void ChangeTest()
+    {
+        _isTest = !_isTest;
+        _testButtonImage.color = _isTest ? Color.black : Color.white;
+    }
+
     // ゲームスタート時の処理
 	private async UniTask GameStart()
 	{
 		await UniTask.WaitWhile(() => !_finishGetMaster);
 		_currentNoteList = new List<NoteMaster>(_settingMaster.notes);
+        _isTest = _settingMaster.IsTestMode;
+        _testButtonImage.color = _isTest ? Color.black : Color.white;
         _bgmSource.Play();
 	}
 
@@ -141,6 +153,7 @@ public class GameManager : MonoBehaviour
             if (_bgmSource.time >= noteTime - _settingMaster.BallTimeOffset)
             {
                 var newBall = Instantiate(_ballPrefab, _startTransform.parent);
+                newBall.transform.localPosition = _startTransform.localPosition;
                 var cts = new CancellationTokenSource();  
                 bool isLeft = firstNote.block <= 3;
                 newBall.Init(isLeft, noteTime, cts);
@@ -169,13 +182,13 @@ public class GameManager : MonoBehaviour
                 newBall.SetTween(tween);
             }
         }
-        if (_settingMaster.IsTestMode)
+        if (_isTest)
         {
-            if (_leftBallList.Count > 0 && _leftBallList[0].CriticalTime > _bgmSource.time - _settingMaster.NoteTimeBuffer && _leftBallList[0].CriticalTime < _bgmSource.time + _settingMaster.NoteTimeBuffer)
+            if (_leftBallList.Count > 0 && _leftBallList[0].CriticalTime > _bgmSource.time - _settingMaster.TestNoteTimeBuffer && _leftBallList[0].CriticalTime < _bgmSource.time + _settingMaster.TestNoteTimeBuffer)
             {
                 OnClickLeftButton();
             }
-            if (_rightBallList.Count > 0 && _rightBallList[0].CriticalTime > _bgmSource.time - _settingMaster.NoteTimeBuffer && _rightBallList[0].CriticalTime < _bgmSource.time + _settingMaster.NoteTimeBuffer)
+            if (_rightBallList.Count > 0 && _rightBallList[0].CriticalTime > _bgmSource.time - _settingMaster.TestNoteTimeBuffer && _rightBallList[0].CriticalTime < _bgmSource.time + _settingMaster.TestNoteTimeBuffer)
             {
                 OnClickRightButton();
             }
