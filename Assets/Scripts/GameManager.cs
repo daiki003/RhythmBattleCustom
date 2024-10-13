@@ -19,6 +19,14 @@ public class SettingMaster
     public bool IsTestMode;
     public float TestNoteTimeBuffer;
     public List<float> NoteList = new List<float>();
+    public List<NoteMaster> notes = new List<NoteMaster>();
+}
+
+public class NoteMaster
+{
+    public int lpb;
+    public int num;
+    public int block;
 }
 
 public class GameManager : MonoBehaviour
@@ -103,16 +111,17 @@ public class GameManager : MonoBehaviour
         {
             return;
         }
-        if (_settingMaster.NoteList.Count > 0)
+        if (_settingMaster.notes.Count > 0)
         {
-            float noteTime = (_settingMaster.NoteList[0] + _settingMaster.NoteTimeOffset) * (60f / _settingMaster.BPM);
+            var firstNote = _settingMaster.notes[0];
+            float noteTime = (firstNote.num * (4 / firstNote.lpb) + _settingMaster.NoteTimeOffset) * (60f / _settingMaster.BPM);
             if (_bgmSource.time >= noteTime - _settingMaster.BallTimeOffset)
             {
                 var newBall = Instantiate(_ballPrefab, _startTransform.parent);
                 var cts = new CancellationTokenSource();  
-                bool isLeft = UnityEngine.Random.Range(0, 2) == 0;
+                bool isLeft = firstNote.block <= 3;
                 newBall.Init(isLeft, noteTime, cts);
-                _settingMaster.NoteList.RemoveAt(0);
+                _settingMaster.notes.RemoveAt(0);
                 if (isLeft)
                 {
                     _leftBallList.Add(newBall);
