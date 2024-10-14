@@ -11,6 +11,7 @@ public class ClickHandler
 {
     public Subject<bool> OnClickButton = new Subject<bool>();
     public Subject<bool> OnReleaseButton = new Subject<bool>();
+    public Subject<int> OnUpdateTouchCount = new Subject<int>();
     public void Update()
     {
 #if UNITY_EDITOR
@@ -40,6 +41,7 @@ public class ClickHandler
 #endif
 
         var touchCount = Input.touchCount;
+        OnUpdateTouchCount.OnNext(touchCount);
         for (var i = 0; i < touchCount; i++)
         {
             var touch = Input.GetTouch(i);

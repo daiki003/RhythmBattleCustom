@@ -33,14 +33,17 @@ public class NoteMaster
 
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] private RectTransform _leftButton;
+    [SerializeField] private RectTransform _leftTransform;
     [SerializeField] private RectTransform _rightTransform;
     [SerializeField] private RectTransform _startTransform;
+    [SerializeField] private Image _leftButton;
+    [SerializeField] private Image _rightButton;
 
     [SerializeField] private Ball _ballPrefab;
     [SerializeField] private LongBall _longBallPrefab;
 
     [SerializeField] private Text _countText;
+    [SerializeField] private Text _touchCountText;
     [SerializeField] private Button _resetButton;
     [SerializeField] private Button _testButton;
     [SerializeField] private Image _testButtonImage;
@@ -89,10 +92,30 @@ public class GameManager : MonoBehaviour
         _clickHandler.OnClickButton.Subscribe(isLeft =>
         {
             OnClickButton(isLeft);
+            if (isLeft)
+            {
+                _leftButton.color = Color.red;
+            }
+            else
+            {
+                _rightButton.color = Color.red;
+            }
         });
         _clickHandler.OnReleaseButton.Subscribe(isLeft =>
         {
             OnReleaseButton(isLeft);
+            if (isLeft)
+            {
+                _leftButton.color = Color.white;
+            }
+            else
+            {
+                _rightButton.color = Color.white;
+            }
+        });
+        _clickHandler.OnUpdateTouchCount.Subscribe(count =>
+        {
+            _touchCountText.text = count.ToString();
         });
         _resetButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -178,7 +201,7 @@ public class GameManager : MonoBehaviour
                         _rightBallList.Add(newBall);
                     }
 
-                    var tween = newBall.transform.DOMove(newBall.IsLeft ? _leftButton.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.Linear).OnComplete(() =>
+                    var tween = newBall.transform.DOMove(newBall.IsLeft ? _leftTransform.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.Linear).OnComplete(() =>
                     {
                         if (newBall.IsLeft)
                         {
@@ -218,7 +241,7 @@ public class GameManager : MonoBehaviour
                         _longBallList.Remove(longBall);
                     });
 
-                    var startBallTween = longBall.StartBall.transform.DOMove(longBall.StartBall.IsLeft ? _leftButton.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.Linear).OnComplete(() =>
+                    var startBallTween = longBall.StartBall.transform.DOMove(longBall.StartBall.IsLeft ? _leftTransform.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.Linear).OnComplete(() =>
                     {
                         if (longBall.StartBall.IsLeft)
                         {
@@ -247,7 +270,7 @@ public class GameManager : MonoBehaviour
                 {
                     _rightBallList.Add(firstBall.EndBall);
                 }
-                var startBallTween = firstBall.EndBall.transform.DOMove(firstBall.EndBall.IsLeft ? _leftButton.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.Linear).OnComplete(() =>
+                var startBallTween = firstBall.EndBall.transform.DOMove(firstBall.EndBall.IsLeft ? _leftTransform.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.Linear).OnComplete(() =>
                 {
                     if (firstBall.EndBall.IsLeft)
                     {
