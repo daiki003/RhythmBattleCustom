@@ -267,13 +267,29 @@ public class GameManager : MonoBehaviour
         }
         if (_isTest)
         {
-            if (_leftBallList.Count > 0 && _leftBallList[0].CriticalTime > _bgmSource.time - _settingMaster.TestNoteTimeBuffer && _leftBallList[0].CriticalTime < _bgmSource.time + _settingMaster.TestNoteTimeBuffer)
+            var leftFirstBall = _leftBallList.FirstOrDefault();
+            if (leftFirstBall != null && leftFirstBall.CriticalTime > _bgmSource.time - _settingMaster.TestNoteTimeBuffer && leftFirstBall.CriticalTime < _bgmSource.time + _settingMaster.TestNoteTimeBuffer)
             {
-                OnClickButton(isLeft: true);
+                if (leftFirstBall.BallType == BallType.LongEnd)
+                {
+                    OnReleaseButton(isLeft: true);
+                }
+                else
+                {
+                    OnClickButton(isLeft: true);
+                }
             }
-            if (_rightBallList.Count > 0 && _rightBallList[0].CriticalTime > _bgmSource.time - _settingMaster.TestNoteTimeBuffer && _rightBallList[0].CriticalTime < _bgmSource.time + _settingMaster.TestNoteTimeBuffer)
+            var rightFirstBall = _rightBallList.FirstOrDefault();
+            if (rightFirstBall != null && rightFirstBall.CriticalTime > _bgmSource.time - _settingMaster.TestNoteTimeBuffer && rightFirstBall.CriticalTime < _bgmSource.time + _settingMaster.TestNoteTimeBuffer)
             {
-                OnClickButton(isLeft: false);
+                if (rightFirstBall.BallType == BallType.LongEnd)
+                {
+                    OnReleaseButton(isLeft: false);
+                }
+                else
+                {
+                    OnClickButton(isLeft: false);
+                }
             }
         }
         _clickHandler.Update();
