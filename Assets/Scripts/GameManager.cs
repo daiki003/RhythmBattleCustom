@@ -27,6 +27,8 @@ public class NoteMaster
     public int lpb;
     public int num;
     public int block;
+    public int type;
+    public List<NoteMaster> notes = new List<NoteMaster>();
 }
 
 public class GameManager : MonoBehaviour
@@ -36,6 +38,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private RectTransform _startTransform;
 
     [SerializeField] private Ball _ballPrefab;
+    [SerializeField] private LongBall _longBallPrefab;
 
     [SerializeField] private Text _countText;
     [SerializeField] private Button _resetButton;
@@ -48,14 +51,12 @@ public class GameManager : MonoBehaviour
 
     private List<Ball> _leftBallList = new List<Ball>();
     private List<Ball> _rightBallList = new List<Ball>();
+    private List<LongBall> _longBallList = new List<LongBall>();
     private int _count = 0;
-    private const int _ballCount = 300;
 
     private List<NoteMaster> _currentNoteList = new List<NoteMaster>();
     private SettingMaster _settingMaster;
     private bool _finishGetMaster;
-    private float _justBeforeTime;
-    private float _justBeforeRealTime;
     private bool _isTest;
 
     private ClickHandler _clickHandler;
@@ -85,13 +86,13 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         _clickHandler = new ClickHandler();
-        _clickHandler.OnClickLeftButton.Subscribe(_ =>
+        _clickHandler.OnClickButton.Subscribe(isLeft =>
         {
-            OnClickLeftButton();
+            OnClickButton(isLeft);
         });
-        _clickHandler.OnClickRightButton.Subscribe(_ =>
+        _clickHandler.OnReleaseButton.Subscribe(isLeft =>
         {
-            OnClickRightButton();
+            OnReleaseButton(isLeft);
         });
         _resetButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -120,6 +121,14 @@ public class GameManager : MonoBehaviour
             _rightBallList.RemoveAt(0);
             Destroy(ball.gameObject);
         }
+        while (_longBallList.Count > 0)
+        {
+            var ball = _longBallList[0];
+            _longBallList.RemoveAt(0);
+            Destroy(ball.gameObject);
+        }
+        _count = 0;
+        _countText.text = _count.ToString();
         _bgmSource.Stop();
         _bgmSource.Play();
     }
@@ -152,83 +161,173 @@ public class GameManager : MonoBehaviour
             float noteTime = (firstNote.num * (4 / firstNote.lpb) + _settingMaster.NoteTimeOffset) * (60f / _settingMaster.BPM);
             if (_bgmSource.time >= noteTime - _settingMaster.BallTimeOffset)
             {
-                var newBall = Instantiate(_ballPrefab, _startTransform.parent);
-                newBall.transform.localPosition = _startTransform.localPosition;
-                var cts = new CancellationTokenSource();  
-                bool isLeft = firstNote.block <= 3;
-                newBall.Init(isLeft, noteTime, cts);
-                _currentNoteList.RemoveAt(0);
-                if (isLeft)
+                if (firstNote.type == 1)
                 {
-                    _leftBallList.Add(newBall);
-                }
-                else
-                {
-                    _rightBallList.Add(newBall);
-                }
-
-                var tween = newBall.transform.DOMove(newBall.IsLeft ? _leftButton.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.Linear).OnComplete(() =>
-                {
-                    if (newBall.IsLeft)
+                    var newBall = Instantiate(_ballPrefab, _startTransform.parent);
+                    newBall.transform.localPosition = _startTransform.localPosition;
+                    var cts = new CancellationTokenSource();  
+                    bool isLeft = firstNote.block <= 3;
+                    newBall.Init(isLeft, noteTime, BallType.Single, cts);
+                    _currentNoteList.RemoveAt(0);
+                    if (isLeft)
                     {
-                        _leftBallList.Remove(newBall);
+                        _leftBallList.Add(newBall);
                     }
                     else
                     {
-                        _rightBallList.Remove(newBall);
+                        _rightBallList.Add(newBall);
                     }
-                    Destroy(newBall.gameObject);
+
+                    var tween = newBall.transform.DOMove(newBall.IsLeft ? _leftButton.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.Linear).OnComplete(() =>
+                    {
+                        if (newBall.IsLeft)
+                        {
+                            _leftBallList.Remove(newBall);
+                        }
+                        else
+                        {
+                            _rightBallList.Remove(newBall);
+                        }
+                        Destroy(newBall.gameObject);
+                    });
+                    newBall.SetTween(tween);
+                }
+                else
+                {
+                    var longBall = Instantiate(_longBallPrefab, _startTransform.parent);
+                    longBall.transform.position = _startTransform.position;
+                    longBall.StartBall.transform.position = _startTransform.position;
+                    longBall.EndBall.transform.position = _startTransform.position;
+                    var cts = new CancellationTokenSource();  
+                    bool isLeft = firstNote.block <= 3;
+                    var endNote = firstNote.notes[0];
+                    float endNoteTime = (endNote.num * (4 / endNote.lpb) + _settingMaster.NoteTimeOffset) * (60f / _settingMaster.BPM);
+                    longBall.Init(isLeft, noteTime, endNoteTime, cts);
+                    _currentNoteList.RemoveAt(0);
+                    if (isLeft)
+                    {
+                        _leftBallList.Add(longBall.StartBall);
+                    }
+                    else
+                    {
+                        _rightBallList.Add(longBall.StartBall);
+                    }
+                    _longBallList.Add(longBall);
+                    longBall.OnWhenDestroyed.Subscribe(_ =>
+                    {
+                        _longBallList.Remove(longBall);
+                    });
+
+                    var startBallTween = longBall.StartBall.transform.DOMove(longBall.StartBall.IsLeft ? _leftButton.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.Linear).OnComplete(() =>
+                    {
+                        if (longBall.StartBall.IsLeft)
+                        {
+                            _leftBallList.Remove(longBall.StartBall);
+                        }
+                        else
+                        {
+                            _rightBallList.Remove(longBall.StartBall);
+                        }
+                    });
+                    longBall.StartBall.SetTween(startBallTween);
+                }
+            }
+        }
+        if (_longBallList.Count > 0)
+        {
+            var firstBall = _longBallList.FirstOrDefault(b => !b.IsEndBallLaunched);
+            if (firstBall != null && _bgmSource.time >= firstBall.EndBall.CriticalTime - _settingMaster.BallTimeOffset)
+            {
+                firstBall.IsEndBallLaunched = true;
+                if (firstBall.EndBall.IsLeft)
+                {
+                    _leftBallList.Add(firstBall.EndBall);
+                }
+                else
+                {
+                    _rightBallList.Add(firstBall.EndBall);
+                }
+                var startBallTween = firstBall.EndBall.transform.DOMove(firstBall.EndBall.IsLeft ? _leftButton.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.Linear).OnComplete(() =>
+                {
+                    if (firstBall.EndBall.IsLeft)
+                    {
+                        _leftBallList.Remove(firstBall.EndBall);
+                    }
+                    else
+                    {
+                        _rightBallList.Remove(firstBall.EndBall);
+                    }
+                    Destroy(firstBall.gameObject);
                 });
-                newBall.SetTween(tween);
+                firstBall.EndBall.SetTween(startBallTween);
             }
         }
         if (_isTest)
         {
             if (_leftBallList.Count > 0 && _leftBallList[0].CriticalTime > _bgmSource.time - _settingMaster.TestNoteTimeBuffer && _leftBallList[0].CriticalTime < _bgmSource.time + _settingMaster.TestNoteTimeBuffer)
             {
-                OnClickLeftButton();
+                OnClickButton(isLeft: true);
             }
             if (_rightBallList.Count > 0 && _rightBallList[0].CriticalTime > _bgmSource.time - _settingMaster.TestNoteTimeBuffer && _rightBallList[0].CriticalTime < _bgmSource.time + _settingMaster.TestNoteTimeBuffer)
             {
-                OnClickRightButton();
+                OnClickButton(isLeft: false);
             }
         }
         _clickHandler.Update();
     }
 
-    private void OnClickLeftButton()
+    private void OnClickButton(bool isLeft)
     {
         float time = _bgmSource.time;
-        float realTime = _leftBallList[0].CriticalTime;
-        _justBeforeTime = time;
-        _justBeforeRealTime = realTime;
-        var firstActiveBall = _leftBallList.FirstOrDefault(b => b.CriticalTime > _bgmSource.time - _settingMaster.NoteTimeBuffer && b.CriticalTime < _bgmSource.time + _settingMaster.NoteTimeBuffer);
+        var targetList = isLeft ? _leftBallList : _rightBallList;
+        var firstActiveBall = targetList.FirstOrDefault(b => b.CriticalTime > _bgmSource.time - _settingMaster.NoteTimeBuffer && b.CriticalTime < _bgmSource.time + _settingMaster.NoteTimeBuffer);
         if (firstActiveBall != null)
         {
+            if (firstActiveBall.BallType == BallType.LongEnd)
+            {
+                return;
+            }
             _count++;
             _countText.text = _count.ToString();
             _seSource.PlayOneShot(_beatSe);
             firstActiveBall.Cts.Cancel();
-            _leftBallList.Remove(firstActiveBall);
-            Destroy(firstActiveBall.gameObject);
+            targetList.Remove(firstActiveBall);
+            firstActiveBall.OnWhenClicked.OnNext(default);
+            if (firstActiveBall.BallType == BallType.Single)
+            {
+                Destroy(firstActiveBall.gameObject);
+            }
+            else if (firstActiveBall.BallType == BallType.LongStart)
+            {
+                firstActiveBall.MoveTween.Kill();
+            }
         }
     }
 
-    private void OnClickRightButton()
+    private void OnReleaseButton(bool isLeft)
     {
         float time = _bgmSource.time;
-        float realTime = _rightBallList[0].CriticalTime;
-        _justBeforeTime = time;
-        _justBeforeRealTime = realTime;
-        var firstActiveBall = _rightBallList.FirstOrDefault(b => b.CriticalTime > _bgmSource.time - _settingMaster.NoteTimeBuffer && b.CriticalTime < _bgmSource.time + _settingMaster.NoteTimeBuffer);
+        var targetList = isLeft ? _leftBallList : _rightBallList;
+        var firstBall = targetList.FirstOrDefault();
+        var firstActiveBall = targetList.FirstOrDefault(b => b.CriticalTime > _bgmSource.time - _settingMaster.NoteTimeBuffer && b.CriticalTime < _bgmSource.time + _settingMaster.NoteTimeBuffer);
         if (firstActiveBall != null)
         {
+            if (firstActiveBall.BallType != BallType.LongEnd)
+            {
+                return;
+            }
             _count++;
             _countText.text = _count.ToString();
             _seSource.PlayOneShot(_beatSe);
             firstActiveBall.Cts.Cancel();
-            _rightBallList.Remove(firstActiveBall);
+            targetList.Remove(firstActiveBall);
             Destroy(firstActiveBall.gameObject);
+        }
+        var outLongBallList = _longBallList.Where(b => b.IsStartBallClicked && b.EndBall.IsLeft == isLeft).ToList();
+        while (outLongBallList.Count > 0)
+        {
+            Destroy(outLongBallList[0].gameObject);
+            outLongBallList.RemoveAt(0);
         }
     }
 }

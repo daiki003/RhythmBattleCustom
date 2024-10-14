@@ -9,19 +9,74 @@ using UnityEngine.UI;
 
 public class ClickHandler
 {
-    public Subject<Unit> OnClickLeftButton = new Subject<Unit>();
-    public Subject<Unit> OnClickRightButton = new Subject<Unit>();
+    public Subject<bool> OnClickButton = new Subject<bool>();
+    public Subject<bool> OnReleaseButton = new Subject<bool>();
     public void Update()
     {
+#if UNITY_EDITOR
+        // Unity上ではタッチ操作ができないのでこちら
         if (Input.GetMouseButtonDown(0))
         {
             if (IsOnTargetTag("LeftButton"))
             {
-                OnClickLeftButton.OnNext(default);
+                OnClickButton.OnNext(true);
             }
             if (IsOnTargetTag("RightButton"))
             {
-                OnClickRightButton.OnNext(default);
+                OnClickButton.OnNext(false);
+            }
+        }
+        if (Input.GetMouseButtonUp(0))
+        {
+            if (IsOnTargetTag("LeftButton"))
+            {
+                OnReleaseButton.OnNext(true);
+            }
+            if (IsOnTargetTag("RightButton"))
+            {
+                OnReleaseButton.OnNext(false);
+            }
+        }
+#endif
+
+        var touchCount = Input.touchCount;
+        for (var i = 0; i < touchCount; i++)
+        {
+            var touch = Input.GetTouch(i);
+            switch (touch.phase)
+            {
+                case TouchPhase.Began:
+                    if (IsOnTargetTag("LeftButton"))
+                    {
+                        OnClickButton.OnNext(true);
+                    }
+                    if (IsOnTargetTag("RightButton"))
+                    {
+                        OnClickButton.OnNext(false);
+                    }
+                    break;
+                case TouchPhase.Moved:
+                    // 画面上で指が動いたときに行いたい処理をここに書く
+                    break;
+                case TouchPhase.Stationary:
+                    // 指が画面に触れているが動いてはいない時に行いたい処理をここに書く
+                    break;
+                case TouchPhase.Ended:
+                    // 画面から指が離れた時に行いたい処理をここに書く
+                    if (IsOnTargetTag("LeftButton"))
+                    {
+                        OnReleaseButton.OnNext(true);
+                    }
+                    if (IsOnTargetTag("RightButton"))
+                    {
+                        OnReleaseButton.OnNext(false);
+                    }
+                    break;
+                case TouchPhase.Canceled:
+                    // システムがタッチの追跡をキャンセルした時に行いたい処理をここに書く
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
     }
