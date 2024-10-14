@@ -6,7 +6,6 @@ using R3;
 using UnityEngine.EventSystems;
 using System.Linq;
 using UnityEngine.UI;
-using Unity.VisualScripting.Dependencies.Sqlite;
 
 public class ClickHandler
 {
