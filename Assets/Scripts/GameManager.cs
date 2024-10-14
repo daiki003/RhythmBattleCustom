@@ -35,9 +35,8 @@ public class GameManager : MonoBehaviour
 {
     [SerializeField] private RectTransform _leftTransform;
     [SerializeField] private RectTransform _rightTransform;
-    [SerializeField] private RectTransform _startTransform;
-    [SerializeField] private Image _leftButton;
-    [SerializeField] private Image _rightButton;
+    [SerializeField] private RectTransform _leftStartTransform;
+    [SerializeField] private RectTransform _rightStartTransform;
 
     [SerializeField] private Ball _ballPrefab;
     [SerializeField] private LongBall _longBallPrefab;
@@ -61,6 +60,7 @@ public class GameManager : MonoBehaviour
     private SettingMaster _settingMaster;
     private bool _finishGetMaster;
     private bool _isTest;
+    private float _lastCriticalTime;
 
     private ClickHandler _clickHandler;
 
@@ -164,12 +164,13 @@ public class GameManager : MonoBehaviour
             float noteTime = (firstNote.num * (4 / firstNote.lpb) + _settingMaster.NoteTimeOffset) * (60f / _settingMaster.BPM);
             if (_bgmSource.time >= noteTime - _settingMaster.BallTimeOffset)
             {
+                bool isLeft = firstNote.block <= 3;
+                var startTransform = isLeft ? _leftStartTransform : _rightStartTransform;
                 if (firstNote.type == 1)
                 {
-                    var newBall = Instantiate(_ballPrefab, _startTransform.parent);
-                    newBall.transform.localPosition = _startTransform.localPosition;
+                    var newBall = Instantiate(_ballPrefab, startTransform.parent);
+                    newBall.transform.localPosition = startTransform.localPosition;
                     var cts = new CancellationTokenSource();  
-                    bool isLeft = firstNote.block <= 3;
                     newBall.Init(isLeft, noteTime, BallType.Single, cts);
                     _currentNoteList.RemoveAt(0);
                     if (isLeft)
@@ -197,12 +198,11 @@ public class GameManager : MonoBehaviour
                 }
                 else
                 {
-                    var longBall = Instantiate(_longBallPrefab, _startTransform.parent);
-                    longBall.transform.position = _startTransform.position;
-                    longBall.StartBall.transform.position = _startTransform.position;
-                    longBall.EndBall.transform.position = _startTransform.position;
-                    var cts = new CancellationTokenSource();  
-                    bool isLeft = firstNote.block <= 3;
+                    var longBall = Instantiate(_longBallPrefab, startTransform.parent);
+                    longBall.transform.position = startTransform.position;
+                    longBall.StartBall.transform.position = startTransform.position;
+                    longBall.EndBall.transform.position = startTransform.position;
+                    var cts = new CancellationTokenSource();
                     var endNote = firstNote.notes[0];
                     float endNoteTime = (endNote.num * (4 / endNote.lpb) + _settingMaster.NoteTimeOffset) * (60f / _settingMaster.BPM);
                     longBall.Init(isLeft, noteTime, endNoteTime, cts);
@@ -292,7 +292,11 @@ public class GameManager : MonoBehaviour
             }
             _count++;
             _countText.text = _count.ToString();
-            _seSource.PlayOneShot(_beatSe);
+            if (_lastCriticalTime != firstActiveBall.CriticalTime)
+            {
+                _seSource.PlayOneShot(_beatSe);
+            }
+            _lastCriticalTime = firstActiveBall.CriticalTime;
             firstActiveBall.Cts.Cancel();
             targetList.Remove(firstActiveBall);
             firstActiveBall.OnWhenClicked.OnNext(default);
@@ -321,7 +325,11 @@ public class GameManager : MonoBehaviour
             }
             _count++;
             _countText.text = _count.ToString();
-            _seSource.PlayOneShot(_beatSe);
+            if (_lastCriticalTime != firstActiveBall.CriticalTime)
+            {
+                _seSource.PlayOneShot(_beatSe);
+            }
+            _lastCriticalTime = firstActiveBall.CriticalTime;
             firstActiveBall.Cts.Cancel();
             targetList.Remove(firstActiveBall);
             Destroy(firstActiveBall.gameObject);

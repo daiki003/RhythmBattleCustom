@@ -6,6 +6,7 @@ using R3;
 using UnityEngine.EventSystems;
 using System.Linq;
 using UnityEngine.UI;
+using Unity.VisualScripting.Dependencies.Sqlite;
 
 public class ClickHandler
 {
@@ -37,6 +38,22 @@ public class ClickHandler
             {
                 OnReleaseButton.OnNext(false);
             }
+        }
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            OnClickButton.OnNext(true);
+        }
+        if (Input.GetKeyUp(KeyCode.V))
+        {
+            OnReleaseButton.OnNext(true);
+        }
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            OnClickButton.OnNext(false);
+        }
+        if (Input.GetKeyUp(KeyCode.M))
+        {
+            OnReleaseButton.OnNext(false);
         }
 #endif
 
