@@ -48,11 +48,11 @@ public class ClickHandler
             switch (touch.phase)
             {
                 case TouchPhase.Began:
-                    if (IsOnTargetTag("LeftButton"))
+                    if (IsOnTargetTag("LeftButton", touch))
                     {
                         OnClickButton.OnNext(true);
                     }
-                    if (IsOnTargetTag("RightButton"))
+                    if (IsOnTargetTag("RightButton", touch))
                     {
                         OnClickButton.OnNext(false);
                     }
@@ -65,11 +65,11 @@ public class ClickHandler
                     break;
                 case TouchPhase.Ended:
                     // 画面から指が離れた時に行いたい処理をここに書く
-                    if (IsOnTargetTag("LeftButton"))
+                    if (IsOnTargetTag("LeftButton", touch))
                     {
                         OnReleaseButton.OnNext(true);
                     }
-                    if (IsOnTargetTag("RightButton"))
+                    if (IsOnTargetTag("RightButton", touch))
                     {
                         OnReleaseButton.OnNext(false);
                     }
@@ -83,10 +83,10 @@ public class ClickHandler
         }
     }
 
-    private List<RaycastResult> GetRaycastResults()
+    private List<RaycastResult> GetRaycastResults(Vector2 touchPosition)
 	{
 		PointerEventData pointer = new PointerEventData(EventSystem.current);
-		pointer.position = Input.mousePosition;
+        pointer.position = touchPosition;
 		List<RaycastResult> results = new List<RaycastResult>();
 		EventSystem.current.RaycastAll(pointer, results);
 
@@ -111,27 +111,32 @@ public class ClickHandler
 
     public bool IsOnTargetTag(string tagName)
 	{
-		return GetRaycastResults().Any(r => r.gameObject.CompareTag(tagName));
+		return GetRaycastResults(Input.mousePosition).Any(r => r.gameObject.CompareTag(tagName));
 	}
 
-    public string GetFirstTag()
-    {
-        return GetRaycastResults().Select(r => r.gameObject.tag).FirstOrDefault(r => r != "Untagged");
-    }
-
-    public List<string> GetTargetTagList()
+    public bool IsOnTargetTag(string tagName, Touch touch)
 	{
-		return GetRaycastResults().Select(r => r.gameObject.tag).ToList();
+		return GetRaycastResults(touch.position).Any(r => r.gameObject.CompareTag(tagName));
 	}
 
-	public T GetTargetComponent<T>()
-	{
-        var component = GetRaycastResults().Select(r => r.gameObject.GetComponent<T>()).FirstOrDefault(s => s != null);
-        if (component == null)
-        {
-            // なければ親要素まで見る
-            component = GetRaycastResults().Select(r => r.gameObject.transform.parent.GetComponent<T>()).FirstOrDefault(s => s != null);
-        }
-        return component;
-	}
+    // public string GetFirstTag(Touch touch = default)
+    // {
+    //     return GetRaycastResults(touch).Select(r => r.gameObject.tag).FirstOrDefault(r => r != "Untagged");
+    // }
+
+    // public List<string> GetTargetTagList(Touch touch = default)
+	// {
+	// 	return GetRaycastResults(touch).Select(r => r.gameObject.tag).ToList();
+	// }
+
+	// public T GetTargetComponent<T>(Touch touch = default)
+	// {
+    //     var component = GetRaycastResults(touch).Select(r => r.gameObject.GetComponent<T>()).FirstOrDefault(s => s != null);
+    //     if (component == null)
+    //     {
+    //         // なければ親要素まで見る
+    //         component = GetRaycastResults(touch).Select(r => r.gameObject.transform.parent.GetComponent<T>()).FirstOrDefault(s => s != null);
+    //     }
+    //     return component;
+	// }
 }

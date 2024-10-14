@@ -92,30 +92,10 @@ public class GameManager : MonoBehaviour
         _clickHandler.OnClickButton.Subscribe(isLeft =>
         {
             OnClickButton(isLeft);
-            if (isLeft)
-            {
-                _leftButton.color = Color.red;
-            }
-            else
-            {
-                _rightButton.color = Color.red;
-            }
         });
         _clickHandler.OnReleaseButton.Subscribe(isLeft =>
         {
             OnReleaseButton(isLeft);
-            if (isLeft)
-            {
-                _leftButton.color = Color.white;
-            }
-            else
-            {
-                _rightButton.color = Color.white;
-            }
-        });
-        _clickHandler.OnUpdateTouchCount.Subscribe(count =>
-        {
-            _touchCountText.text = count.ToString();
         });
         _resetButton.OnClickAsObservable().Subscribe(_ =>
         {
