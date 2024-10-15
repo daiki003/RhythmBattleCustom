@@ -45,11 +45,13 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Text _touchCountText;
     [SerializeField] private Button _resetButton;
     [SerializeField] private Button _testButton;
+    [SerializeField] private Button _debugButton;
     [SerializeField] private Image _testButtonImage;
 
     [SerializeField] private AudioSource _seSource;
     [SerializeField] private AudioClip _beatSe;
     [SerializeField] private AudioSource _bgmSource;
+    [SerializeField] private GameObject _debugPanel;
 
     private List<Ball> _leftBallList = new List<Ball>();
     private List<Ball> _rightBallList = new List<Ball>();
@@ -105,6 +107,10 @@ public class GameManager : MonoBehaviour
         {
             ChangeTest();
         });
+        _debugButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            _debugPanel.SetActive(true);
+        });
         PlayFabController.login();
         GameStart().Forget();
     }
@@ -136,10 +142,27 @@ public class GameManager : MonoBehaviour
         _bgmSource.Play();
     }
 
+    public void MoveTime(float time)
+    {
+        Reset();
+        _bgmSource.Pause();
+        while (_currentNoteList.Count > 0 && CalcNoteTime(_currentNoteList[0]) < time + _settingMaster.BallTimeOffset)
+        {
+            _currentNoteList.RemoveAt(0);
+        }
+        _bgmSource.time = time;
+        _bgmSource.Play();
+    }
+
     public void ChangeTest()
     {
         _isTest = !_isTest;
         _testButtonImage.color = _isTest ? Color.black : Color.white;
+    }
+
+    private float CalcNoteTime(NoteMaster noteMaster)
+    {
+        return (noteMaster.num * (4 / noteMaster.lpb) + _settingMaster.NoteTimeOffset) * (60f / _settingMaster.BPM);
     }
 
     // ゲームスタート時の処理
@@ -161,7 +184,7 @@ public class GameManager : MonoBehaviour
         if (_currentNoteList.Count > 0)
         {
             var firstNote = _currentNoteList[0];
-            float noteTime = (firstNote.num * (4 / firstNote.lpb) + _settingMaster.NoteTimeOffset) * (60f / _settingMaster.BPM);
+            float noteTime = CalcNoteTime(firstNote);
             if (_bgmSource.time >= noteTime - _settingMaster.BallTimeOffset)
             {
                 bool isLeft = firstNote.block <= 3;
@@ -169,6 +192,10 @@ public class GameManager : MonoBehaviour
                 if (firstNote.type == 1)
                 {
                     var newBall = Instantiate(_ballPrefab, startTransform.parent);
+                    newBall.OnWhenDestroy.Subscribe(ball => 
+                    {
+                        RemoveBallFromList(ball);
+                    });
                     newBall.transform.localPosition = startTransform.localPosition;
                     var cts = new CancellationTokenSource();  
                     newBall.Init(isLeft, noteTime, BallType.Single, cts);
@@ -184,14 +211,7 @@ public class GameManager : MonoBehaviour
 
                     var tween = newBall.transform.DOMove(newBall.IsLeft ? _leftTransform.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.Linear).OnComplete(() =>
                     {
-                        if (newBall.IsLeft)
-                        {
-                            _leftBallList.Remove(newBall);
-                        }
-                        else
-                        {
-                            _rightBallList.Remove(newBall);
-                        }
+                        RemoveBallFromList(newBall);
                         Destroy(newBall.gameObject);
                     });
                     newBall.SetTween(tween);
@@ -206,6 +226,14 @@ public class GameManager : MonoBehaviour
                     var endNote = firstNote.notes[0];
                     float endNoteTime = (endNote.num * (4 / endNote.lpb) + _settingMaster.NoteTimeOffset) * (60f / _settingMaster.BPM);
                     longBall.Init(isLeft, noteTime, endNoteTime, cts);
+                    longBall.StartBall.OnWhenDestroy.Subscribe(ball => 
+                    {
+                        RemoveBallFromList(ball);
+                    });
+                    longBall.EndBall.OnWhenDestroy.Subscribe(ball => 
+                    {
+                        RemoveBallFromList(ball);
+                    });
                     _currentNoteList.RemoveAt(0);
                     if (isLeft)
                     {
@@ -223,14 +251,8 @@ public class GameManager : MonoBehaviour
 
                     var startBallTween = longBall.StartBall.transform.DOMove(longBall.StartBall.IsLeft ? _leftTransform.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.Linear).OnComplete(() =>
                     {
-                        if (longBall.StartBall.IsLeft)
-                        {
-                            _leftBallList.Remove(longBall.StartBall);
-                        }
-                        else
-                        {
-                            _rightBallList.Remove(longBall.StartBall);
-                        }
+                        RemoveBallFromList(longBall.StartBall);
+                        Destroy(longBall.gameObject);
                     });
                     longBall.StartBall.SetTween(startBallTween);
                 }
@@ -252,14 +274,7 @@ public class GameManager : MonoBehaviour
                 }
                 var startBallTween = firstBall.EndBall.transform.DOMove(firstBall.EndBall.IsLeft ? _leftTransform.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.Linear).OnComplete(() =>
                 {
-                    if (firstBall.EndBall.IsLeft)
-                    {
-                        _leftBallList.Remove(firstBall.EndBall);
-                    }
-                    else
-                    {
-                        _rightBallList.Remove(firstBall.EndBall);
-                    }
+                    RemoveBallFromList(firstBall.EndBall);
                     Destroy(firstBall.gameObject);
                 });
                 firstBall.EndBall.SetTween(startBallTween);
@@ -293,6 +308,18 @@ public class GameManager : MonoBehaviour
             }
         }
         _clickHandler.Update();
+    }
+
+    private void RemoveBallFromList(Ball ball)
+    {
+        if (ball.IsLeft)
+        {
+            _leftBallList.Remove(ball);
+        }
+        else
+        {
+            _rightBallList.Remove(ball);
+        }
     }
 
     private void OnClickButton(bool isLeft)
@@ -353,6 +380,15 @@ public class GameManager : MonoBehaviour
         var outLongBallList = _longBallList.Where(b => b.IsStartBallClicked && b.EndBall.IsLeft == isLeft).ToList();
         while (outLongBallList.Count > 0)
         {
+            var endBall = outLongBallList[0].EndBall;
+            if (isLeft)
+            {
+                _leftBallList.Remove(endBall);
+            }
+            else
+            {
+                _rightBallList.Remove(endBall);
+            }
             Destroy(outLongBallList[0].gameObject);
             outLongBallList.RemoveAt(0);
         }

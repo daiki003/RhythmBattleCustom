@@ -27,7 +27,7 @@ public class Ball : MonoBehaviour
     private Vector3 _leftTargetPosition = new Vector3(300, 600, 0);
     private Vector3 _rightTargetPosition = new Vector3(-300, 600, 0);
     public Tweener MoveTween;
-    public Subject<Unit> OnWhenDestroy = new Subject<Unit>();
+    public Subject<Ball> OnWhenDestroy = new Subject<Ball>();
     public Subject<Unit> OnWhenClicked = new Subject<Unit>();
 
     public virtual void Init(bool isleft, float criticalTime, BallType ballType, CancellationTokenSource cts)
@@ -47,6 +47,6 @@ public class Ball : MonoBehaviour
     void OnDestroy()
     {
         MoveTween.Kill();
-        OnWhenDestroy.OnNext(default);
+        OnWhenDestroy.OnNext(this);
     }
 }

@@ -24,7 +24,7 @@ public class LongBall : MonoBehaviour
 
     private const float _lineWidth = 0.2f;
 
-    public Subject<Unit> OnWhenDestroyed = new Subject<Unit>();
+    public Subject<LongBall> OnWhenDestroyed = new Subject<LongBall>();
 
     public void Init(bool isleft, float criticalTime, float endCriticalTime, CancellationTokenSource cts)
     {
@@ -63,6 +63,6 @@ public class LongBall : MonoBehaviour
         {
             Destroy(_endBall.gameObject);
         }
-        OnWhenDestroyed.OnNext(default);
+        OnWhenDestroyed.OnNext(this);
     }
 }
