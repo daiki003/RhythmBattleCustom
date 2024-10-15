@@ -19,7 +19,7 @@ public class SettingMaster
     public bool IsTestMode;
     public float TestNoteTimeBuffer;
     public List<float> NoteList = new List<float>();
-    public List<NoteMaster> notes = new List<NoteMaster>();
+    public List<List<NoteMaster>> notes = new List<List<NoteMaster>>();
 }
 
 public class NoteMaster
@@ -63,6 +63,7 @@ public class GameManager : MonoBehaviour
     private bool _finishGetMaster;
     private bool _isTest;
     private float _lastCriticalTime;
+    private int _currentLevel;
 
     private ClickHandler _clickHandler;
 
@@ -117,7 +118,7 @@ public class GameManager : MonoBehaviour
 
     public void Reset()
     {
-        _currentNoteList = new List<NoteMaster>(_settingMaster.notes);
+        _currentNoteList = new List<NoteMaster>(_settingMaster.notes[_currentLevel]);
         while (_leftBallList.Count > 0)
         {
             var ball = _leftBallList[0];
@@ -154,6 +155,12 @@ public class GameManager : MonoBehaviour
         _bgmSource.Play();
     }
 
+    public void ChangeLevel(int level)
+    {
+        _currentLevel = level;
+        Reset();
+    }
+
     public void ChangeTest()
     {
         _isTest = !_isTest;
@@ -169,7 +176,7 @@ public class GameManager : MonoBehaviour
 	private async UniTask GameStart()
 	{
 		await UniTask.WaitWhile(() => !_finishGetMaster);
-		_currentNoteList = new List<NoteMaster>(_settingMaster.notes);
+		_currentNoteList = new List<NoteMaster>(_settingMaster.notes[_currentLevel]);
         _isTest = _settingMaster.IsTestMode;
         _testButtonImage.color = _isTest ? Color.black : Color.white;
         _bgmSource.Play();
