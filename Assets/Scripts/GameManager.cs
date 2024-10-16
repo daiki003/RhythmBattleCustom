@@ -15,8 +15,8 @@ public class SettingMaster
     public float NoteTimeOffset;
     public float NoteTimeBuffer;
     public float BallTimeOffset;
+    public float BallSpeed;
     public float BPM;
-    public bool IsTestMode;
     public float TestNoteTimeBuffer;
     public List<float> NoteList = new List<float>();
     public List<List<NoteMaster>> notes = new List<List<NoteMaster>>();
@@ -29,6 +29,7 @@ public class NoteMaster
     public int block;
     public int type;
     public List<NoteMaster> notes = new List<NoteMaster>();
+    public int noteNumber => num * (4 / lpb);
 }
 
 public class GameManager : MonoBehaviour
@@ -38,11 +39,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private RectTransform _leftStartTransform;
     [SerializeField] private RectTransform _rightStartTransform;
 
-    [SerializeField] private Ball _ballPrefab;
+    [SerializeField] private SingleBall _ballPrefab;
     [SerializeField] private LongBall _longBallPrefab;
 
     [SerializeField] private Text _countText;
-    [SerializeField] private Text _touchCountText;
     [SerializeField] private Button _resetButton;
     [SerializeField] private Button _testButton;
     [SerializeField] private Button _debugButton;
@@ -53,12 +53,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private AudioSource _bgmSource;
     [SerializeField] private GameObject _debugPanel;
 
-    private List<Ball> _leftBallList = new List<Ball>();
-    private List<Ball> _rightBallList = new List<Ball>();
-    private List<LongBall> _longBallList = new List<LongBall>();
+    private List<SingleBall> _leftBallList = new List<SingleBall>();
+    private List<SingleBall> _rightBallList = new List<SingleBall>();
     private int _count = 0;
 
-    private List<NoteMaster> _currentNoteList = new List<NoteMaster>();
     private SettingMaster _settingMaster;
     private bool _finishGetMaster;
     private bool _isTest;
@@ -103,6 +101,7 @@ public class GameManager : MonoBehaviour
         _resetButton.OnClickAsObservable().Subscribe(_ =>
         {
             Reset();
+            StartMusic();
         });
         _testButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -116,49 +115,40 @@ public class GameManager : MonoBehaviour
         GameStart().Forget();
     }
 
+    public void DestroyAllObjectInList<T>(List<T> ballList)
+    {
+        while (ballList.Count > 0)
+        {
+            var ball = ballList[0];
+            ballList.RemoveAt(0);
+            if (ball is MonoBehaviour monoBehaviour)
+            {
+                Destroy(monoBehaviour.gameObject);
+            }
+        }
+    }
+
     public void Reset()
     {
-        _currentNoteList = new List<NoteMaster>(_settingMaster.notes[_currentLevel]);
-        while (_leftBallList.Count > 0)
-        {
-            var ball = _leftBallList[0];
-            _leftBallList.RemoveAt(0);
-            Destroy(ball.gameObject);
-        }
-        while (_rightBallList.Count > 0)
-        {
-            var ball = _rightBallList[0];
-            _rightBallList.RemoveAt(0);
-            Destroy(ball.gameObject);
-        }
-        while (_longBallList.Count > 0)
-        {
-            var ball = _longBallList[0];
-            _longBallList.RemoveAt(0);
-            Destroy(ball.gameObject);
-        }
+        DestroyAllObjectInList(_leftBallList);
+        DestroyAllObjectInList(_rightBallList);
         _count = 0;
         _countText.text = _count.ToString();
         _bgmSource.Stop();
-        _bgmSource.Play();
     }
 
     public void MoveTime(float time)
     {
         Reset();
-        _bgmSource.Pause();
-        while (_currentNoteList.Count > 0 && CalcNoteTime(_currentNoteList[0]) < time + _settingMaster.BallTimeOffset)
-        {
-            _currentNoteList.RemoveAt(0);
-        }
         _bgmSource.time = time;
-        _bgmSource.Play();
+        StartMusic(time);
     }
 
     public void ChangeLevel(int level)
     {
         _currentLevel = level;
         Reset();
+        StartMusic();
     }
 
     public void ChangeTest()
@@ -169,18 +159,124 @@ public class GameManager : MonoBehaviour
 
     private float CalcNoteTime(NoteMaster noteMaster)
     {
-        return (noteMaster.num * (4 / noteMaster.lpb) + _settingMaster.NoteTimeOffset) * (60f / _settingMaster.BPM);
+        return (noteMaster.noteNumber + _settingMaster.NoteTimeOffset) * (60f / _settingMaster.BPM);
     }
 
     // ゲームスタート時の処理
 	private async UniTask GameStart()
 	{
 		await UniTask.WaitWhile(() => !_finishGetMaster);
-		_currentNoteList = new List<NoteMaster>(_settingMaster.notes[_currentLevel]);
-        _isTest = _settingMaster.IsTestMode;
-        _testButtonImage.color = _isTest ? Color.black : Color.white;
+        StartMusic();
+	}
+
+    // 曲開始時の共通処理
+    private void StartMusic(float startTime = 0f)
+	{
+        // 曲が始まる前にGC.Collect
+        GC.Collect();
+        foreach (NoteMaster noteMaster in _settingMaster.notes[_currentLevel])
+        {
+            float noteTime = CalcNoteTime(noteMaster);
+            // 途中から曲を始める場合それより前のボールは作らない
+            if (noteTime < startTime)
+            {
+                continue;
+            }
+            bool isLeft = noteMaster.block <= 3;
+            var startTransform = isLeft ? _leftStartTransform : _rightStartTransform;
+            if (noteMaster.type == 1)
+            {
+                var newBall = Instantiate(_ballPrefab, startTransform.parent);
+                newBall.transform.localPosition = startTransform.localPosition;
+                newBall.gameObject.SetActive(false);
+                newBall.Init(noteMaster, noteTime, _settingMaster.BallTimeOffset, BallType.Single);
+                SetBallToList(newBall);
+            }
+            else
+            {
+                var longBall = Instantiate(_longBallPrefab, startTransform.parent);
+                longBall.transform.position = startTransform.position;
+                longBall.StartBall.transform.position = startTransform.position;
+                longBall.EndBall.transform.position = startTransform.position;
+                longBall.gameObject.SetActive(false);
+                var endNote = noteMaster.notes[0];
+                float endNoteTime = CalcNoteTime(endNote);
+                longBall.Init(noteMaster, noteTime, endNoteTime, _settingMaster.BallTimeOffset);
+                SetBallToList(longBall.StartBall);
+                SetBallToList(longBall.EndBall);
+            }
+        }
         _bgmSource.Play();
 	}
+
+    // ボールをリストに入れる
+    private void SetBallToList(SingleBall ball, bool isInsert = false)
+    {
+        if (ball.IsLeft)
+        {
+            if (isInsert)
+            {
+                _leftBallList.Insert(0, ball);
+            }
+            else
+            {
+                _leftBallList.Add(ball);
+            }
+        }
+        else
+        {
+            if (isInsert)
+            {
+                _rightBallList.Insert(0, ball);
+            }
+            else
+            {
+                _rightBallList.Add(ball);
+            }
+        }
+        // ボールが破棄されたときにリストから取り除く
+        ball.OnWhenDestroyed.Subscribe(b => 
+        {
+            RemoveBallFromList(b);
+        });
+    }
+
+    private void RemoveBallFromList(SingleBall ball)
+    {
+        if (ball.IsLeft)
+        {
+            _leftBallList.Remove(ball);
+        }
+        else
+        {
+            _rightBallList.Remove(ball);
+        }
+    }
+
+    private void LaunchBall(List<SingleBall> ballList)
+    {
+        var launchBall = ballList.FirstOrDefault(b => b.BallState == BallState.Wait);
+        if (launchBall != null && _bgmSource.time >= launchBall.LaunchTime)
+        {
+            launchBall.gameObject.SetActive(true);
+            launchBall.OnWhenLaunched.OnNext(default);
+            launchBall.BallState = BallState.Launched;
+            CreateMoveTween(launchBall, () =>
+            {
+                RemoveBallFromList(launchBall);
+                Destroy(launchBall.gameObject);
+            });
+        }
+    }
+
+    private void CreateMoveTween(SingleBall ball, Action action)
+    {
+        var tween = ball.transform.DOMove(ball.IsLeft ? _leftTransform.transform.position : _rightTransform.transform.position, _settingMaster.BallSpeed).SetEase(Ease.Linear).OnComplete(() =>
+        {
+            action();
+        });
+        ball.SetTween(tween);
+    }
 
     void Update()
     {
@@ -188,104 +284,13 @@ public class GameManager : MonoBehaviour
         {
             return;
         }
-        if (_currentNoteList.Count > 0)
+        if (_leftBallList.Count > 0)
         {
-            var firstNote = _currentNoteList[0];
-            float noteTime = CalcNoteTime(firstNote);
-            if (_bgmSource.time >= noteTime - _settingMaster.BallTimeOffset)
-            {
-                bool isLeft = firstNote.block <= 3;
-                var startTransform = isLeft ? _leftStartTransform : _rightStartTransform;
-                if (firstNote.type == 1)
-                {
-                    var newBall = Instantiate(_ballPrefab, startTransform.parent);
-                    newBall.OnWhenDestroy.Subscribe(ball => 
-                    {
-                        RemoveBallFromList(ball);
-                    });
-                    newBall.transform.localPosition = startTransform.localPosition;
-                    var cts = new CancellationTokenSource();  
-                    newBall.Init(isLeft, noteTime, BallType.Single, cts);
-                    _currentNoteList.RemoveAt(0);
-                    if (isLeft)
-                    {
-                        _leftBallList.Add(newBall);
-                    }
-                    else
-                    {
-                        _rightBallList.Add(newBall);
-                    }
-
-                    var tween = newBall.transform.DOMove(newBall.IsLeft ? _leftTransform.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.Linear).OnComplete(() =>
-                    {
-                        RemoveBallFromList(newBall);
-                        Destroy(newBall.gameObject);
-                    });
-                    newBall.SetTween(tween);
-                }
-                else
-                {
-                    var longBall = Instantiate(_longBallPrefab, startTransform.parent);
-                    longBall.transform.position = startTransform.position;
-                    longBall.StartBall.transform.position = startTransform.position;
-                    longBall.EndBall.transform.position = startTransform.position;
-                    var cts = new CancellationTokenSource();
-                    var endNote = firstNote.notes[0];
-                    float endNoteTime = (endNote.num * (4 / endNote.lpb) + _settingMaster.NoteTimeOffset) * (60f / _settingMaster.BPM);
-                    longBall.Init(isLeft, noteTime, endNoteTime, cts);
-                    longBall.StartBall.OnWhenDestroy.Subscribe(ball => 
-                    {
-                        RemoveBallFromList(ball);
-                    });
-                    longBall.EndBall.OnWhenDestroy.Subscribe(ball => 
-                    {
-                        RemoveBallFromList(ball);
-                    });
-                    _currentNoteList.RemoveAt(0);
-                    if (isLeft)
-                    {
-                        _leftBallList.Add(longBall.StartBall);
-                    }
-                    else
-                    {
-                        _rightBallList.Add(longBall.StartBall);
-                    }
-                    _longBallList.Add(longBall);
-                    longBall.OnWhenDestroyed.Subscribe(_ =>
-                    {
-                        _longBallList.Remove(longBall);
-                    });
-
-                    var startBallTween = longBall.StartBall.transform.DOMove(longBall.StartBall.IsLeft ? _leftTransform.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.Linear).OnComplete(() =>
-                    {
-                        RemoveBallFromList(longBall.StartBall);
-                        Destroy(longBall.gameObject);
-                    });
-                    longBall.StartBall.SetTween(startBallTween);
-                }
-            }
+            LaunchBall(_leftBallList);
         }
-        if (_longBallList.Count > 0)
+        if (_rightBallList.Count > 0)
         {
-            var firstBall = _longBallList.FirstOrDefault(b => !b.IsEndBallLaunched);
-            if (firstBall != null && _bgmSource.time >= firstBall.EndBall.CriticalTime - _settingMaster.BallTimeOffset)
-            {
-                firstBall.IsEndBallLaunched = true;
-                if (firstBall.EndBall.IsLeft)
-                {
-                    _leftBallList.Add(firstBall.EndBall);
-                }
-                else
-                {
-                    _rightBallList.Add(firstBall.EndBall);
-                }
-                var startBallTween = firstBall.EndBall.transform.DOMove(firstBall.EndBall.IsLeft ? _leftTransform.transform.position : _rightTransform.transform.position, 2f).SetEase(Ease.Linear).OnComplete(() =>
-                {
-                    RemoveBallFromList(firstBall.EndBall);
-                    Destroy(firstBall.gameObject);
-                });
-                firstBall.EndBall.SetTween(startBallTween);
-            }
+            LaunchBall(_rightBallList);
         }
         if (_isTest)
         {
@@ -317,25 +322,13 @@ public class GameManager : MonoBehaviour
         _clickHandler.Update();
     }
 
-    private void RemoveBallFromList(Ball ball)
-    {
-        if (ball.IsLeft)
-        {
-            _leftBallList.Remove(ball);
-        }
-        else
-        {
-            _rightBallList.Remove(ball);
-        }
-    }
-
     private void OnClickButton(bool isLeft)
     {
         float time = _bgmSource.time;
         var targetList = isLeft ? _leftBallList : _rightBallList;
-        var firstActiveBall = targetList.FirstOrDefault(b => b.CriticalTime > _bgmSource.time - _settingMaster.NoteTimeBuffer && b.CriticalTime < _bgmSource.time + _settingMaster.NoteTimeBuffer);
+        var firstActiveBall = targetList.FirstOrDefault(b => IsBallClitical(b));
         if (firstActiveBall != null)
-        {
+        { 
             if (firstActiveBall.BallType == BallType.LongEnd)
             {
                 return;
@@ -347,7 +340,6 @@ public class GameManager : MonoBehaviour
                 _seSource.PlayOneShot(_beatSe);
             }
             _lastCriticalTime = firstActiveBall.CriticalTime;
-            firstActiveBall.Cts.Cancel();
             targetList.Remove(firstActiveBall);
             firstActiveBall.OnWhenClicked.OnNext(default);
             if (firstActiveBall.BallType == BallType.Single)
@@ -356,6 +348,7 @@ public class GameManager : MonoBehaviour
             }
             else if (firstActiveBall.BallType == BallType.LongStart)
             {
+                Debug.Log("Tween破棄" + firstActiveBall.CriticalTime);
                 firstActiveBall.MoveTween.Kill();
             }
         }
@@ -366,7 +359,13 @@ public class GameManager : MonoBehaviour
         float time = _bgmSource.time;
         var targetList = isLeft ? _leftBallList : _rightBallList;
         var firstBall = targetList.FirstOrDefault();
-        var firstActiveBall = targetList.FirstOrDefault(b => b.CriticalTime > _bgmSource.time - _settingMaster.NoteTimeBuffer && b.CriticalTime < _bgmSource.time + _settingMaster.NoteTimeBuffer);
+        // ロングノーツの終端の前で離したらそれを破棄
+        if (firstBall.BallType == BallType.LongEnd && !IsBallClitical(firstBall))
+        {
+            targetList.Remove(firstBall);
+            Destroy(firstBall.gameObject);
+        }
+        var firstActiveBall = targetList.FirstOrDefault(b => IsBallClitical(b));
         if (firstActiveBall != null)
         {
             if (firstActiveBall.BallType != BallType.LongEnd)
@@ -380,24 +379,13 @@ public class GameManager : MonoBehaviour
                 _seSource.PlayOneShot(_beatSe);
             }
             _lastCriticalTime = firstActiveBall.CriticalTime;
-            firstActiveBall.Cts.Cancel();
             targetList.Remove(firstActiveBall);
             Destroy(firstActiveBall.gameObject);
         }
-        var outLongBallList = _longBallList.Where(b => b.IsStartBallClicked && b.EndBall.IsLeft == isLeft).ToList();
-        while (outLongBallList.Count > 0)
-        {
-            var endBall = outLongBallList[0].EndBall;
-            if (isLeft)
-            {
-                _leftBallList.Remove(endBall);
-            }
-            else
-            {
-                _rightBallList.Remove(endBall);
-            }
-            Destroy(outLongBallList[0].gameObject);
-            outLongBallList.RemoveAt(0);
-        }
+    }
+
+    private bool IsBallClitical(SingleBall ball)
+    {
+        return ball.CriticalTime > _bgmSource.time - _settingMaster.NoteTimeBuffer && ball.CriticalTime < _bgmSource.time + _settingMaster.NoteTimeBuffer;
     }
 }

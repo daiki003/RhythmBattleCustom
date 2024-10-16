@@ -12,11 +12,11 @@ using UnityEngine.UI;
 public class LongBall : MonoBehaviour
 {
     [SerializeField] private Image _ballImage;
-    [SerializeField] private Ball _startBall;
-    [SerializeField] private Ball _endBall;
+    [SerializeField] private SingleBall _startBall;
+    [SerializeField] private SingleBall _endBall;
     [SerializeField] private LineRenderer _lineRenderer;
-    public Ball StartBall => _startBall;
-    public Ball EndBall => _endBall;
+    public SingleBall StartBall => _startBall;
+    public SingleBall EndBall => _endBall;
     public LineRenderer LineRenderer => _lineRenderer;
 
     public bool IsEndBallLaunched;
@@ -24,17 +24,24 @@ public class LongBall : MonoBehaviour
 
     private const float _lineWidth = 0.2f;
 
-    public Subject<LongBall> OnWhenDestroyed = new Subject<LongBall>();
-
-    public void Init(bool isleft, float criticalTime, float endCriticalTime, CancellationTokenSource cts)
+    public void Init(NoteMaster noteMaster, float criticalTime, float endCriticalTime, float ballTimeOffset)
     {
-        _startBall.Init(isleft, criticalTime, BallType.LongStart, cts);
-        _endBall.Init(isleft, endCriticalTime, BallType.LongEnd, cts);
+        _startBall.Init(noteMaster, criticalTime, ballTimeOffset, BallType.LongStart);
+        _endBall.Init(noteMaster.notes[0], endCriticalTime, ballTimeOffset, BallType.LongEnd);
+        _startBall.OnWhenLaunched.Subscribe(_ =>
+        {
+            gameObject.SetActive(true);
+            IsStartBallClicked = true;
+        });
         _startBall.OnWhenClicked.Subscribe(_ =>
         {
             IsStartBallClicked = true;
         });
-        _endBall.OnWhenDestroy.Subscribe(_ =>
+        _startBall.OnWhenDestroyed.Subscribe(_ =>
+        {
+            Destroy(gameObject);
+        });
+        _endBall.OnWhenDestroyed.Subscribe(_ =>
         {
             Destroy(gameObject);
         });
@@ -49,8 +56,11 @@ public class LongBall : MonoBehaviour
 
     void Update()
     {
-        _lineRenderer.SetPosition(0, StartBall.transform.position);
-        _lineRenderer.SetPosition(1, EndBall.transform.position);
+        if (StartBall != null && EndBall != null)
+        {
+            _lineRenderer.SetPosition(0, StartBall.transform.position);
+            _lineRenderer.SetPosition(1, EndBall.transform.position);
+        }
     }
 
     void OnDestroy()
@@ -63,6 +73,5 @@ public class LongBall : MonoBehaviour
         {
             Destroy(_endBall.gameObject);
         }
-        OnWhenDestroyed.OnNext(this);
     }
 }
