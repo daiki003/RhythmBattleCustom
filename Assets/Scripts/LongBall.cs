@@ -24,10 +24,10 @@ public class LongBall : MonoBehaviour
 
     private const float _lineWidth = 0.2f;
 
-    public void Init(NoteMaster noteMaster, float criticalTime, float endCriticalTime, float ballTimeOffset)
+    public void Init(NoteMaster noteMaster, float criticalTime, float endCriticalTime)
     {
-        _startBall.Init(noteMaster, criticalTime, ballTimeOffset, BallType.LongStart);
-        _endBall.Init(noteMaster.notes[0], endCriticalTime, ballTimeOffset, BallType.LongEnd);
+        _startBall.Init(noteMaster, criticalTime, BallType.LongStart);
+        _endBall.Init(noteMaster.notes[0], endCriticalTime, BallType.LongEnd);
         _startBall.OnWhenLaunched.Subscribe(_ =>
         {
             gameObject.SetActive(true);

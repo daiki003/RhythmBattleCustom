@@ -39,7 +39,7 @@ public class PlayFabController
             getPlayerData();
         }
         UpdateRandomPlayfabId();
-        GameManager.instance.GetAllMasterData();
+        MasterManager.GetAllMasterData();
         Debug.Log("ログイン" + playFabId);
     }
 

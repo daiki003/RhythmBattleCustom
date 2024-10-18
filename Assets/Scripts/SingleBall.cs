@@ -22,13 +22,13 @@ public class SingleBall : MonoBehaviour
     public Subject<SingleBall> OnWhenDestroyed = new Subject<SingleBall>();
     public Tweener MoveTween;
 
-    public void Init(NoteMaster noteMaster, float criticalTime, float ballTimeOffset, BallType ballType)
+    public void Init(NoteMaster noteMaster, float criticalTime, BallType ballType)
     {
         string ballSpritePath = ballType == BallType.Single ? "Ball/Single" : "Ball/Long";
         _ballImage.sprite = Resources.Load<Sprite>(ballSpritePath);
         // _ballImage.color = ballType == BallType.Single ? Color.red : Color.blue;
         CriticalTime = criticalTime;
-        LaunchTime = criticalTime - ballTimeOffset;
+        LaunchTime = criticalTime - MasterManager.SettingMaster.BallTimeOffset;
         BallType = ballType;
         IsLeft = noteMaster.block <= 3;
     }
