@@ -112,7 +112,11 @@ public class GameManager : MonoBehaviour
         DestroyAllObjectInList(_leftBallList);
         DestroyAllObjectInList(_rightBallList);
         _criticalCount = 0;
+        _hitCount = 0;
+        _missCount = 0;
         _criticalCountText.text = _criticalCount.ToString();
+        _hitCountText.text = _hitCount.ToString();
+        _missCountText.text = _missCount.ToString();
         _bgmSource.Stop();
     }
 
