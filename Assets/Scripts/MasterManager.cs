@@ -11,7 +11,6 @@ public class SettingMaster
     public float BallSpeed;
     public float BPM;
     public float TestNoteTimeBuffer;
-    public List<float> NoteList = new List<float>();
     public List<List<NoteMaster>> notes = new List<List<NoteMaster>>();
 }
 
@@ -24,18 +23,28 @@ public class NoteMaster
     public List<NoteMaster> notes = new List<NoteMaster>();
     public int noteNumber => num * (4 / lpb);
 }
+
+public class StageMaster
+{
+    public int StageId;
+    public List<List<NoteMaster>> notes = new List<List<NoteMaster>>();
+}
+
 public static class MasterManager
 {
     public static SettingMaster SettingMaster;
+    public static  List<StageMaster> StageMasterList = new List<StageMaster>();
     public static bool FinishGetMaster;
     public static void GetAllMasterData()
 	{
 		PlayFabController.GetTitleData(SetMasterData);
 	}
 
-    public static void SetMasterData(SettingMaster settingMaster)
+    public static void SetMasterData(SettingMaster settingMaster, StageMaster battleRoseMoon)
 	{
 		SettingMaster = settingMaster;
+        StageMasterList.Add(battleRoseMoon);
+        PlayFabController.GetPlayerData();
         FinishGetMaster = true;
 	}
 }

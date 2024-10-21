@@ -36,12 +36,15 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Button _resetButton;
     [SerializeField] private Button _testButton;
     [SerializeField] private Button _debugButton;
+    [SerializeField] private Button _backButton;
     [SerializeField] private Image _testButtonImage;
 
     [SerializeField] private AudioSource _seSource;
     [SerializeField] private AudioClip _beatSe;
     [SerializeField] private AudioSource _bgmSource;
+    [SerializeField] private AudioClip _bgmClip;
     [SerializeField] private GameObject _debugPanel;
+    [SerializeField] private GameObject _titlePanel;
 
     private List<SingleBall> _leftBallList = new List<SingleBall>();
     private List<SingleBall> _rightBallList = new List<SingleBall>();
@@ -51,7 +54,9 @@ public class GameManager : MonoBehaviour
 
     private bool _isTest;
     private float _lastBeatTime;
+    private int _currentStage;
     private int _currentLevel;
+    private bool _startFinish;
 
     private ClickHandler _clickHandler;
 
@@ -90,7 +95,13 @@ public class GameManager : MonoBehaviour
         {
             _debugPanel.SetActive(true);
         });
+        _backButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            Reset();
+            _titlePanel.SetActive(true);
+        });
         PlayFabController.login();
+        _currentStage = 1;
         GameStart().Forget();
     }
 
@@ -149,15 +160,23 @@ public class GameManager : MonoBehaviour
 	private async UniTask GameStart()
 	{
 		await UniTask.WaitWhile(() => !MasterManager.FinishGetMaster);
-        StartMusic();
+        _titlePanel.SetActive(true);
 	}
+
+    public void StartBattle(int stageId, int level)
+    {
+        Reset();
+        _currentStage = stageId;
+        _currentLevel = level;
+        StartMusic();
+    }
 
     // 曲開始時の共通処理
     private void StartMusic(float startTime = 0f)
 	{
         // 曲が始まる前にGC.Collect
         GC.Collect();
-        foreach (NoteMaster noteMaster in MasterManager.SettingMaster.notes[_currentLevel])
+        foreach (NoteMaster noteMaster in MasterManager.StageMasterList.First(s => s.StageId == _currentStage).notes[_currentLevel])
         {
             float noteTime = CalcNoteTime(noteMaster);
             // 途中から曲を始める場合それより前のボールは作らない
@@ -190,6 +209,7 @@ public class GameManager : MonoBehaviour
             }
         }
         _bgmSource.Play();
+        _startFinish = false;
 	}
 
     // ボールをリストに入れる
@@ -248,7 +268,8 @@ public class GameManager : MonoBehaviour
             {
                 RemoveBallFromList(launchBall);
                 Destroy(launchBall.gameObject);
-                CountUpText(HitType.None);
+                CreateLetter(launchBall.IsLeft, HitType.None);
+                CountUpText(HitType.None, count: launchBall.BallType == BallType.LongStart ? 2 : 1);
             });
         }
     }
@@ -303,7 +324,20 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
+        if (_bgmClip.length <= _bgmSource.time && !_startFinish)
+        {
+            _startFinish = true;
+            FinishBattle().Forget();
+        }
         _clickHandler.Update();
+    }
+
+    private async UniTask FinishBattle()
+    {
+        await UniTask.WaitForSeconds(2.5f);
+        SaveDataManager.UpdateClearState(_currentStage, _currentLevel, _criticalCount, _hitCount, _missCount);
+        Reset();
+        _titlePanel.SetActive(true);
     }
 
     private void OnClickButton(bool isLeft)
@@ -337,10 +371,11 @@ public class GameManager : MonoBehaviour
         var targetList = isLeft ? _leftBallList : _rightBallList;
         var firstBall = targetList.FirstOrDefault();
         // ロングノーツの終端の前で離したらそれを破棄
-        if (firstBall.BallType == BallType.LongEnd && JudgeBall(firstBall) == HitType.None)
+        if (firstBall != null && firstBall.BallType == BallType.LongEnd && JudgeBall(firstBall) == HitType.None)
         {
             targetList.Remove(firstBall);
             Destroy(firstBall.gameObject);
+            CreateLetter(isLeft, HitType.None);
             CountUpText(HitType.None);
         }
         var firstActiveBall = targetList.FirstOrDefault(b => JudgeBall(b) >= HitType.Hit);
@@ -377,26 +412,31 @@ public class GameManager : MonoBehaviour
         }
         _lastBeatTime = ball.CriticalTime;
         ball.OnWhenClicked.OnNext(default);
-        var letter = Instantiate(_criticalPrefab, ball.IsLeft ? _leftLetterTransform : _rightLetterTransform);
-        letter.InitAndStart(JudgeBall(ball)).Forget();
+        CreateLetter(ball.IsLeft, JudgeBall(ball));
         CountUpText(hitType);
     }
 
-    private void CountUpText(HitType hitType)
+    private void CreateLetter(bool isLeft, HitType hitType)
+    {
+        var letter = Instantiate(_criticalPrefab, isLeft ? _leftLetterTransform : _rightLetterTransform);
+        letter.InitAndStart(hitType).Forget();
+    }
+
+    private void CountUpText(HitType hitType, int count = 1)
     {
         if (hitType == HitType.Hit)
         {
-            _hitCount++;
+            _hitCount += count;
             _hitCountText.text = _hitCount.ToString();
         }
         else if (hitType == HitType.Critical)
         {
-            _criticalCount++;
+            _criticalCount += count;
             _criticalCountText.text = _criticalCount.ToString();
         }
         else
         {
-            _missCount++;
+            _missCount += count;
             _missCountText.text = _missCount.ToString();
         }
     }

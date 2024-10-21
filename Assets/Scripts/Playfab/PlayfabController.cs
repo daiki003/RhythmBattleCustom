@@ -15,6 +15,7 @@ public class PlayFabController
 
     [HideInInspector] static public string PlayerName { get; private set; }
     [HideInInspector] static public List<CharacterResult> Characters { get; private set; }
+    private static bool _finishGetMaster;
 
     // ログイン ---------------------------------------------------------------------------------------------------------------------------------------[]
     public static void login()
@@ -30,14 +31,6 @@ public class PlayFabController
     public static void loginSuccess(LoginResult result)
     {
         playFabId = result.PlayFabId;
-        if (result.NewlyCreated)
-        {
-            initializePublicData(getPlayerData);
-        }
-        else
-        {
-            getPlayerData();
-        }
         UpdateRandomPlayfabId();
         MasterManager.GetAllMasterData();
         Debug.Log("ログイン" + playFabId);
@@ -68,8 +61,7 @@ public class PlayFabController
         {
             Data = new Dictionary<string, string>
             {
-                { "Name", "" },
-                { "AllDecks", "" }
+                { "Name", "" }
             }
         };
 
@@ -88,13 +80,26 @@ public class PlayFabController
         }
     }
 
-    public static void initializePublicData(Action callBack)
+    public static void InitializePublicData(Action callBack)
     {
+        var clearStates = new List<ClearState>();
+        for (int i = 0; i < MasterManager.StageMasterList.Count; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                var clearState = new ClearState()
+                {
+                    StageId = MasterManager.StageMasterList[i].StageId,
+                    Level = j,
+                };
+                clearStates.Add(clearState);
+            }
+        }
         var request = new UpdateUserDataRequest()
         {
             Data = new Dictionary<string, string>
             {
-                { "MainDeck", "" }
+                { "ClearStates", PlayFabSimpleJson.SerializeObject(clearStates) }
             },
             Permission = UserDataPermission.Public
         };
@@ -115,13 +120,21 @@ public class PlayFabController
 
     // プレイヤーデータ取得 ------------------------------------------------------------------------------------------------------------------------
     // 自身の全てのデータを取得してSaveDataを更新
-    public static void getPlayerData()
+    public static void GetPlayerData()
     {
         var request = new GetUserDataRequest();
         PlayFabClientAPI.GetUserData(request, OnSuccess, OnError);
 
         void OnSuccess(GetUserDataResult result)
         {
+            if (result.Data.ContainsKey("ClearStates"))
+            {
+                SaveDataManager.ClearStateList = PlayFabSimpleJson.DeserializeObject<List<ClearState>>(result.Data["ClearStates"].Value);   
+            }
+            else
+            {
+                InitializePublicData(GetPlayerData);
+            }
             Debug.Log("GetUserData: Success!");
         }
 
@@ -147,7 +160,32 @@ public class PlayFabController
 
         void OnSuccess(UpdateUserDataResult result)
         {
-            getPlayerData();
+            GetPlayerData();
+            Debug.Log("UpdateUserData: Success!");
+        }
+
+        void OnError(PlayFabError error)
+        {
+            Debug.Log("UpdateUserData: Fail...");
+            Debug.Log(error.GenerateErrorReport());
+        }
+    }
+
+    public static void UpdateClearState(List<ClearState> clearStates)
+    {
+        var request = new UpdateUserDataRequest()
+        {
+            Data = new Dictionary<string, string>
+            {
+                { "ClearStates", PlayFabSimpleJson.SerializeObject(clearStates) }
+            }
+        };
+
+        PlayFabClientAPI.UpdateUserData(request, OnSuccess, OnError);
+
+        void OnSuccess(UpdateUserDataResult result)
+        {
+            GetPlayerData();
             Debug.Log("UpdateUserData: Success!");
         }
 
@@ -159,7 +197,7 @@ public class PlayFabController
     }
 
     // タイトルデータ取得
-    public static void GetTitleData(Action<SettingMaster> callBack)
+    public static void GetTitleData(Action<SettingMaster, StageMaster> callBack)
     {
         var request = new GetTitleDataRequest();
         PlayFabClientAPI.GetTitleData(request, OnSuccess, OnError);
@@ -168,8 +206,10 @@ public class PlayFabController
         {
             Debug.Log("GetTitleData: Success!");
 
-            SettingMaster settingData = PlayFabSimpleJson.DeserializeObject<SettingMaster>(result.Data["Setting"]);
-            callBack(settingData);
+            var settingData = PlayFabSimpleJson.DeserializeObject<SettingMaster>(result.Data["Setting"]);
+            var stageMaster = PlayFabSimpleJson.DeserializeObject<StageMaster>(result.Data["BattleRoseMoon"]);
+            callBack(settingData, stageMaster);
+            _finishGetMaster = true;
         }
 
         void OnError(PlayFabError error)

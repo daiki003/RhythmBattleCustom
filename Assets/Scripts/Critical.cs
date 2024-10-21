@@ -27,6 +27,11 @@ public class Critical : MonoBehaviour
                 text.color = new Color32(255, 255, 0, 255);
                 text.fontSize = 70;
                 break;
+            case HitType.None:
+                text.text = "Miss";
+                text.color = new Color32(0, 0, 0, 255);
+                text.fontSize = 60;
+                break;
         }
 
         transform.localScale = Vector3.zero;
