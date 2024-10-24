@@ -1,31 +1,50 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using R3;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class StageStrip : MonoBehaviour
 {
-    [SerializeField] private List<Button> _levelButtonList;
+    [SerializeField] private Button _startButton;
+    [SerializeField] private Text _scoreText;
+    [SerializeField] private Text _comboText;
+    [SerializeField] private Text _criticalText;
+    [SerializeField] private Text _hitText;
+    [SerializeField] private Text _missText;
 
     private int _stageId;
+    private int _level;
     public Subject<(int stageId, int level)> OnWhenClickLevelButton = new Subject<(int stageId, int level)>();
 
-    public void Init(int stageId)
+    public void Init(int stageId, int level)
     {
         _stageId = stageId;
-        for (int i = 0; i < _levelButtonList.Count; i++)
+        _level = level;
+        _startButton.OnClickAsObservable().Subscribe(x =>
         {
-            int level = i;
-            _levelButtonList[i].OnClickAsObservable().Subscribe(_ =>
-            {
-                ClickLevelButton(level);
-            });
-        }
+            StartBattle(_stageId, _level);
+        });
+        UpdateScore();
     }
 
-    public void ClickLevelButton(int level)
+    public void UpdateScore()
     {
-        OnWhenClickLevelButton.OnNext((_stageId, level));
+        var clearState = SaveDataManager.ClearStateList.FirstOrDefault(c => c.StageId == _stageId && c.Level == _level);
+        if (clearState == null)
+        {
+            return;
+        }
+        _scoreText.text = clearState.Score.ToString();
+        _comboText.text = clearState.Combo.ToString();
+        _criticalText.text = clearState.CriticalNumber.ToString();
+        _hitText.text = clearState.HitNumber.ToString();
+        _missText.text = clearState.MissNumber.ToString();
+    }
+
+    private void StartBattle(int stageId, int level)
+    {
+        GameManager.instance.StartBattle(stageId, level);
     }
 }

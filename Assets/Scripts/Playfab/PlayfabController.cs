@@ -136,6 +136,7 @@ public class PlayFabController
                 InitializePublicData(GetPlayerData);
             }
             Debug.Log("GetUserData: Success!");
+            MasterManager.FinishGetMaster = true;
         }
 
         void OnError(PlayFabError error)

@@ -11,7 +11,6 @@ public class SettingMaster
     public float BallSpeed;
     public float BPM;
     public float TestNoteTimeBuffer;
-    public List<List<NoteMaster>> notes = new List<List<NoteMaster>>();
 }
 
 public class NoteMaster
@@ -45,6 +44,5 @@ public static class MasterManager
 		SettingMaster = settingMaster;
         StageMasterList.Add(battleRoseMoon);
         PlayFabController.GetPlayerData();
-        FinishGetMaster = true;
 	}
 }

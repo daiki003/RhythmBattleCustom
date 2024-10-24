@@ -39,12 +39,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Button _backButton;
     [SerializeField] private Image _testButtonImage;
 
-    [SerializeField] private AudioSource _seSource;
-    [SerializeField] private AudioClip _beatSe;
     [SerializeField] private AudioSource _bgmSource;
     [SerializeField] private AudioClip _bgmClip;
     [SerializeField] private GameObject _debugPanel;
     [SerializeField] private GameObject _titlePanel;
+    [SerializeField] private TitleManager _titleManager;
 
     private List<SingleBall> _leftBallList = new List<SingleBall>();
     private List<SingleBall> _rightBallList = new List<SingleBall>();
@@ -57,6 +56,7 @@ public class GameManager : MonoBehaviour
     private int _currentStage;
     private int _currentLevel;
     private bool _startFinish;
+    private float _diffTotal;
 
     private ClickHandler _clickHandler;
 
@@ -160,11 +160,13 @@ public class GameManager : MonoBehaviour
 	private async UniTask GameStart()
 	{
 		await UniTask.WaitWhile(() => !MasterManager.FinishGetMaster);
+        _titleManager.Init();
         _titlePanel.SetActive(true);
 	}
 
     public void StartBattle(int stageId, int level)
     {
+        _titlePanel.SetActive(false);
         Reset();
         _currentStage = stageId;
         _currentLevel = level;
@@ -392,6 +394,9 @@ public class GameManager : MonoBehaviour
 
     private HitType JudgeBall(SingleBall ball)
     {
+        var diff = ball.CriticalTime - _bgmSource.time;
+        _diffTotal += diff;
+        Debug.Log("判定合計" + _diffTotal);
         if (ball.CriticalTime > _bgmSource.time - MasterManager.SettingMaster.CriticalTimeBuffer && ball.CriticalTime < _bgmSource.time + MasterManager.SettingMaster.CriticalTimeBuffer)
         {
             return HitType.Critical;
@@ -408,7 +413,7 @@ public class GameManager : MonoBehaviour
     {
         if (_lastBeatTime != ball.CriticalTime)
         {
-            _seSource.PlayOneShot(_beatSe);
+            SEManager.instance.PlayBeatSe();
         }
         _lastBeatTime = ball.CriticalTime;
         ball.OnWhenClicked.OnNext(default);
