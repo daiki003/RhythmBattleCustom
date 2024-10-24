@@ -56,7 +56,6 @@ public class GameManager : MonoBehaviour
     private int _currentStage;
     private int _currentLevel;
     private bool _startFinish;
-    private float _diffTotal;
 
     private ClickHandler _clickHandler;
 
@@ -394,9 +393,6 @@ public class GameManager : MonoBehaviour
 
     private HitType JudgeBall(SingleBall ball)
     {
-        var diff = ball.CriticalTime - _bgmSource.time;
-        _diffTotal += diff;
-        Debug.Log("判定合計" + _diffTotal);
         if (ball.CriticalTime > _bgmSource.time - MasterManager.SettingMaster.CriticalTimeBuffer && ball.CriticalTime < _bgmSource.time + MasterManager.SettingMaster.CriticalTimeBuffer)
         {
             return HitType.Critical;

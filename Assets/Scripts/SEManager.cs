@@ -14,8 +14,6 @@ public class SEManager : MonoBehaviour
 		{
 			instance = this;
 		}
-        // フレームレート設定（FPS60にしたい場合）
-        Application.targetFrameRate = 60;
 	}
 
     public void PlayBeatSe()
