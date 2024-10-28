@@ -18,16 +18,7 @@ public class TitleManager : MonoBehaviour
 
     public void Init()
     {
-        DestroyAllStrip();
-        for (int i = 0; i < MasterManager.StageMasterList.Count; i++)
-        {
-            for (int j = 0; j < 4; j++)
-            {
-                var strip = Instantiate(_stageStripPrefab, _stripTransformList[j]);
-                _stripList.Add(strip.gameObject);
-                strip.Init(MasterManager.StageMasterList[i].StageId, j);
-            }
-        }
+        RercreateStrip();
         for (int i = 0; i < _levelButtonList.Count; i++)
         {
             int level = i;
@@ -38,6 +29,20 @@ public class TitleManager : MonoBehaviour
             });
         }
         SetLevelPanel(0);
+    }
+
+    public void RercreateStrip()
+    {
+        DestroyAllStrip();
+        for (int i = 0; i < MasterManager.StageMasterList.Count; i++)
+        {
+            for (int j = 0; j < 4; j++)
+            {
+                var strip = Instantiate(_stageStripPrefab, _stripTransformList[j]);
+                _stripList.Add(strip.gameObject);
+                strip.Init(MasterManager.StageMasterList[i].StageId, j);
+            }
+        }
     }
 
     public void DestroyAllStrip()

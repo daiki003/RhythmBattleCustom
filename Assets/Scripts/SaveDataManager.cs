@@ -25,8 +25,9 @@ public static class SaveDataManager
                 StageId = stageId,
                 Level = level,
             };
+            ClearStateList.Add(targetState);
         }
-        int baseScore = criticalNumber * 10 + hitNumber * 8;
+        int baseScore = criticalNumber * 100 + hitNumber * 80;
         int realScore = baseScore / (criticalNumber + hitNumber + missNumber);
         if (targetState != null && targetState.Score <= realScore)
         {

@@ -52,6 +52,7 @@ public class GameManager : MonoBehaviour
     private int _hitCount = 0;
     private int _missCount = 0;
     private int _comboCount = 0;
+    private int _maxComboCount = 0;
 
     private bool _isTest;
     private float _lastBeatTime;
@@ -127,6 +128,8 @@ public class GameManager : MonoBehaviour
         _criticalCount = 0;
         _hitCount = 0;
         _missCount = 0;
+        _comboCount = 0;
+        _maxComboCount = 0;
         _criticalCountText.text = _criticalCount.ToString();
         _hitCountText.text = _hitCount.ToString();
         _missCountText.text = _missCount.ToString();
@@ -163,12 +166,13 @@ public class GameManager : MonoBehaviour
 	private async UniTask GameStart()
 	{
 		await UniTask.WaitWhile(() => !MasterManager.FinishGetMaster);
+        _titleManager.Init();
         GoToTitle();
 	}
 
     private void GoToTitle()
     {
-        _titleManager.Init();
+        _titleManager.RercreateStrip();
         _titlePanel.SetActive(true);
     }
 
@@ -347,9 +351,11 @@ public class GameManager : MonoBehaviour
 
     private async UniTask FinishBattle()
     {
+        _maxComboCount = Math.Max(_comboCount, _maxComboCount);
         await UniTask.WaitForSeconds(2.5f);
-        SaveDataManager.UpdateClearState(_currentStage, _currentLevel, _criticalCount, _hitCount, _missCount, _comboCount);
+        SaveDataManager.UpdateClearState(_currentStage, _currentLevel, _criticalCount, _hitCount, _missCount, _maxComboCount);
         Reset();
+        GoToTitle();
         _titlePanel.SetActive(true);
     }
 
@@ -455,6 +461,7 @@ public class GameManager : MonoBehaviour
         {
             _missCount += count;
             _missCountText.text = _missCount.ToString();
+            _maxComboCount = Math.Max(_comboCount, _maxComboCount);
             _comboCount = 0;
             _comboText.text = _comboCount.ToString();
         }
