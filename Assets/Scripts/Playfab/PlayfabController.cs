@@ -198,7 +198,7 @@ public class PlayFabController
     }
 
     // タイトルデータ取得
-    public static void GetTitleData(Action<SettingMaster, StageMaster> callBack)
+    public static void GetTitleData(Action<SettingMaster, List<StageMaster>> callBack)
     {
         var request = new GetTitleDataRequest();
         PlayFabClientAPI.GetTitleData(request, OnSuccess, OnError);
@@ -208,8 +208,15 @@ public class PlayFabController
             Debug.Log("GetTitleData: Success!");
 
             var settingData = PlayFabSimpleJson.DeserializeObject<SettingMaster>(result.Data["Setting"]);
-            var stageMaster = PlayFabSimpleJson.DeserializeObject<StageMaster>(result.Data["BattleRoseMoon"]);
-            callBack(settingData, stageMaster);
+            var stageMasterList = new List<StageMaster>();
+            foreach (var item in result.Data)
+            {
+                if (item.Key != "Setting")
+                {
+                    stageMasterList.Add(PlayFabSimpleJson.DeserializeObject<StageMaster>(item.Value));
+                }
+            }
+            callBack(settingData, stageMasterList);
             _finishGetMaster = true;
         }
 

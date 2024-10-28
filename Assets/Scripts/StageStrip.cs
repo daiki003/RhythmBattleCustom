@@ -14,11 +14,10 @@ public class StageStrip : MonoBehaviour
     [SerializeField] private Text _hitText;
     [SerializeField] private Text _missText;
 
-    private int _stageId;
+    private string _stageId;
     private int _level;
-    public Subject<(int stageId, int level)> OnWhenClickLevelButton = new Subject<(int stageId, int level)>();
 
-    public void Init(int stageId, int level)
+    public void Init(string stageId, int level)
     {
         _stageId = stageId;
         _level = level;
@@ -43,7 +42,7 @@ public class StageStrip : MonoBehaviour
         _missText.text = clearState.MissNumber.ToString();
     }
 
-    private void StartBattle(int stageId, int level)
+    private void StartBattle(string stageId, int level)
     {
         GameManager.instance.StartBattle(stageId, level);
     }

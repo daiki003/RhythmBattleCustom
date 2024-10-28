@@ -33,6 +33,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Text _criticalCountText;
     [SerializeField] private Text _hitCountText;
     [SerializeField] private Text _missCountText;
+    [SerializeField] private Text _comboText;
     [SerializeField] private Button _resetButton;
     [SerializeField] private Button _testButton;
     [SerializeField] private Button _debugButton;
@@ -50,12 +51,15 @@ public class GameManager : MonoBehaviour
     private int _criticalCount = 0;
     private int _hitCount = 0;
     private int _missCount = 0;
+    private int _comboCount = 0;
 
     private bool _isTest;
     private float _lastBeatTime;
-    private int _currentStage;
+    private string _currentStage;
     private int _currentLevel;
     private bool _startFinish;
+    private StageMaster _currentStageMaster;
+    private AudioClip _currentBgmClip;
 
     private ClickHandler _clickHandler;
 
@@ -97,10 +101,9 @@ public class GameManager : MonoBehaviour
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {
             Reset();
-            _titlePanel.SetActive(true);
+            GoToTitle();
         });
         PlayFabController.login();
-        _currentStage = 1;
         GameStart().Forget();
     }
 
@@ -127,6 +130,7 @@ public class GameManager : MonoBehaviour
         _criticalCountText.text = _criticalCount.ToString();
         _hitCountText.text = _hitCount.ToString();
         _missCountText.text = _missCount.ToString();
+        _comboText.text = _comboCount.ToString();
         _bgmSource.Stop();
     }
 
@@ -152,18 +156,23 @@ public class GameManager : MonoBehaviour
 
     private float CalcNoteTime(NoteMaster noteMaster)
     {
-        return (noteMaster.noteNumber + MasterManager.SettingMaster.NoteTimeOffset) * (60f / MasterManager.SettingMaster.BPM);
+        return (noteMaster.noteNumber + _currentStageMaster.NoteTimeOffset) * (60f / _currentStageMaster.BPM);
     }
 
     // ゲームスタート時の処理
 	private async UniTask GameStart()
 	{
 		await UniTask.WaitWhile(() => !MasterManager.FinishGetMaster);
-        _titleManager.Init();
-        _titlePanel.SetActive(true);
+        GoToTitle();
 	}
 
-    public void StartBattle(int stageId, int level)
+    private void GoToTitle()
+    {
+        _titleManager.Init();
+        _titlePanel.SetActive(true);
+    }
+
+    public void StartBattle(string stageId, int level)
     {
         _titlePanel.SetActive(false);
         Reset();
@@ -177,7 +186,10 @@ public class GameManager : MonoBehaviour
 	{
         // 曲が始まる前にGC.Collect
         GC.Collect();
-        foreach (NoteMaster noteMaster in MasterManager.StageMasterList.First(s => s.StageId == _currentStage).notes[_currentLevel])
+        _currentStageMaster = MasterManager.StageMasterList.First(s => s.StageId == _currentStage);
+        _currentBgmClip = Resources.Load<AudioClip>("BGM/" + _currentStageMaster.StageId);
+        _bgmSource.clip = _currentBgmClip;
+        foreach (NoteMaster noteMaster in _currentStageMaster.notes[_currentLevel])
         {
             float noteTime = CalcNoteTime(noteMaster);
             // 途中から曲を始める場合それより前のボールは作らない
@@ -325,7 +337,7 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
-        if (_bgmClip.length <= _bgmSource.time && !_startFinish)
+        if (_currentBgmClip != null && _currentBgmClip.length <= _bgmSource.time && !_startFinish)
         {
             _startFinish = true;
             FinishBattle().Forget();
@@ -336,7 +348,7 @@ public class GameManager : MonoBehaviour
     private async UniTask FinishBattle()
     {
         await UniTask.WaitForSeconds(2.5f);
-        SaveDataManager.UpdateClearState(_currentStage, _currentLevel, _criticalCount, _hitCount, _missCount);
+        SaveDataManager.UpdateClearState(_currentStage, _currentLevel, _criticalCount, _hitCount, _missCount, _comboCount);
         Reset();
         _titlePanel.SetActive(true);
     }
@@ -429,16 +441,22 @@ public class GameManager : MonoBehaviour
         {
             _hitCount += count;
             _hitCountText.text = _hitCount.ToString();
+            _comboCount += count;
+            _comboText.text = _comboCount.ToString();
         }
         else if (hitType == HitType.Critical)
         {
             _criticalCount += count;
             _criticalCountText.text = _criticalCount.ToString();
+            _comboCount += count;
+            _comboText.text = _comboCount.ToString();
         }
         else
         {
             _missCount += count;
             _missCountText.text = _missCount.ToString();
+            _comboCount = 0;
+            _comboText.text = _comboCount.ToString();
         }
     }
 }

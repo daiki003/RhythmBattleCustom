@@ -4,12 +4,10 @@ using UnityEngine;
 
 public class SettingMaster
 {
-    public float NoteTimeOffset;
     public float CriticalTimeBuffer;
     public float HitTimeBuffer;
     public float BallTimeOffset;
     public float BallSpeed;
-    public float BPM;
     public float TestNoteTimeBuffer;
 }
 
@@ -25,7 +23,9 @@ public class NoteMaster
 
 public class StageMaster
 {
-    public int StageId;
+    public string StageId;
+    public float BPM;
+    public float NoteTimeOffset;
     public List<List<NoteMaster>> notes = new List<List<NoteMaster>>();
 }
 
@@ -39,10 +39,10 @@ public static class MasterManager
 		PlayFabController.GetTitleData(SetMasterData);
 	}
 
-    public static void SetMasterData(SettingMaster settingMaster, StageMaster battleRoseMoon)
+    public static void SetMasterData(SettingMaster settingMaster, List<StageMaster> stageMasterList)
 	{
 		SettingMaster = settingMaster;
-        StageMasterList.Add(battleRoseMoon);
+        StageMasterList.AddRange(stageMasterList);
         PlayFabController.GetPlayerData();
 	}
 }
