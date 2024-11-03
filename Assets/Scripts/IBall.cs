@@ -16,6 +16,7 @@ public enum BallState
 {
     Wait,
     Launched,
+    Holded,
 }
 
 public class IBall : MonoBehaviour

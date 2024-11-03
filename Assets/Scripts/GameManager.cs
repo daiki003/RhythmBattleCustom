@@ -40,8 +40,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Button _backButton;
     [SerializeField] private Image _testButtonImage;
 
-    [SerializeField] private AudioSource _bgmSource;
-    [SerializeField] private AudioClip _bgmClip;
     [SerializeField] private GameObject _debugPanel;
     [SerializeField] private GameObject _titlePanel;
     [SerializeField] private TitleManager _titleManager;
@@ -60,7 +58,6 @@ public class GameManager : MonoBehaviour
     private int _currentLevel;
     private bool _startFinish;
     private StageMaster _currentStageMaster;
-    private AudioClip _currentBgmClip;
 
     private ClickHandler _clickHandler;
 
@@ -134,13 +131,13 @@ public class GameManager : MonoBehaviour
         _hitCountText.text = _hitCount.ToString();
         _missCountText.text = _missCount.ToString();
         _comboText.text = _comboCount.ToString();
-        _bgmSource.Stop();
+        BGMManager.instance.Stop();
     }
 
     public void MoveTime(float time)
     {
         Reset();
-        _bgmSource.time = time;
+        BGMManager.instance.SetTime(time);
         StartMusic(time);
     }
 
@@ -174,6 +171,8 @@ public class GameManager : MonoBehaviour
     {
         _titleManager.RercreateStrip();
         _titlePanel.SetActive(true);
+        BGMManager.instance.SetClip("WanderersCity");
+        BGMManager.instance.Play();
     }
 
     public void StartBattle(string stageId, int level)
@@ -191,8 +190,7 @@ public class GameManager : MonoBehaviour
         // 曲が始まる前にGC.Collect
         GC.Collect();
         _currentStageMaster = MasterManager.StageMasterList.First(s => s.StageId == _currentStage);
-        _currentBgmClip = Resources.Load<AudioClip>("BGM/" + _currentStageMaster.StageId);
-        _bgmSource.clip = _currentBgmClip;
+        BGMManager.instance.SetClip(_currentStageMaster.StageId);
         foreach (NoteMaster noteMaster in _currentStageMaster.notes[_currentLevel])
         {
             float noteTime = CalcNoteTime(noteMaster);
@@ -214,7 +212,6 @@ public class GameManager : MonoBehaviour
             else
             {
                 var longBall = Instantiate(_longBallPrefab, startTransform.parent);
-                longBall.transform.position = startTransform.position;
                 longBall.StartBall.transform.position = startTransform.position;
                 longBall.EndBall.transform.position = startTransform.position;
                 longBall.gameObject.SetActive(false);
@@ -225,7 +222,7 @@ public class GameManager : MonoBehaviour
                 SetBallToList(longBall.EndBall);
             }
         }
-        _bgmSource.Play();
+        BGMManager.instance.Play();
         _startFinish = false;
 	}
 
@@ -259,6 +256,13 @@ public class GameManager : MonoBehaviour
         {
             RemoveBallFromList(b);
         });
+        // ボールを打ち損ねたらミス判定
+        ball.OnWhenMiss.Subscribe(_ => 
+        {
+            RemoveBallFromList(ball);
+            CreateLetter(ball.IsLeft, HitType.None);
+            CountUpText(HitType.None, count: ball.BallType == BallType.LongStart ? 2 : 1);
+        });
     }
 
     private void RemoveBallFromList(SingleBall ball)
@@ -276,28 +280,12 @@ public class GameManager : MonoBehaviour
     private void LaunchBall(List<SingleBall> ballList)
     {
         var launchBall = ballList.FirstOrDefault(b => b.BallState == BallState.Wait);
-        if (launchBall != null && _bgmSource.time >= launchBall.LaunchTime)
+        if (launchBall != null && BGMManager.instance.CurrentTime >= launchBall.LaunchTime)
         {
             launchBall.gameObject.SetActive(true);
             launchBall.OnWhenLaunched.OnNext(default);
             launchBall.BallState = BallState.Launched;
-            CreateMoveTween(launchBall, () =>
-            {
-                RemoveBallFromList(launchBall);
-                Destroy(launchBall.gameObject);
-                CreateLetter(launchBall.IsLeft, HitType.None);
-                CountUpText(HitType.None, count: launchBall.BallType == BallType.LongStart ? 2 : 1);
-            });
         }
-    }
-
-    private void CreateMoveTween(SingleBall ball, Action action)
-    {
-        var tween = ball.transform.DOMove(ball.IsLeft ? _leftTransform.transform.position : _rightTransform.transform.position, MasterManager.SettingMaster.BallSpeed).SetEase(Ease.Linear).OnComplete(() =>
-        {
-            action();
-        });
-        ball.SetTween(tween);
     }
 
     void Update()
@@ -317,7 +305,7 @@ public class GameManager : MonoBehaviour
         if (_isTest)
         {
             var leftFirstBall = _leftBallList.FirstOrDefault();
-            if (leftFirstBall != null && leftFirstBall.CriticalTime > _bgmSource.time - MasterManager.SettingMaster.TestNoteTimeBuffer && leftFirstBall.CriticalTime < _bgmSource.time + MasterManager.SettingMaster.TestNoteTimeBuffer)
+            if (leftFirstBall != null && leftFirstBall.CriticalTime > BGMManager.instance.CurrentTime - MasterManager.SettingMaster.TestNoteTimeBuffer && leftFirstBall.CriticalTime < BGMManager.instance.CurrentTime + MasterManager.SettingMaster.TestNoteTimeBuffer)
             {
                 if (leftFirstBall.BallType == BallType.LongEnd)
                 {
@@ -329,7 +317,7 @@ public class GameManager : MonoBehaviour
                 }
             }
             var rightFirstBall = _rightBallList.FirstOrDefault();
-            if (rightFirstBall != null && rightFirstBall.CriticalTime > _bgmSource.time - MasterManager.SettingMaster.TestNoteTimeBuffer && rightFirstBall.CriticalTime < _bgmSource.time + MasterManager.SettingMaster.TestNoteTimeBuffer)
+            if (rightFirstBall != null && rightFirstBall.CriticalTime > BGMManager.instance.CurrentTime - MasterManager.SettingMaster.TestNoteTimeBuffer && rightFirstBall.CriticalTime < BGMManager.instance.CurrentTime + MasterManager.SettingMaster.TestNoteTimeBuffer)
             {
                 if (rightFirstBall.BallType == BallType.LongEnd)
                 {
@@ -341,7 +329,7 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
-        if (_currentBgmClip != null && _currentBgmClip.length <= _bgmSource.time && !_startFinish)
+        if (BGMManager.instance.IsFinishBgm && !_startFinish)
         {
             _startFinish = true;
             FinishBattle().Forget();
@@ -361,78 +349,56 @@ public class GameManager : MonoBehaviour
 
     private void OnClickButton(bool isLeft)
     {
-        float time = _bgmSource.time;
+        float time = BGMManager.instance.CurrentTime;
         var targetList = isLeft ? _leftBallList : _rightBallList;
-        var firstActiveBall = targetList.FirstOrDefault(b => JudgeBall(b) >= HitType.Hit);
+        var firstActiveBall = targetList.FirstOrDefault(b => b.JudgeBall() >= HitType.Hit);
         if (firstActiveBall != null)
-        { 
-            if (firstActiveBall.BallType == BallType.LongEnd)
+        {
+            bool isSuccess = firstActiveBall.OnClickButton();
+            if (!isSuccess)
             {
                 return;
             }
-            BeatBall(firstActiveBall, JudgeBall(firstActiveBall));
-            if (firstActiveBall.BallType == BallType.Single)
-            {
-                Destroy(firstActiveBall.gameObject);
-            }
-            else if (firstActiveBall.BallType == BallType.LongStart)
-            {
-                Debug.Log("Tween破棄" + firstActiveBall.CriticalTime);
-                firstActiveBall.MoveTween.Kill();
-            }
+            BeatBall(firstActiveBall);
             targetList.Remove(firstActiveBall);
         }
     }
 
     private void OnReleaseButton(bool isLeft)
     {
-        float time = _bgmSource.time;
+        float time = BGMManager.instance.CurrentTime;
         var targetList = isLeft ? _leftBallList : _rightBallList;
         var firstBall = targetList.FirstOrDefault();
         // ロングノーツの終端の前で離したらそれを破棄
-        if (firstBall != null && firstBall.BallType == BallType.LongEnd && JudgeBall(firstBall) == HitType.None)
+        if (firstBall != null && firstBall.BallType == BallType.LongEnd && firstBall.JudgeBall() == HitType.None)
         {
             targetList.Remove(firstBall);
             Destroy(firstBall.gameObject);
             CreateLetter(isLeft, HitType.None);
             CountUpText(HitType.None);
         }
-        var firstActiveBall = targetList.FirstOrDefault(b => JudgeBall(b) >= HitType.Hit);
+        var firstActiveBall = targetList.FirstOrDefault(b => b.JudgeBall() >= HitType.Hit);
         if (firstActiveBall != null)
         {
             if (firstActiveBall.BallType != BallType.LongEnd)
             {
                 return;
             }
-            BeatBall(firstActiveBall, JudgeBall(firstActiveBall));
+            BeatBall(firstActiveBall);
             Destroy(firstActiveBall.gameObject);
         }
     }
 
-    private HitType JudgeBall(SingleBall ball)
-    {
-        if (ball.CriticalTime > _bgmSource.time - MasterManager.SettingMaster.CriticalTimeBuffer && ball.CriticalTime < _bgmSource.time + MasterManager.SettingMaster.CriticalTimeBuffer)
-        {
-            return HitType.Critical;
-        }
-        else if (ball.CriticalTime > _bgmSource.time - MasterManager.SettingMaster.HitTimeBuffer && ball.CriticalTime < _bgmSource.time + MasterManager.SettingMaster.HitTimeBuffer)
-        {
-            return HitType.Hit;
-        }
-        return HitType.None;
-    }
-
     // ボールを打った時の処理
-    private void BeatBall(SingleBall ball, HitType hitType)
+    private void BeatBall(SingleBall ball)
     {
         if (_lastBeatTime != ball.CriticalTime)
         {
             SEManager.instance.PlayBeatSe();
         }
         _lastBeatTime = ball.CriticalTime;
-        ball.OnWhenClicked.OnNext(default);
-        CreateLetter(ball.IsLeft, JudgeBall(ball));
-        CountUpText(hitType);
+        CreateLetter(ball.IsLeft, ball.JudgeBall());
+        CountUpText(ball.JudgeBall());
     }
 
     private void CreateLetter(bool isLeft, HitType hitType)

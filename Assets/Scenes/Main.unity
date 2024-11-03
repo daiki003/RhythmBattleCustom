@@ -1660,6 +1660,7 @@ GameObject:
   m_Component:
   - component: {fileID: 295915818}
   - component: {fileID: 295915817}
+  - component: {fileID: 295915819}
   m_Layer: 0
   m_Name: BGM
   m_TagString: Untagged
@@ -1778,6 +1779,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &295915819
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 295915816}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cdd67b3a15bb4d4d87e97de213a6ce5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _bgmSource: {fileID: 295915817}
 --- !u!1 &297866625
 GameObject:
   m_ObjectHideFlags: 0
@@ -3566,8 +3580,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 240, y: -770}
-  m_SizeDelta: {x: 550, y: 800}
+  m_AnchoredPosition: {x: 240, y: -720}
+  m_SizeDelta: {x: 550, y: 900}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &681393023
 MonoBehaviour:
@@ -3806,8 +3820,6 @@ MonoBehaviour:
   _debugButton: {fileID: 236470171}
   _backButton: {fileID: 1127761388}
   _testButtonImage: {fileID: 1628411836}
-  _bgmSource: {fileID: 295915817}
-  _bgmClip: {fileID: 8300000, guid: 0ad001547f419a941b6b774ac0852e90, type: 3}
   _debugPanel: {fileID: 786115289}
   _titlePanel: {fileID: 1117379040}
   _titleManager: {fileID: 1117379042}
@@ -5071,8 +5083,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -240, y: -770}
-  m_SizeDelta: {x: 550, y: 800}
+  m_AnchoredPosition: {x: -240, y: -720}
+  m_SizeDelta: {x: 550, y: 900}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1079143798
 MonoBehaviour:

@@ -19,8 +19,8 @@ public class SingleBall : MonoBehaviour
 
     public Subject<Unit> OnWhenLaunched = new Subject<Unit>();
     public Subject<Unit> OnWhenClicked = new Subject<Unit>();
+    public Subject<Unit> OnWhenMiss = new Subject<Unit>();
     public Subject<SingleBall> OnWhenDestroyed = new Subject<SingleBall>();
-    public Tweener MoveTween;
 
     public void Init(NoteMaster noteMaster, float criticalTime, BallType ballType)
     {
@@ -33,16 +33,78 @@ public class SingleBall : MonoBehaviour
         IsLeft = noteMaster.block <= 3;
     }
 
-    public void SetTween(Tweener tweener)
+    public HitType JudgeBall()
     {
-        MoveTween = tweener;
+        float currentTime = BGMManager.instance.CurrentTime;
+        float criticalTimeBuffer = MasterManager.SettingMaster.CriticalTimeBuffer;
+        float hitTimeBuffer = MasterManager.SettingMaster.HitTimeBuffer;
+        if (CriticalTime > currentTime - criticalTimeBuffer && CriticalTime < currentTime + criticalTimeBuffer)
+        {
+            return HitType.Critical;
+        }
+        else if (CriticalTime > currentTime - hitTimeBuffer && CriticalTime < currentTime + hitTimeBuffer)
+        {
+            return HitType.Hit;
+        }
+        return HitType.None;
     }
+
+    public bool OnClickButton()
+    {
+        if (BallType == BallType.LongEnd)
+        {
+            return false;
+        }
+        OnWhenClicked.OnNext(default);
+        if (BallType == BallType.Single)
+        {
+            Destroy(gameObject);
+        }
+        else if (BallType == BallType.LongStart)
+        {
+            BallState = BallState.Holded;
+        }
+        return true;
+    }
+
+    public bool OnReleaseButton()
+    {
+        if (BallType == BallType.LongEnd)
+        {
+            return false;
+        }
+        OnWhenClicked.OnNext(default);
+        if (BallType == BallType.Single)
+        {
+            Destroy(gameObject);
+        }
+        else if (BallType == BallType.LongStart)
+        {
+            BallState = BallState.Holded;
+        }
+        return true;
+    }
+
     void OnDestroy()
     {
         OnWhenDestroyed.OnNext(this);
-        if (MoveTween != null)
+    }
+
+    void Update()
+    {
+        float currentTime = BGMManager.instance.CurrentTime;
+        if (BallState == BallState.Holded || currentTime < LaunchTime)
         {
-            MoveTween.Kill();
+            return;
         }
+        if (currentTime > CriticalTime + MasterManager.SettingMaster.HitTimeBuffer)
+        {
+            OnWhenMiss.OnNext(default);
+            Destroy(gameObject);
+            return;
+        }
+        float timeRate = 1 - (CriticalTime - currentTime) / MasterManager.SettingMaster.BallTimeOffset;
+        int xDirection = IsLeft ? -1 : 1;
+        transform.localPosition = new Vector3(xDirection * (70 + (140 * timeRate)), 400 - (970 * timeRate), 0);
     }
 }
