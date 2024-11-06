@@ -35,7 +35,7 @@ public class StageStrip : MonoBehaviour
         {
             return;
         }
-        _scoreText.text = clearState.Score.ToString();
+        _scoreText.text = Mathf.Floor(clearState.Score).ToString();
         _comboText.text = clearState.Combo.ToString();
         _criticalText.text = clearState.CriticalNumber.ToString();
         _hitText.text = clearState.HitNumber.ToString();

@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public class ClearState
 {
     public string StageId;
     public int Level;
-    public int Score;
+    public float Score;
     public int CriticalNumber;
     public int HitNumber;
     public int MissNumber;
@@ -27,8 +28,8 @@ public static class SaveDataManager
             };
             ClearStateList.Add(targetState);
         }
-        int baseScore = criticalNumber * 100 + hitNumber * 80;
-        int realScore = baseScore / (criticalNumber + hitNumber + missNumber);
+        float baseScore = criticalNumber * 100 + hitNumber * 50 - missNumber * 100;
+        float realScore = Mathf.Max(0, baseScore / (criticalNumber + hitNumber + missNumber));
         if (targetState != null && targetState.Score <= realScore)
         {
             targetState.CriticalNumber = criticalNumber;

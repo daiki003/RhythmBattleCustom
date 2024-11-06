@@ -379,7 +379,10 @@ public class GameManager : MonoBehaviour
     {
         _maxComboCount = Math.Max(_comboCount, _maxComboCount);
         await UniTask.WaitForSeconds(2.5f);
-        SaveDataManager.UpdateClearState(_currentStage, _currentLevel, _criticalCount, _hitCount, _missCount, _maxComboCount);
+        if (!_isTest)
+        {
+            SaveDataManager.UpdateClearState(_currentStage, _currentLevel, _criticalCount, _hitCount, _missCount, _maxComboCount);
+        }        
         Reset();
         GoToTitle();
         _titlePanel.SetActive(true);
