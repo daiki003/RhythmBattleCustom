@@ -61,6 +61,15 @@ public class GameManager : MonoBehaviour
 
     private ClickHandler _clickHandler;
 
+    [SerializeField]
+    private Text _tex;
+    private float Interval = 0.1f;
+
+    private float _time_cnt;
+    private int _frames;
+    private float _time_mn;
+    private float _fps;
+
     public static GameManager instance;
 	public void Awake()
 	{
@@ -335,6 +344,19 @@ public class GameManager : MonoBehaviour
             FinishBattle().Forget();
         }
         _clickHandler.Update();
+
+        _time_mn -= Time.deltaTime;
+        _time_cnt += Time.timeScale / Time.deltaTime;
+        _frames++;
+
+        if (0 < _time_mn) return;
+
+        _fps = _time_cnt / _frames;
+        _time_mn = Interval;
+        _time_cnt = 0;
+        _frames = 0;
+
+        _tex.text = "FPS: " + _fps.ToString("f2");
     }
 
     private async UniTask FinishBattle()

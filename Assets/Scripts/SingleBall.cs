@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using R3;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.UI;
 
 public class SingleBall : MonoBehaviour
@@ -92,19 +93,31 @@ public class SingleBall : MonoBehaviour
 
     void Update()
     {
+        Profiler.BeginSample("BallUpdate1");
         float currentTime = BGMManager.instance.CurrentTime;
+        Profiler.EndSample();
+        Profiler.BeginSample("BallUpdate2");
         if (BallState == BallState.Holded || currentTime < LaunchTime)
         {
             return;
         }
+        Profiler.EndSample();
+        Profiler.BeginSample("BallUpdate3");
         if (currentTime > CriticalTime + MasterManager.SettingMaster.HitTimeBuffer)
         {
             OnWhenMiss.OnNext(default);
             Destroy(gameObject);
             return;
         }
+        Profiler.EndSample();
+        Profiler.BeginSample("BallUpdate4");
         float timeRate = 1 - (CriticalTime - currentTime) / MasterManager.SettingMaster.BallTimeOffset;
+        Profiler.EndSample();
+        Profiler.BeginSample("BallUpdate5");
         int xDirection = IsLeft ? -1 : 1;
+        Profiler.EndSample();
+        Profiler.BeginSample("BallUpdate6");
         transform.localPosition = new Vector3(xDirection * (70 + (140 * timeRate)), 400 - (970 * timeRate), 0);
+        Profiler.EndSample();
     }
 }
