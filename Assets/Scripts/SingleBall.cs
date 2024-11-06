@@ -23,6 +23,8 @@ public class SingleBall : MonoBehaviour
     public Subject<Unit> OnWhenMiss = new Subject<Unit>();
     public Subject<SingleBall> OnWhenDestroyed = new Subject<SingleBall>();
 
+    public Tweener MoveTween;
+
     public void Init(NoteMaster noteMaster, float criticalTime, BallType ballType)
     {
         string ballSpritePath = ballType == BallType.Single ? "Ball/Single" : "Ball/Long";
@@ -48,6 +50,11 @@ public class SingleBall : MonoBehaviour
             return HitType.Hit;
         }
         return HitType.None;
+    }
+
+    public void SetTween(Tweener tweener)
+    {
+        MoveTween = tweener;
     }
 
     public bool OnClickButton()
@@ -89,35 +96,28 @@ public class SingleBall : MonoBehaviour
     void OnDestroy()
     {
         OnWhenDestroyed.OnNext(this);
+        if (MoveTween != null)
+        {
+            MoveTween.Kill();
+        }
     }
 
     void Update()
     {
-        Profiler.BeginSample("BallUpdate1");
         float currentTime = BGMManager.instance.CurrentTime;
-        Profiler.EndSample();
-        Profiler.BeginSample("BallUpdate2");
         if (BallState == BallState.Holded || currentTime < LaunchTime)
         {
+            MoveTween.Kill();
             return;
         }
-        Profiler.EndSample();
-        Profiler.BeginSample("BallUpdate3");
         if (currentTime > CriticalTime + MasterManager.SettingMaster.HitTimeBuffer)
         {
             OnWhenMiss.OnNext(default);
             Destroy(gameObject);
             return;
         }
-        Profiler.EndSample();
-        Profiler.BeginSample("BallUpdate4");
         float timeRate = 1 - (CriticalTime - currentTime) / MasterManager.SettingMaster.BallTimeOffset;
-        Profiler.EndSample();
-        Profiler.BeginSample("BallUpdate5");
         int xDirection = IsLeft ? -1 : 1;
-        Profiler.EndSample();
-        Profiler.BeginSample("BallUpdate6");
-        transform.localPosition = new Vector3(xDirection * (70 + (140 * timeRate)), 400 - (970 * timeRate), 0);
-        Profiler.EndSample();
+        // transform.localPosition = new Vector3(xDirection * (70 + (140 * timeRate)), 400 - (970 * timeRate), 0);
     }
 }

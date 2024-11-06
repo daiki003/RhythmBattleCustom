@@ -294,7 +294,23 @@ public class GameManager : MonoBehaviour
             launchBall.gameObject.SetActive(true);
             launchBall.OnWhenLaunched.OnNext(default);
             launchBall.BallState = BallState.Launched;
+            CreateMoveTween(launchBall, () =>
+            {
+                // RemoveBallFromList(launchBall);
+                // Destroy(launchBall.gameObject);
+                // CreateLetter(launchBall.IsLeft, HitType.None);
+                // CountUpText(HitType.None, count: launchBall.BallType == BallType.LongStart ? 2 : 1);
+            });
         }
+    }
+
+    private void CreateMoveTween(SingleBall ball, Action action)
+    {
+        var tween = ball.transform.DOMove(ball.IsLeft ? _leftTransform.transform.position : _rightTransform.transform.position, MasterManager.SettingMaster.BallSpeed).SetEase(Ease.Linear).OnComplete(() =>
+        {
+            action();
+        });
+        ball.SetTween(tween);
     }
 
     void Update()
