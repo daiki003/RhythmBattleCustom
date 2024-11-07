@@ -25,6 +25,7 @@ public class StageMaster
 {
     public string StageId;
     public float BPM;
+    public int LPB;
     public float NoteTimeOffset;
     public List<List<NoteMaster>> notes = new List<List<NoteMaster>>();
 }

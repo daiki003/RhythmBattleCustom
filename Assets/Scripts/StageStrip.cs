@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using R3;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,9 +22,9 @@ public class StageStrip : MonoBehaviour
     {
         _stageId = stageId;
         _level = level;
-        _startButton.OnClickAsObservable().Subscribe(x =>
+        _startButton.OnClickAsObservable().Subscribe(async x =>
         {
-            StartBattle(_stageId, _level);
+            await StartBattle(_stageId, _level);
         });
         UpdateScore();
     }
@@ -42,8 +43,8 @@ public class StageStrip : MonoBehaviour
         _missText.text = clearState.MissNumber.ToString();
     }
 
-    private void StartBattle(string stageId, int level)
+    private async UniTask StartBattle(string stageId, int level)
     {
-        GameManager.instance.StartBattle(stageId, level);
+        await GameManager.instance.StartBattle(stageId, level);
     }
 }

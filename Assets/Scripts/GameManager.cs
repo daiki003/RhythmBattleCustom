@@ -9,12 +9,20 @@ using System.Threading;
 using R3;
 using System;
 using PlayFab.Json;
+using UnityEditor.SearchService;
 
 public enum HitType
 {
     None,
     Hit,
     Critical
+}
+
+public enum SceneType
+{
+    None,
+    Battle,
+    Title
 }
 
 public class GameManager : MonoBehaviour
@@ -42,6 +50,8 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private GameObject _debugPanel;
     [SerializeField] private GameObject _titlePanel;
+    [SerializeField] private GameObject _battlePanel;
+    [SerializeField] private GameObject _loadPanel;
     [SerializeField] private TitleManager _titleManager;
 
     private List<SingleBall> _leftBallList = new List<SingleBall>();
@@ -110,6 +120,7 @@ public class GameManager : MonoBehaviour
             Reset();
             GoToTitle();
         });
+        ChangePanel(SceneType.None);
         PlayFabController.login();
         GameStart().Forget();
     }
@@ -125,6 +136,13 @@ public class GameManager : MonoBehaviour
                 Destroy(monoBehaviour.gameObject);
             }
         }
+    }
+
+    public void ChangePanel(SceneType sceneType)
+    {
+        _loadPanel.SetActive(sceneType == SceneType.None);
+        _battlePanel.SetActive(sceneType == SceneType.Battle);
+        _titlePanel.SetActive(sceneType == SceneType.Title);
     }
 
     public void Reset()
@@ -165,7 +183,8 @@ public class GameManager : MonoBehaviour
 
     private float CalcNoteTime(NoteMaster noteMaster)
     {
-        return (noteMaster.noteNumber + _currentStageMaster.NoteTimeOffset) * (60f / _currentStageMaster.BPM);
+        int noteNumber = noteMaster.num * (_currentStageMaster.LPB / noteMaster.lpb);
+        return (noteNumber + _currentStageMaster.NoteTimeOffset) * (60f / _currentStageMaster.BPM);
     }
 
     // ゲームスタート時の処理
@@ -179,14 +198,17 @@ public class GameManager : MonoBehaviour
     private void GoToTitle()
     {
         _titleManager.RercreateStrip();
-        _titlePanel.SetActive(true);
+        ChangePanel(SceneType.Title);
         BGMManager.instance.SetClip("WanderersCity");
         BGMManager.instance.Play();
     }
 
-    public void StartBattle(string stageId, int level)
+    public async UniTask StartBattle(string stageId, int level)
     {
-        _titlePanel.SetActive(false);
+        ChangePanel(SceneType.None);
+        SEManager.instance.PlayBattleStartSe();
+        await UniTask.WaitForSeconds(2f);
+        ChangePanel(SceneType.Battle);
         Reset();
         _currentStage = stageId;
         _currentLevel = level;
@@ -231,7 +253,7 @@ public class GameManager : MonoBehaviour
                 SetBallToList(longBall.EndBall);
             }
         }
-        BGMManager.instance.Play();
+        BGMManager.instance.PlayFromIntro().Forget();
         _startFinish = false;
 	}
 
@@ -385,7 +407,7 @@ public class GameManager : MonoBehaviour
         }        
         Reset();
         GoToTitle();
-        _titlePanel.SetActive(true);
+        ChangePanel(SceneType.Title);
     }
 
     private void OnClickButton(bool isLeft)
