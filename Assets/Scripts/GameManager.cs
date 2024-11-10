@@ -194,7 +194,7 @@ public class GameManager : MonoBehaviour
         Reset();
         _titleManager.RecreateStrip();
         ChangePanel(SceneType.Title);
-        BGMManager.instance.SetClip("WanderersCity");
+        BGMManager.instance.SetClip("WanderersCity", isLoop: true);
         BGMManager.instance.Play();
     }
 
@@ -407,7 +407,7 @@ public class GameManager : MonoBehaviour
 
         _resultView.SetScore(clearState, SaveDataManager.GetClearState(_currentStage, _currentLevel), criticalMultiple, hitMultiple, missMultiple);
         _resultView.gameObject.SetActive(true);
-        BGMManager.instance.SetClip("Result");
+        BGMManager.instance.SetClip("Result", isLoop: true);
         BGMManager.instance.Play();
         if (!_isTest)
         {

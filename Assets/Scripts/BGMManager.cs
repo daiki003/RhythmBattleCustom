@@ -21,9 +21,10 @@ public class BGMManager : MonoBehaviour
 		}
 	}
 
-	public void SetClip(string clipPath)
+	public void SetClip(string clipPath, bool isLoop = false)
 	{
 		_currentBgmClip = Resources.Load<AudioClip>(string.Format("BGM/{0}", clipPath));
+		_bgmSource.loop = isLoop;
 	}
 
 	public async UniTask PlayFromIntro()
