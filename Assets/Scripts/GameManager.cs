@@ -9,7 +9,6 @@ using System.Threading;
 using R3;
 using System;
 using PlayFab.Json;
-using UnityEditor.SearchService;
 
 public enum HitType
 {
@@ -53,6 +52,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject _battlePanel;
     [SerializeField] private GameObject _loadPanel;
     [SerializeField] private TitleManager _titleManager;
+    [SerializeField] private ResultView _resultView;
 
     private List<SingleBall> _leftBallList = new List<SingleBall>();
     private List<SingleBall> _rightBallList = new List<SingleBall>();
@@ -66,19 +66,10 @@ public class GameManager : MonoBehaviour
     private float _lastBeatTime;
     private string _currentStage;
     private int _currentLevel;
-    private bool _startFinish;
+    private bool _isDuaringBattle;
     private StageMaster _currentStageMaster;
 
     private ClickHandler _clickHandler;
-
-    [SerializeField]
-    private Text _tex;
-    private float Interval = 0.1f;
-
-    private float _time_cnt;
-    private int _frames;
-    private float _time_mn;
-    private float _fps;
 
     public static GameManager instance;
 	public void Awake()
@@ -117,7 +108,10 @@ public class GameManager : MonoBehaviour
         });
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {
-            Reset();
+            GoToTitle();
+        });
+        _resultView.OnWhenPushGoHome.Subscribe(_ =>
+        {
             GoToTitle();
         });
         ChangePanel(SceneType.None);
@@ -197,7 +191,8 @@ public class GameManager : MonoBehaviour
 
     private void GoToTitle()
     {
-        _titleManager.RercreateStrip();
+        Reset();
+        _titleManager.RecreateStrip();
         ChangePanel(SceneType.Title);
         BGMManager.instance.SetClip("WanderersCity");
         BGMManager.instance.Play();
@@ -207,8 +202,10 @@ public class GameManager : MonoBehaviour
     {
         ChangePanel(SceneType.None);
         SEManager.instance.PlayBattleStartSe();
+        BGMManager.instance.Stop();
         await UniTask.WaitForSeconds(2f);
         ChangePanel(SceneType.Battle);
+        _resultView.gameObject.SetActive(false);
         Reset();
         _currentStage = stageId;
         _currentLevel = level;
@@ -253,8 +250,8 @@ public class GameManager : MonoBehaviour
                 SetBallToList(longBall.EndBall);
             }
         }
+        _isDuaringBattle = true;
         BGMManager.instance.PlayFromIntro().Forget();
-        _startFinish = false;
 	}
 
     // ボールをリストに入れる
@@ -376,38 +373,46 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
-        if (BGMManager.instance.IsFinishBgm && !_startFinish)
+        if (BGMManager.instance.IsFinishBgm && _isDuaringBattle)
         {
-            _startFinish = true;
+            _isDuaringBattle = false;
             FinishBattle().Forget();
         }
         _clickHandler.Update();
-
-        _time_mn -= Time.deltaTime;
-        _time_cnt += Time.timeScale / Time.deltaTime;
-        _frames++;
-
-        if (0 < _time_mn) return;
-
-        _fps = _time_cnt / _frames;
-        _time_mn = Interval;
-        _time_cnt = 0;
-        _frames = 0;
-
-        _tex.text = "FPS: " + _fps.ToString("f2");
     }
 
     private async UniTask FinishBattle()
     {
         _maxComboCount = Math.Max(_comboCount, _maxComboCount);
         await UniTask.WaitForSeconds(2.5f);
+
+        var clearState = new ClearState()
+        {
+            StageId = _currentStage,
+            Level = _currentLevel,
+        };
+        float totalCount = _criticalCount + _hitCount + _missCount;
+        float criticalMultiple = 100f / totalCount;
+        float hitMultiple = 50f / totalCount;
+        float missMultiple = -100f / totalCount;
+        float realScore = Mathf.Max(0, _criticalCount * criticalMultiple + _hitCount * hitMultiple + _missCount * missMultiple);
+        if (clearState != null && clearState.Score <= realScore)
+        {
+            clearState.CriticalNumber = _criticalCount;
+            clearState.HitNumber = _hitCount;
+            clearState.MissNumber = _missCount;
+            clearState.Score = realScore;
+            clearState.Combo = _maxComboCount;
+        }
+
+        _resultView.SetScore(clearState, SaveDataManager.GetClearState(_currentStage, _currentLevel), criticalMultiple, hitMultiple, missMultiple);
+        _resultView.gameObject.SetActive(true);
+        BGMManager.instance.SetClip("Result");
+        BGMManager.instance.Play();
         if (!_isTest)
         {
-            SaveDataManager.UpdateClearState(_currentStage, _currentLevel, _criticalCount, _hitCount, _missCount, _maxComboCount);
-        }        
-        Reset();
-        GoToTitle();
-        ChangePanel(SceneType.Title);
+            SaveDataManager.UpdateClearState(clearState);
+        }
     }
 
     private void OnClickButton(bool isLeft)

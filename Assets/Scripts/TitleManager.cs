@@ -18,7 +18,7 @@ public class TitleManager : MonoBehaviour
 
     public void Init()
     {
-        RercreateStrip();
+        RecreateStrip();
         for (int i = 0; i < _levelButtonList.Count; i++)
         {
             int level = i;
@@ -31,7 +31,7 @@ public class TitleManager : MonoBehaviour
         SetLevelPanel(0);
     }
 
-    public void RercreateStrip()
+    public void RecreateStrip()
     {
         DestroyAllStrip();
         for (int i = 0; i < MasterManager.StageMasterList.Count; i++)

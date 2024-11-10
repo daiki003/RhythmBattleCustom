@@ -16,30 +16,32 @@ public class ClearState
 public static class SaveDataManager
 {
     public static List<ClearState> ClearStateList = new List<ClearState>();
-    public static void UpdateClearState(string stageId, int level, int criticalNumber, int hitNumber, int missNumber, int combo)
+
+    public static ClearState GetClearState(string stageId, int level)
     {
-        var targetState = ClearStateList.FirstOrDefault(c => c.StageId == stageId && c.Level == level);
+        return ClearStateList.FirstOrDefault(c => c.StageId == stageId && c.Level == level);
+    }
+
+    public static void UpdateClearState(ClearState clearState)
+    {
+        var targetState = GetClearState(clearState.StageId, clearState.Level);
         if (targetState == null)
         {
-            targetState = new ClearState()
+            ClearStateList.Add(clearState);
+        }
+        else
+        {
+            if (targetState.Score <= clearState.Score)
             {
-                StageId = stageId,
-                Level = level,
-            };
-            ClearStateList.Add(targetState);
-        }
-        float baseScore = criticalNumber * 100 + hitNumber * 50 - missNumber * 100;
-        float realScore = Mathf.Max(0, baseScore / (criticalNumber + hitNumber + missNumber));
-        if (targetState != null && targetState.Score <= realScore)
-        {
-            targetState.CriticalNumber = criticalNumber;
-            targetState.HitNumber = hitNumber;
-            targetState.MissNumber = missNumber;
-            targetState.Score = realScore;
-        }
-        if (targetState != null && targetState.Combo <= combo)
-        {
-            targetState.Combo = combo;
+                targetState.CriticalNumber = clearState.CriticalNumber;
+                targetState.HitNumber = clearState.HitNumber;
+                targetState.MissNumber = clearState.MissNumber;
+                targetState.Score = clearState.Score;
+            }
+            if (targetState.Combo <= clearState.Combo)
+            {
+                targetState.Combo = clearState.Combo;
+            }
         }
         PlayFabController.UpdateClearState(ClearStateList);
     }

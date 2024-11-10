@@ -23,8 +23,7 @@ public class BGMManager : MonoBehaviour
 
 	public void SetClip(string clipPath)
 	{
-		_currentBgmClip = Resources.Load<AudioClip>(string.Format("BGM/{0}/Main", clipPath));
-		_currentIntroClip = Resources.Load<AudioClip>(string.Format("BGM/{0}/Intro", clipPath));
+		_currentBgmClip = Resources.Load<AudioClip>(string.Format("BGM/{0}", clipPath));
 	}
 
 	public async UniTask PlayFromIntro()
