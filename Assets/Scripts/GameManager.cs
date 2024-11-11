@@ -32,6 +32,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private RectTransform _rightStartTransform;
     [SerializeField] private RectTransform _leftLetterTransform;
     [SerializeField] private RectTransform _rightLetterTransform;
+    [SerializeField] private RectTransform _ballTransform;
 
     [SerializeField] private SingleBall _ballPrefab;
     [SerializeField] private LongBall _longBallPrefab;
@@ -231,7 +232,7 @@ public class GameManager : MonoBehaviour
             var startTransform = isLeft ? _leftStartTransform : _rightStartTransform;
             if (noteMaster.type == 1)
             {
-                var newBall = Instantiate(_ballPrefab, startTransform.parent);
+                var newBall = Instantiate(_ballPrefab, _ballTransform);
                 newBall.transform.localPosition = startTransform.localPosition;
                 newBall.gameObject.SetActive(false);
                 newBall.Init(noteMaster, noteTime, BallType.Single);
@@ -239,7 +240,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                var longBall = Instantiate(_longBallPrefab, startTransform.parent);
+                var longBall = Instantiate(_longBallPrefab, _ballTransform);
                 longBall.StartBall.transform.position = startTransform.position;
                 longBall.EndBall.transform.position = startTransform.position;
                 longBall.gameObject.SetActive(false);

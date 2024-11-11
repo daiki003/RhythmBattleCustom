@@ -19,17 +19,24 @@ public static class SaveDataManager
 
     public static ClearState GetClearState(string stageId, int level)
     {
-        return ClearStateList.FirstOrDefault(c => c.StageId == stageId && c.Level == level);
+        var clearState = ClearStateList.FirstOrDefault(c => c.StageId == stageId && c.Level == level);
+        if (clearState == null)
+        {
+            // クリア状況が作られていなければここで作る
+            clearState = new ClearState()
+            {
+                StageId = stageId,
+                Level = level
+            };
+            ClearStateList.Add(clearState);
+        }
+        return clearState;
     }
 
     public static void UpdateClearState(ClearState clearState)
     {
         var targetState = GetClearState(clearState.StageId, clearState.Level);
-        if (targetState == null)
-        {
-            ClearStateList.Add(clearState);
-        }
-        else
+        if (targetState != null)
         {
             if (targetState.Score <= clearState.Score)
             {

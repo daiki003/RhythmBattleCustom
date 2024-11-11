@@ -31,7 +31,7 @@ public class StageStrip : MonoBehaviour
 
     public void UpdateScore()
     {
-        var clearState = SaveDataManager.ClearStateList.FirstOrDefault(c => c.StageId == _stageId && c.Level == _level);
+        var clearState = SaveDataManager.GetClearState(_stageId, _level);
         if (clearState == null)
         {
             return;

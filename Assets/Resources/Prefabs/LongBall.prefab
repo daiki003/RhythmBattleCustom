@@ -111,8 +111,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 0, g: 0.06298876, b: 1, a: 1}
-      key1: {r: 0, g: 0.06298876, b: 1, a: 1}
+      key0: {r: 0, g: 0.24705887, b: 1, a: 1}
+      key1: {r: 0, g: 0.24705887, b: 1, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -166,6 +166,8 @@ MonoBehaviour:
   _startBall: {fileID: 193435911325289790}
   _endBall: {fileID: 2814611165238856649}
   _lineRenderer: {fileID: 7915500878725613886}
+  IsEndBallLaunched: 0
+  IsStartBallClicked: 0
 --- !u!1001 &5058433548103174827
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -184,11 +186,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3368572329336014497, guid: bfa0f47a490ee17419907addbf69e0a9, type: 3}
       propertyPath: m_Color.g
-      value: 0.16972414
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3368572329336014497, guid: bfa0f47a490ee17419907addbf69e0a9, type: 3}
       propertyPath: m_Color.r
-      value: 0.023584902
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8849684680776802851, guid: bfa0f47a490ee17419907addbf69e0a9, type: 3}
       propertyPath: m_Pivot.x
@@ -309,11 +311,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3368572329336014497, guid: bfa0f47a490ee17419907addbf69e0a9, type: 3}
       propertyPath: m_Color.g
-      value: 0.16972414
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3368572329336014497, guid: bfa0f47a490ee17419907addbf69e0a9, type: 3}
       propertyPath: m_Color.r
-      value: 0.023584902
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8849684680776802851, guid: bfa0f47a490ee17419907addbf69e0a9, type: 3}
       propertyPath: m_Pivot.x

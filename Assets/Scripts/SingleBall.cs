@@ -29,7 +29,7 @@ public class SingleBall : MonoBehaviour
     {
         string ballSpritePath = ballType == BallType.Single ? "Ball/Single" : "Ball/Long";
         _ballImage.sprite = Resources.Load<Sprite>(ballSpritePath);
-        // _ballImage.color = ballType == BallType.Single ? Color.red : Color.blue;
+        _ballImage.color = ballType == BallType.Single ? Color.red : Color.blue;
         CriticalTime = criticalTime;
         LaunchTime = criticalTime - MasterManager.SettingMaster.BallTimeOffset;
         BallType = ballType;
