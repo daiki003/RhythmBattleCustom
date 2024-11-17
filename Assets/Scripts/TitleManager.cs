@@ -7,6 +7,7 @@ using System.Linq;
 
 public class TitleManager : MonoBehaviour
 {
+    [SerializeField] private Text _totalScoreText;
     [SerializeField] private StageStrip _stageStripPrefab;
     [SerializeField] private List<Button> _levelButtonList;
     [SerializeField] private List<GameObject> _levelPanelList;
@@ -43,6 +44,7 @@ public class TitleManager : MonoBehaviour
                 strip.Init(MasterManager.StageMasterList[i].StageId, j);
             }
         }
+        _totalScoreText.text = SaveDataManager.GetTotalScore().ToString();
     }
 
     public void DestroyAllStrip()

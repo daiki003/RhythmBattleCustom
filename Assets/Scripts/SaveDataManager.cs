@@ -33,6 +33,16 @@ public static class SaveDataManager
         return clearState;
     }
 
+    public static float GetTotalScore()
+    {
+        float totalScore = 0f;
+        for (int i = 0; i < ClearStateList.Count; i++)
+        {
+            totalScore += ClearStateList[i].Score;
+        }
+        return totalScore;
+    }
+
     public static void UpdateClearState(ClearState clearState)
     {
         var targetState = GetClearState(clearState.StageId, clearState.Level);
