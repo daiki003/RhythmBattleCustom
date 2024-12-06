@@ -12,6 +12,12 @@ public class ClickHandler
     public Subject<bool> OnClickButton = new Subject<bool>();
     public Subject<bool> OnReleaseButton = new Subject<bool>();
     public Subject<int> OnUpdateTouchCount = new Subject<int>();
+    public Subject<(int number, bool isLeft)> OnClickScoreLine = new Subject<(int number, bool isLeft)>();
+    public Subject<SingleBall> OnDragSingleBall = new Subject<SingleBall>();
+    public Subject<SingleBall> OnReleaseSingleBall = new Subject<SingleBall>();
+
+    private SingleBall _movingBall;
+
     public void Update()
     {
 #if UNITY_EDITOR
@@ -25,6 +31,11 @@ public class ClickHandler
             if (IsOnTargetTag("RightButton"))
             {
                 OnClickButton.OnNext(false);
+            }
+            if (IsOnTargetTag("LinePocket"))
+            {
+                var pocket = GetTargetComponent<LinePocket>();
+                OnClickScoreLine.OnNext((pocket.Number, pocket.IsLeft));
             }
         }
         if (Input.GetMouseButtonUp(0))
@@ -72,9 +83,20 @@ public class ClickHandler
                     {
                         OnClickButton.OnNext(false);
                     }
+                    if (IsOnTargetTag("LinePocket"))
+                    {
+                        var pocket = GetTargetComponent<LinePocket>();
+                        OnClickScoreLine.OnNext((pocket.Number, pocket.IsLeft));
+                    }
                     break;
                 case TouchPhase.Moved:
-                    // 画面上で指が動いたときに行いたい処理をここに書く
+                    // ボールをドラッグしたら指に合わせて動かす
+                    if (IsOnTargetTag("Ball", touch))
+                    {
+                        var ball = GetTargetComponent<SingleBall>();
+                        _movingBall = ball;
+                        ball.transform.position = touch.position;
+                    }
                     break;
                 case TouchPhase.Stationary:
                     // 指が画面に触れているが動いてはいない時に行いたい処理をここに書く
@@ -88,6 +110,11 @@ public class ClickHandler
                     if (IsOnTargetTag("RightButton", touch))
                     {
                         OnReleaseButton.OnNext(false);
+                    }
+                    if (_movingBall != null)
+                    {
+                        OnReleaseSingleBall.OnNext(_movingBall);
+                        _movingBall = null;
                     }
                     break;
                 case TouchPhase.Canceled:
@@ -137,7 +164,7 @@ public class ClickHandler
 
     // public string GetFirstTag(Touch touch = default)
     // {
-    //     return GetRaycastResults(touch).Select(r => r.gameObject.tag).FirstOrDefault(r => r != "Untagged");
+    //     return GetRaycastResults(touch.position).Select(r => r.gameObject.tag).FirstOrDefault(r => r != "Untagged");
     // }
 
     // public List<string> GetTargetTagList(Touch touch = default)
@@ -145,14 +172,19 @@ public class ClickHandler
 	// 	return GetRaycastResults(touch).Select(r => r.gameObject.tag).ToList();
 	// }
 
-	// public T GetTargetComponent<T>(Touch touch = default)
-	// {
-    //     var component = GetRaycastResults(touch).Select(r => r.gameObject.GetComponent<T>()).FirstOrDefault(s => s != null);
-    //     if (component == null)
-    //     {
-    //         // なければ親要素まで見る
-    //         component = GetRaycastResults(touch).Select(r => r.gameObject.transform.parent.GetComponent<T>()).FirstOrDefault(s => s != null);
-    //     }
-    //     return component;
-	// }
+	public T GetTargetComponent<T>(Touch touch = default)
+	{
+#if UNITY_EDITOR
+        var position = Input.mousePosition;
+#else
+        var position = touch.position;
+#endif
+        var component = GetRaycastResults(position).Select(r => r.gameObject.GetComponent<T>()).FirstOrDefault(s => s != null);
+        if (component == null)
+        {
+            // なければ親要素まで見る
+            component = GetRaycastResults(position).Select(r => r.gameObject.transform.parent.GetComponent<T>()).FirstOrDefault(s => s != null);
+        }
+        return component;
+	}
 }

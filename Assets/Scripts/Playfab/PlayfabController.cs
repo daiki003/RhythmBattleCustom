@@ -18,7 +18,7 @@ public class PlayFabController
     private static bool _finishGetMaster;
 
     // ログイン ---------------------------------------------------------------------------------------------------------------------------------------[]
-    public static void login()
+    public static void Login()
     {
         InfoRequestParams = new GetPlayerCombinedInfoRequestParams();
         InfoRequestParams.GetUserData = true;
@@ -36,7 +36,7 @@ public class PlayFabController
         Debug.Log("ログイン" + playFabId);
     }
 
-    public static void simpleLogin(string customId)
+    public static void SimpleLogin(string customId)
     {
         PlayFabClientAPI.LoginWithCustomID(new LoginWithCustomIDRequest()
         {
@@ -55,7 +55,7 @@ public class PlayFabController
         });
     }
 
-    public static void initializePrivateData(Action callBack)
+    public static void InitializePrivateData(Action callBack)
     {
         var request = new UpdateUserDataRequest()
         {
@@ -108,7 +108,7 @@ public class PlayFabController
 
         void OnSuccess(UpdateUserDataResult result)
         {
-            initializePrivateData(callBack);
+            InitializePrivateData(callBack);
         }
 
         void OnError(PlayFabError error)
@@ -118,7 +118,7 @@ public class PlayFabController
         }
     }
 
-    // プレイヤーデータ取得 ------------------------------------------------------------------------------------------------------------------------
+#region プレイヤーデータ取得
     // 自身の全てのデータを取得してSaveDataを更新
     public static void GetPlayerData()
     {
@@ -129,7 +129,14 @@ public class PlayFabController
         {
             if (result.Data.ContainsKey("ClearStates"))
             {
-                SaveDataManager.ClearStateList = PlayFabSimpleJson.DeserializeObject<List<ClearState>>(result.Data["ClearStates"].Value);   
+                SaveDataManager.ClearStateList = PlayFabSimpleJson.DeserializeObject<List<ClearState>>(result.Data["ClearStates"].Value);
+                foreach (var item in result.Data)
+                {
+                    if (item.Key.Contains("Override"))
+                    {
+                        MasterManager.OverrideMasterList.Add(PlayFabSimpleJson.DeserializeObject<StageMaster>(item.Value.Value));
+                    }
+                }
             }
             else
             {
@@ -145,9 +152,32 @@ public class PlayFabController
             Debug.Log(error.GenerateErrorReport());
         }
     }
+    public static StageMaster GetOverrideStageMaster(string stageId)
+    {
+        var request = new GetUserDataRequest();
+        StageMaster stageMaster = null;
+        PlayFabClientAPI.GetUserData(request, OnSuccess, OnError);
+        return stageMaster;
 
-    // プレイヤーデータ操作 ------------------------------------------------------------------------------------------------------------------------------
-    public static void updatePlayerName(string playerName)
+        void OnSuccess(GetUserDataResult result)
+        {
+            string overrideKey = stageId + "Override";
+            if (result.Data.ContainsKey(overrideKey))
+            {
+                stageMaster = PlayFabSimpleJson.DeserializeObject<StageMaster>(result.Data["ClearStates"].Value);
+            }
+        }
+
+        void OnError(PlayFabError error)
+        {
+            Debug.Log("GetUserData: Fail...");
+            Debug.Log(error.GenerateErrorReport());
+        }
+    }
+#endregion
+
+#region プレイヤーデータ操作
+    public static void UpdatePlayerName(string playerName)
     {
         var request = new UpdateUserDataRequest()
         {
@@ -197,7 +227,33 @@ public class PlayFabController
         }
     }
 
-    // タイトルデータ取得
+    public static void UpdateOverrideScore(StageMaster stageMaster)
+    {
+        string keyName = stageMaster.StageId + "Override";
+        var request = new UpdateUserDataRequest()
+        {
+            Data = new Dictionary<string, string>
+            {
+                { keyName, PlayFabSimpleJson.SerializeObject(stageMaster) }
+            }
+        };
+
+        PlayFabClientAPI.UpdateUserData(request, OnSuccess, OnError);
+
+        void OnSuccess(UpdateUserDataResult result)
+        {
+            Debug.Log("UpdateStageOverride:" + keyName);
+        }
+
+        void OnError(PlayFabError error)
+        {
+            Debug.Log("UpdateUserData: Fail...");
+            Debug.Log(error.GenerateErrorReport());
+        }
+    }
+#endregion
+
+    // タイトルデータ取得 ------------------------------------------------------------------------------------------------------------------------------------
     public static void GetTitleData(Action<SettingMaster, List<StageMaster>> callBack)
     {
         var request = new GetTitleDataRequest();
@@ -227,7 +283,7 @@ public class PlayFabController
         }
     }
 
-    // ランキング関連 ---------------------------------------------------------------------------------------------------------------------------------------
+#region ランキング関連
     // ランキング情報の登録
     public static void UpdatePlayerStatistics()
     {
@@ -298,4 +354,5 @@ public class PlayFabController
     {
         Debug.LogError($"スコア(統計情報)取得に失敗しました\n{error.GenerateErrorReport()}");
     }
+#endregion
 }

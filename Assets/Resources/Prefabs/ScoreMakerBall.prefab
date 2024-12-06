@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 8849684680776802851}
   - component: {fileID: 6904413985697474505}
   - component: {fileID: 3368572329336014497}
-  - component: {fileID: 4943846751913297813}
+  - component: {fileID: 3341408063706425006}
   m_Layer: 5
-  m_Name: Ball
+  m_Name: ScoreMakerBall
   m_TagString: Ball
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -35,7 +35,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 300}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 150, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6904413985697474505
@@ -66,7 +66,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 3bbd5989d841a6f4da03b44e1344cfb2, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 96f5c07ef9bd90641aae5cec4ffe627a, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -76,7 +76,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &4943846751913297813
+--- !u!114 &3341408063706425006
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -85,12 +85,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 1942117549572544253}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e131fdf42200fbc4fb22b3cce4060b6b, type: 3}
+  m_Script: {fileID: 11500000, guid: 9b5f9d65739260f40b4826e6d42fecb6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _ballImage: {fileID: 3368572329336014497}
-  IsLeft: 0
-  CriticalTime: 0
-  LaunchTime: 0
   BallType: 0
-  BallState: 0

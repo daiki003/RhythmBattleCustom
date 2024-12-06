@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class SettingMaster
@@ -34,16 +35,21 @@ public static class MasterManager
 {
     public static SettingMaster SettingMaster;
     public static  List<StageMaster> StageMasterList = new List<StageMaster>();
+    public static  List<StageMaster> OverrideMasterList = new List<StageMaster>();
     public static bool FinishGetMaster;
     public static void GetAllMasterData()
 	{
 		PlayFabController.GetTitleData(SetMasterData);
 	}
-
     public static void SetMasterData(SettingMaster settingMaster, List<StageMaster> stageMasterList)
 	{
 		SettingMaster = settingMaster;
         StageMasterList.AddRange(stageMasterList);
         PlayFabController.GetPlayerData();
 	}
+    public static StageMaster GetStageMaster(string stageId)
+    {
+        var overrideMaster = OverrideMasterList.FirstOrDefault(s => s.StageId == stageId);
+        return overrideMaster ?? StageMasterList.FirstOrDefault(s => s.StageId == stageId);
+    }
 }

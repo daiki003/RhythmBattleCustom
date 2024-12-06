@@ -12,6 +12,7 @@ public class TitleManager : MonoBehaviour
     [SerializeField] private List<Button> _levelButtonList;
     [SerializeField] private List<GameObject> _levelPanelList;
     [SerializeField] private List<Transform> _stripTransformList;
+    [SerializeField] private Button _scoreMakeButton;
 
     private List<GameObject> _stripList = new List<GameObject>();
     private Color32 _activeButtonColor = new Color32(255, 255, 255, 255);
@@ -30,6 +31,11 @@ public class TitleManager : MonoBehaviour
             });
         }
         SetLevelPanel(0);
+
+        _scoreMakeButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            GameManager.instance.GoToScoreMaker();
+        });
     }
 
     public void RecreateStrip()
@@ -37,7 +43,7 @@ public class TitleManager : MonoBehaviour
         DestroyAllStrip();
         for (int i = 0; i < MasterManager.StageMasterList.Count; i++)
         {
-            for (int j = 0; j < 4; j++)
+            for (int j = 0; j < 3; j++)
             {
                 var strip = Instantiate(_stageStripPrefab, _stripTransformList[j]);
                 _stripList.Add(strip.gameObject);

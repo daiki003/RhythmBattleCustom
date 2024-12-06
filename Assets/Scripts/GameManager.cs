@@ -21,7 +21,8 @@ public enum SceneType
 {
     None,
     Battle,
-    Title
+    Title,
+    ScoreMaker
 }
 
 public class GameManager : MonoBehaviour
@@ -49,11 +50,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Image _testButtonImage;
 
     [SerializeField] private GameObject _debugPanel;
-    [SerializeField] private GameObject _titlePanel;
     [SerializeField] private GameObject _battlePanel;
     [SerializeField] private GameObject _loadPanel;
     [SerializeField] private TitleManager _titleManager;
     [SerializeField] private ResultView _resultView;
+    [SerializeField] private ScoreMaker _scoreMaker;
 
     private List<SingleBall> _leftBallList = new List<SingleBall>();
     private List<SingleBall> _rightBallList = new List<SingleBall>();
@@ -71,6 +72,7 @@ public class GameManager : MonoBehaviour
     private StageMaster _currentStageMaster;
 
     private ClickHandler _clickHandler;
+    public ClickHandler ClickHandler => _clickHandler;
 
     public static GameManager instance;
 	public void Awake()
@@ -116,7 +118,7 @@ public class GameManager : MonoBehaviour
             GoToTitle();
         });
         ChangePanel(SceneType.None);
-        PlayFabController.login();
+        PlayFabController.Login();
         GameStart().Forget();
     }
 
@@ -137,7 +139,8 @@ public class GameManager : MonoBehaviour
     {
         _loadPanel.SetActive(sceneType == SceneType.None);
         _battlePanel.SetActive(sceneType == SceneType.Battle);
-        _titlePanel.SetActive(sceneType == SceneType.Title);
+        _titleManager.gameObject.SetActive(sceneType == SceneType.Title);
+        _scoreMaker.gameObject.SetActive(sceneType == SceneType.ScoreMaker);
     }
 
     public void Reset()
@@ -187,16 +190,26 @@ public class GameManager : MonoBehaviour
 	{
 		await UniTask.WaitWhile(() => !MasterManager.FinishGetMaster);
         _titleManager.Init();
+        _scoreMaker.Init();
         GoToTitle();
 	}
 
-    private void GoToTitle()
+    public void GoToTitle()
     {
         Reset();
         _titleManager.RecreateStrip();
         ChangePanel(SceneType.Title);
         BGMManager.instance.SetClip("WanderersCity", isLoop: true);
         BGMManager.instance.Play();
+    }
+
+    public void GoToScoreMaker()
+    {
+        Reset();
+        ChangePanel(SceneType.ScoreMaker);
+        BGMManager.instance.SetClip("WanderersCity", isLoop: true);
+        BGMManager.instance.Play();
+        _scoreMaker.StartMake();
     }
 
     public async UniTask StartBattle(string stageId, int level)
@@ -218,7 +231,7 @@ public class GameManager : MonoBehaviour
 	{
         // 曲が始まる前にGC.Collect
         GC.Collect();
-        _currentStageMaster = MasterManager.StageMasterList.First(s => s.StageId == _currentStage);
+        _currentStageMaster = MasterManager.GetStageMaster(_currentStage);
         BGMManager.instance.SetClip(_currentStageMaster.StageId);
         foreach (NoteMaster noteMaster in _currentStageMaster.notes[_currentLevel])
         {
