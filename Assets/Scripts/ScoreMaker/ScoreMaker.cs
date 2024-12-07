@@ -39,10 +39,9 @@ public class ScoreMaker : MonoBehaviour
         Long
     }
     private ScoreMakerBallType _currentSelectBallType;
-
-    private const float _offset = 0.2f;
-    private const float _bpm = 520f;
-    private const float _singleBeatTime = 60f / _bpm;
+    private float _bpm => _currentOriginalStageMaster != null ? _currentOriginalStageMaster.BPM : 500f;
+    private float _singleBeatTime => 60f / _bpm;
+    private float _offset => _currentOriginalStageMaster != null ? _currentOriginalStageMaster.NoteTimeOffset - 1.3f : 0.2f;
 
     public void Init()
     {
@@ -86,7 +85,7 @@ public class ScoreMaker : MonoBehaviour
         SwitchBallType(isLong: false);
     }
 
-    private void CreateLine(float lineNumber)
+    private void CreateLine(string stageId)
     {
         // すでにラインが作られていたら全て削除
         while (_scoreLineList.Count > 0)
@@ -96,10 +95,11 @@ public class ScoreMaker : MonoBehaviour
             Destroy(destroyLine.gameObject);
         }
 
-        _currentOriginalStageMaster = MasterManager.GetStageMaster("BattleRoseMoon");
+        _currentOriginalStageMaster = MasterManager.GetStageMaster(stageId);
         var masterList = _currentOriginalStageMaster.notes[2];
+        int lineNumber = (int)(_bpm * (BGMManager.instance.CurrentClipLength / 60f));
         // ライン作成
-        for (int i = 0; i < (int)lineNumber; i++)
+        for (int i = 0; i < lineNumber; i++)
         {
             var scoreLine = Instantiate(_scoreLinePrefab, _scoreLineTransform);
             scoreLine.transform.SetSiblingIndex(0);
@@ -169,11 +169,11 @@ public class ScoreMaker : MonoBehaviour
         return null;
     }
 
-    public void StartMake()
+    public void StartMake(string stageId)
     {
         _scoreScrollRect.verticalNormalizedPosition = 0;
-        BGMManager.instance.SetClip("BattleRoseMoon");
-        CreateLine(_bpm * (BGMManager.instance.CurrentClipLength / 60f));
+        BGMManager.instance.SetClip(stageId);
+        CreateLine(stageId);
         BGMManager.instance.Play();
     }
 

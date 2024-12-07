@@ -157,6 +157,7 @@ public class GameManager : MonoBehaviour
         _missCountText.text = _missCount.ToString();
         _comboText.text = _comboCount.ToString();
         BGMManager.instance.Stop();
+        _isDuaringBattle = false;
     }
 
     public void MoveTime(float time)
@@ -203,13 +204,13 @@ public class GameManager : MonoBehaviour
         BGMManager.instance.Play();
     }
 
-    public void GoToScoreMaker()
+    public void GoToScoreMaker(string stageId)
     {
         Reset();
         ChangePanel(SceneType.ScoreMaker);
-        BGMManager.instance.SetClip("WanderersCity", isLoop: true);
+        BGMManager.instance.SetClip(stageId, isLoop: true);
         BGMManager.instance.Play();
-        _scoreMaker.StartMake();
+        _scoreMaker.StartMake(stageId);
     }
 
     public async UniTask StartBattle(string stageId, int level)

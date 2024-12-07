@@ -83,7 +83,7 @@ public class ClickHandler
                     {
                         OnClickButton.OnNext(false);
                     }
-                    if (IsOnTargetTag("LinePocket"))
+                    if (IsOnTargetTag("LinePocket", touch))
                     {
                         var pocket = GetTargetComponent<LinePocket>();
                         OnClickScoreLine.OnNext((pocket.Number, pocket.IsLeft));

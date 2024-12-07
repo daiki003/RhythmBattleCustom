@@ -58,6 +58,7 @@ public class ScoreMakerBall : MonoBehaviour
                 num = LineNumber,
                 block = IsLeft ? 1 : 5,
                 type = isLong ? 2 : 1,
+                notes = pairNotes,
             };
             return note;
         }

@@ -17,14 +17,23 @@ public class StageStrip : MonoBehaviour
 
     private string _stageId;
     private int _level;
+    private bool _isScoreMaker;
 
-    public void Init(string stageId, int level)
+    public void Init(string stageId, int level, bool isScoreMaker = false)
     {
         _stageId = stageId;
         _level = level;
+        _isScoreMaker = isScoreMaker;
         _startButton.OnClickAsObservable().Subscribe(async x =>
         {
-            await StartBattle(_stageId, _level);
+            if (_isScoreMaker)
+            {
+                GameManager.instance.GoToScoreMaker(_stageId);
+            }
+            else
+            {
+                await StartBattle(_stageId, _level);
+            }
         });
         UpdateScore();
     }

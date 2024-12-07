@@ -12,7 +12,9 @@ public class TitleManager : MonoBehaviour
     [SerializeField] private List<Button> _levelButtonList;
     [SerializeField] private List<GameObject> _levelPanelList;
     [SerializeField] private List<Transform> _stripTransformList;
-    [SerializeField] private Button _scoreMakeButton;
+    [SerializeField] private Button _scoreMakerButton;
+    [SerializeField] private GameObject _scoreMakerPanel;
+    [SerializeField] private Transform _scoreMakerTransform;
 
     private List<GameObject> _stripList = new List<GameObject>();
     private Color32 _activeButtonColor = new Color32(255, 255, 255, 255);
@@ -32,9 +34,10 @@ public class TitleManager : MonoBehaviour
         }
         SetLevelPanel(0);
 
-        _scoreMakeButton.OnClickAsObservable().Subscribe(_ =>
+        _scoreMakerButton.OnClickAsObservable().Subscribe(_ =>
         {
-            GameManager.instance.GoToScoreMaker();
+            SEManager.instance.PlayBeatSe();
+            SetLevelPanel(level: 0, isScoreMaker: true);
         });
     }
 
@@ -49,6 +52,9 @@ public class TitleManager : MonoBehaviour
                 _stripList.Add(strip.gameObject);
                 strip.Init(MasterManager.StageMasterList[i].StageId, j);
             }
+            var scoreMakerStrip = Instantiate(_stageStripPrefab, _scoreMakerTransform);
+            _stripList.Add(scoreMakerStrip.gameObject);
+            scoreMakerStrip.Init(MasterManager.StageMasterList[i].StageId, 2, isScoreMaker: true);
         }
         _totalScoreText.text = SaveDataManager.GetTotalScore().ToString();
     }
@@ -63,14 +69,15 @@ public class TitleManager : MonoBehaviour
         }
     }
 
-    private void SetLevelPanel(int level)
+    private void SetLevelPanel(int level, bool isScoreMaker = false)
     {
         for (int i = 0; i < _levelPanelList.Count; i++)
         {
-            bool isActive = level == i;
+            bool isActive = level == i && !isScoreMaker;
             _levelPanelList[i].gameObject.SetActive(isActive);
             var buttonImage = _levelButtonList[i].GetComponent<Image>();
             buttonImage.color = isActive ? _activeButtonColor : _nonActiveButtonColor;
         }
+        _scoreMakerPanel.SetActive(isScoreMaker);
     }
 }
