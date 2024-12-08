@@ -13,7 +13,6 @@ public class ScoreLine : MonoBehaviour
     public LinePocket RightPocket => _rightPocket;
 
     public int LineNumber { get; private set; }
-    public float LineTime => LineNumber * (60f / 520f);
     public bool IsEnd;
 
     public void Init(int number)
@@ -37,6 +36,7 @@ public class ScoreLine : MonoBehaviour
     {
         if (_leftPocket.InstalledBall != null || _rightPocket.InstalledBall != null)
         {
+            Debug.Log("打刻時間:" + BGMManager.instance.CurrentTime);
             SEManager.instance.PlayBeatSe();
         }
     }

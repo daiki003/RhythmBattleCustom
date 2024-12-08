@@ -41,7 +41,7 @@ public class ScoreMaker : MonoBehaviour
     private ScoreMakerBallType _currentSelectBallType;
     private float _bpm => _currentOriginalStageMaster != null ? _currentOriginalStageMaster.BPM : 500f;
     private float _singleBeatTime => 60f / _bpm;
-    private float _offset => _currentOriginalStageMaster != null ? _currentOriginalStageMaster.NoteTimeOffset - 1.3f : 0.2f;
+    private float _offset => _currentOriginalStageMaster != null ? _currentOriginalStageMaster.NoteTimeOffset : 0.2f;
 
     public void Init()
     {
@@ -69,7 +69,7 @@ public class ScoreMaker : MonoBehaviour
             BGMManager.instance.SetTime(lineNumber * _singleBeatTime + _offset);
             foreach (var line in _scoreLineList)
             {
-                line.IsEnd = line.LineTime < BGMManager.instance.CurrentTime;
+                line.IsEnd = line.LineNumber * (60f / _bpm) < BGMManager.instance.CurrentTime;
             }
             BGMManager.instance.Pause();
         });
@@ -225,7 +225,7 @@ public class ScoreMaker : MonoBehaviour
             float anchorY = _scoreAreaBottom - (_scoreLineSpacing + _scoreLineHeight) * currentLineNumber;
             _scoreAreaRect.anchoredPosition = new Vector3(200, anchorY, 0);
             var nextLine = _scoreLineList.FirstOrDefault(l => !l.IsEnd);
-            if (nextLine != null && BGMManager.instance.CurrentTime - _offset > nextLine.LineTime - MasterManager.SettingMaster.TestNoteTimeBuffer)
+            if (nextLine != null && BGMManager.instance.CurrentTime > nextLine.LineNumber * (60f / _bpm) + _offset - MasterManager.SettingMaster.TestNoteTimeBuffer)
             {
                 nextLine.Beat();
                 nextLine.IsEnd = true;

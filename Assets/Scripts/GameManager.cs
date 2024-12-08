@@ -183,7 +183,7 @@ public class GameManager : MonoBehaviour
     private float CalcNoteTime(NoteMaster noteMaster)
     {
         int noteNumber = noteMaster.num * (_currentStageMaster.LPB / noteMaster.lpb);
-        return (noteNumber + _currentStageMaster.NoteTimeOffset) * (60f / _currentStageMaster.BPM);
+        return noteNumber * (60f / _currentStageMaster.BPM) + _currentStageMaster.NoteTimeOffset;
     }
 
     // ゲームスタート時の処理
@@ -477,6 +477,7 @@ public class GameManager : MonoBehaviour
     {
         if (_lastBeatTime != ball.CriticalTime)
         {
+            Debug.Log("打刻時間:" + BGMManager.instance.CurrentTime);
             SEManager.instance.PlayBeatSe();
         }
         _lastBeatTime = ball.CriticalTime;
