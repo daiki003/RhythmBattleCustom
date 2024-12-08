@@ -17,6 +17,8 @@ public class ClickHandler
     public Subject<SingleBall> OnReleaseSingleBall = new Subject<SingleBall>();
 
     private SingleBall _movingBall;
+    private Vector3 _startClickPosition;
+    private const float _moveDiff = 5f;
 
     public void Update()
     {
@@ -34,8 +36,7 @@ public class ClickHandler
             }
             if (IsOnTargetTag("LinePocket"))
             {
-                var pocket = GetTargetComponent<LinePocket>();
-                OnClickScoreLine.OnNext((pocket.Number, pocket.IsLeft));
+                _startClickPosition = Input.mousePosition;
             }
         }
         if (Input.GetMouseButtonUp(0))
@@ -47,6 +48,14 @@ public class ClickHandler
             if (IsOnTargetTag("RightButton"))
             {
                 OnReleaseButton.OnNext(false);
+            }
+            if (IsOnTargetTag("LinePocket"))
+            {
+                if (!IsMovePosition(Input.mousePosition))
+                {
+                    var pocket = GetTargetComponent<LinePocket>();
+                    OnClickScoreLine.OnNext((pocket.Number, pocket.IsLeft));
+                }
             }
         }
         if (Input.GetKeyDown(KeyCode.V))
@@ -85,18 +94,10 @@ public class ClickHandler
                     }
                     if (IsOnTargetTag("LinePocket", touch))
                     {
-                        var pocket = GetTargetComponent<LinePocket>(touch);
-                        OnClickScoreLine.OnNext((pocket.Number, pocket.IsLeft));
+                        _startClickPosition = Input.mousePosition;
                     }
                     break;
                 case TouchPhase.Moved:
-                    // ボールをドラッグしたら指に合わせて動かす
-                    if (IsOnTargetTag("Ball", touch))
-                    {
-                        var ball = GetTargetComponent<SingleBall>();
-                        _movingBall = ball;
-                        ball.transform.position = touch.position;
-                    }
                     break;
                 case TouchPhase.Stationary:
                     // 指が画面に触れているが動いてはいない時に行いたい処理をここに書く
@@ -111,10 +112,13 @@ public class ClickHandler
                     {
                         OnReleaseButton.OnNext(false);
                     }
-                    if (_movingBall != null)
+                    if (IsOnTargetTag("LinePocket", touch))
                     {
-                        OnReleaseSingleBall.OnNext(_movingBall);
-                        _movingBall = null;
+                        if (!IsMovePosition(touch.position))
+                        {
+                            var pocket = GetTargetComponent<LinePocket>(touch);
+                            OnClickScoreLine.OnNext((pocket.Number, pocket.IsLeft));
+                        }
                     }
                     break;
                 case TouchPhase.Canceled:
@@ -161,6 +165,15 @@ public class ClickHandler
 	{
 		return GetRaycastResults(touch.position).Any(r => r.gameObject.CompareTag(tagName));
 	}
+
+    public bool IsMovePosition(Vector3 currentPosition)
+    {
+        if (_startClickPosition == null)
+        {
+            return false;
+        }
+        return Math.Abs(currentPosition.x - _startClickPosition.x) > _moveDiff && Math.Abs(currentPosition.y - _startClickPosition.y) > _moveDiff;
+    }
 
     // public string GetFirstTag(Touch touch = default)
     // {

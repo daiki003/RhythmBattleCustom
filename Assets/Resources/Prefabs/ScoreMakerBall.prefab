@@ -36,7 +36,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 150, y: 150}
+  m_SizeDelta: {x: 135, y: 135}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &6904413985697474505
 CanvasRenderer:
@@ -90,3 +90,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _ballImage: {fileID: 3368572329336014497}
   BallType: 0
+  LineNumber: 0
+  IsLeft: 0
+  PairBall: {fileID: 0}
+  IsLongLast: 0
