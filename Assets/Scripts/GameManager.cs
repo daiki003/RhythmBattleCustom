@@ -27,6 +27,7 @@ public enum SceneType
 
 public class GameManager : MonoBehaviour
 {
+    [SerializeField] private Image _enemyImage;
     [SerializeField] private RectTransform _leftTransform;
     [SerializeField] private RectTransform _rightTransform;
     [SerializeField] private RectTransform _leftStartTransform;
@@ -233,6 +234,7 @@ public class GameManager : MonoBehaviour
         // 曲が始まる前にGC.Collect
         GC.Collect();
         _currentStageMaster = MasterManager.GetStageMaster(_currentStage);
+        _enemyImage.sprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + _currentStageMaster.StageId);
         BGMManager.instance.SetClip(_currentStageMaster.StageId);
         foreach (NoteMaster noteMaster in _currentStageMaster.notes[_currentLevel])
         {

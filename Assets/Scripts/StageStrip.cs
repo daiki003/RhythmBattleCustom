@@ -8,6 +8,7 @@ using UnityEngine.UI;
 
 public class StageStrip : MonoBehaviour
 {
+    [SerializeField] private Image _enemyImage;
     [SerializeField] private Button _startButton;
     [SerializeField] private Text _scoreText;
     [SerializeField] private Text _comboText;
@@ -21,6 +22,8 @@ public class StageStrip : MonoBehaviour
 
     public void Init(string stageId, int level, bool isScoreMaker = false)
     {
+        var enemySprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + stageId);
+        _enemyImage.sprite = enemySprite;
         _stageId = stageId;
         _level = level;
         _isScoreMaker = isScoreMaker;

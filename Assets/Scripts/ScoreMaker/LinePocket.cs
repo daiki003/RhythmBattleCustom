@@ -42,6 +42,7 @@ public class LinePocket : MonoBehaviour
         else
         {
             Destroy(InstalledBall.gameObject);
+            InstalledBall = null;
         }
         return InstalledBall;
     }

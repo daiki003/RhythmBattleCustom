@@ -145,7 +145,7 @@ public class ScoreMaker : MonoBehaviour
         var targetLine = _scoreLineList[lineNumber];
         var createdBall = targetLine.CreateBall(ballType, isLeft);
         // ロングボールなら、線で繋げられないか検索する
-        if (ballType == ScoreMakerBallType.Long)
+        if (ballType == ScoreMakerBallType.Long && createdBall != null)
         {
             // まず手前のボールを探す
             var frontLineList = _scoreLineList.GetRange(0, lineNumber);
@@ -195,6 +195,8 @@ public class ScoreMaker : MonoBehaviour
         _currentOriginalStageMaster = MasterManager.GetStageMaster(stageId);
         _bpm = _currentOriginalStageMaster.BPM;
         _offset = _currentOriginalStageMaster.NoteTimeOffset;
+        _bpmInput.text = _bpm.ToString();
+        _offsetInput.text = _offset.ToString();
         BGMManager.instance.SetClip(stageId);
         // 初期レベルは2
         _currentLevel = 2;

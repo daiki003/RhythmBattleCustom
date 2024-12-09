@@ -4450,6 +4450,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e05cfa4c87d69e74db9b4f2c3565a277, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _enemyImage: {fileID: 1203917201}
   _leftTransform: {fileID: 1969285246}
   _rightTransform: {fileID: 533448780}
   _leftStartTransform: {fileID: 1029129774}

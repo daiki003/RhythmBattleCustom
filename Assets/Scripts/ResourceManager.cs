@@ -4,21 +4,46 @@ using UnityEngine;
 
 public static class ResourceManager
 {
-    private static Dictionary<string, GameObject> _loadedPrefabList = new Dictionary<string, GameObject>();
+    private static Dictionary<string, GameObject> _loadedPrefabDic = new Dictionary<string, GameObject>();
+    private static Dictionary<string, Sprite> _loadedSpriteDic = new Dictionary<string, Sprite>();
 
     private static string _prefabPath = "Prefabs/";
 
     public static GameObject LoadPrefab(string prefabName)
     {
-        if (_loadedPrefabList.ContainsKey(prefabName))
+        if (_loadedPrefabDic.ContainsKey(prefabName))
         {
-            return _loadedPrefabList[prefabName];
+            return _loadedPrefabDic[prefabName];
         }
         else
         {
             var prefab = Resources.Load<GameObject>(_prefabPath + prefabName);
-            _loadedPrefabList.Add(prefabName, prefab);
+            _loadedPrefabDic.Add(prefabName, prefab);
             return prefab;
         }
+    }
+
+    public static Sprite LoadSprite(string spritePath)
+    {
+        if (_loadedSpriteDic.ContainsKey(spritePath))
+        {
+            return _loadedSpriteDic[spritePath];
+        }
+        else
+        {
+            var sprite = Resources.Load<Sprite>(spritePath);
+            _loadedSpriteDic.Add(spritePath, sprite);
+            return sprite;
+        }
+    }
+
+    public static Sprite LoadSpriteWithDummyEnemy(string spritePath)
+    {
+        var sprite = LoadSprite(spritePath);
+        if (sprite == null)
+        {
+            sprite = Resources.Load<Sprite>("Enemy/Dummy");
+        }
+        return sprite;
     }
 }
