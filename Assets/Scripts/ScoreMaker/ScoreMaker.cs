@@ -259,7 +259,7 @@ public class ScoreMaker : MonoBehaviour
             float anchorY = _scoreAreaBottom - (_scoreLineSpacing + _scoreLineHeight) * currentLineNumber;
             _scoreAreaRect.anchoredPosition = new Vector3(200, anchorY, 0);
             var nextLine = _scoreLineList.FirstOrDefault(l => !l.IsEnd);
-            if (nextLine != null && BGMManager.instance.CurrentTime > nextLine.LineNumber * (60f / _bpm) + _offset - MasterManager.SettingMaster.TestNoteTimeBuffer)
+            if (nextLine != null && BGMManager.instance.CurrentTime > nextLine.LineNumber * (60f / _bpm) + _offset - MasterManager.SettingMaster.ScoreMakerNoteTimeBuffer)
             {
                 nextLine.Beat();
                 nextLine.IsEnd = true;

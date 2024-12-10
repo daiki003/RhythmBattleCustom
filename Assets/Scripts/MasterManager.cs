@@ -10,6 +10,7 @@ public class SettingMaster
     public float BallTimeOffset;
     public float BallSpeed;
     public float TestNoteTimeBuffer;
+    public float ScoreMakerNoteTimeBuffer;
 }
 
 public class NoteMaster

@@ -4,41 +4,51 @@ using UnityEngine;
 using R3;
 using UnityEngine.UI;
 using System.Linq;
+using Unity.VisualScripting;
+
+public enum TitlePanelType
+{
+    Level1,
+    Level2,
+    Level3,
+    ScoreMaker,
+    Setting,
+}
 
 public class TitleManager : MonoBehaviour
 {
     [SerializeField] private Text _totalScoreText;
     [SerializeField] private StageStrip _stageStripPrefab;
-    [SerializeField] private List<Button> _levelButtonList;
-    [SerializeField] private List<GameObject> _levelPanelList;
     [SerializeField] private List<Transform> _stripTransformList;
-    [SerializeField] private Button _scoreMakerButton;
-    [SerializeField] private GameObject _scoreMakerPanel;
     [SerializeField] private Transform _scoreMakerTransform;
+    [SerializeField] private List<MenuButton> _menuButtonList;
+    [SerializeField] private GameObject _Level1Panel;
+    [SerializeField] private GameObject _Level2Panel;
+    [SerializeField] private GameObject _Level3Panel;
+    [SerializeField] private GameObject _scoreMakerPanel;
 
     private List<GameObject> _stripList = new List<GameObject>();
-    private Color32 _activeButtonColor = new Color32(255, 255, 255, 255);
-    private Color32 _nonActiveButtonColor = new Color32(255, 255, 255, 140);
 
     public void Init()
     {
         RecreateStrip();
-        for (int i = 0; i < _levelButtonList.Count; i++)
+        DarkeningMenuButton();
+        for (int i = 0; i < _menuButtonList.Count; i++)
         {
-            int level = i;
-            _levelButtonList[i].OnClickAsObservable().Subscribe(_ =>
+            var menuButton = _menuButtonList[i];
+            var button = menuButton.GetComponent<Button>();
+            button.OnClickAsObservable().Subscribe(_ =>
             {
-                SEManager.instance.PlayBeatSe();
-                SetLevelPanel(level);
+                DarkeningMenuButton();
+                menuButton.OnClick();
+                SetLevelPanel(menuButton.ButtonType);
             });
+            if (i == 0)
+            {
+                menuButton.SetLight(true);
+                SetLevelPanel(menuButton.ButtonType);
+            }
         }
-        SetLevelPanel(0);
-
-        _scoreMakerButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            SEManager.instance.PlayBeatSe();
-            SetLevelPanel(level: 0, isScoreMaker: true);
-        });
     }
 
     public void RecreateStrip()
@@ -69,15 +79,19 @@ public class TitleManager : MonoBehaviour
         }
     }
 
-    private void SetLevelPanel(int level, bool isScoreMaker = false)
+    private void DarkeningMenuButton()
     {
-        for (int i = 0; i < _levelPanelList.Count; i++)
+        foreach (MenuButton menuButton in _menuButtonList)
         {
-            bool isActive = level == i && !isScoreMaker;
-            _levelPanelList[i].gameObject.SetActive(isActive);
-            var buttonImage = _levelButtonList[i].GetComponent<Image>();
-            buttonImage.color = isActive ? _activeButtonColor : _nonActiveButtonColor;
+            menuButton.SetLight(false);
         }
-        _scoreMakerPanel.SetActive(isScoreMaker);
+    }
+
+    private void SetLevelPanel(TitlePanelType titlePanelType)
+    {
+        _Level1Panel.SetActive(titlePanelType == TitlePanelType.Level1);
+        _Level2Panel.SetActive(titlePanelType == TitlePanelType.Level2);
+        _Level3Panel.SetActive(titlePanelType == TitlePanelType.Level3);
+        _scoreMakerPanel.SetActive(titlePanelType == TitlePanelType.ScoreMaker);
     }
 }
