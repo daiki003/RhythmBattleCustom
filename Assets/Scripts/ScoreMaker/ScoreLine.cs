@@ -53,6 +53,11 @@ public class ScoreLine : MonoBehaviour
         return targetPocket.InstalledBall;
     }
 
+    public float GetLineTime(float bpm, float offset)
+    {
+        return LineNumber * (60f / bpm) + offset;
+    }
+
     public NoteMaster GetMaster(bool isLeft)
     {
         var ball = GetBall(isLeft);

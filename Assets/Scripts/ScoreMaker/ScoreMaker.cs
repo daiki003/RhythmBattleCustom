@@ -14,9 +14,7 @@ public class ScoreMaker : MonoBehaviour
     [SerializeField] private GameObject _singleBallSelectedPanel;
     [SerializeField] private GameObject _longBallSelectedPanel;
     [SerializeField] private ScoreLine _scoreLinePrefab; 
-    [SerializeField] private ContentSizeFitter _lineContentSizeFitter;
     [SerializeField] private ScrollRect _scoreScrollRect;
-    [SerializeField] private Scrollbar _scoreScrollBar;
     [SerializeField] private Button _playBgmButton;
     [SerializeField] private Button _saveButton;
     [SerializeField] private Button _backButton;
@@ -74,7 +72,7 @@ public class ScoreMaker : MonoBehaviour
             BGMManager.instance.SetTime(lineNumber * _singleBeatTime + _offset);
             foreach (var line in _scoreLineList)
             {
-                line.IsEnd = line.LineNumber * (60f / _bpm) < BGMManager.instance.CurrentTime;
+                line.IsEnd = line.GetLineTime(_bpm, _offset) < BGMManager.instance.CurrentTime;
             }
             BGMManager.instance.Pause();
         });
@@ -259,7 +257,7 @@ public class ScoreMaker : MonoBehaviour
             float anchorY = _scoreAreaBottom - (_scoreLineSpacing + _scoreLineHeight) * currentLineNumber;
             _scoreAreaRect.anchoredPosition = new Vector3(200, anchorY, 0);
             var nextLine = _scoreLineList.FirstOrDefault(l => !l.IsEnd);
-            if (nextLine != null && BGMManager.instance.CurrentTime > nextLine.LineNumber * (60f / _bpm) + _offset - MasterManager.SettingMaster.ScoreMakerNoteTimeBuffer)
+            if (nextLine != null && BGMManager.instance.CurrentTime > nextLine.GetLineTime(_bpm, _offset) - MasterManager.SettingMaster.ScoreMakerNoteTimeBuffer)
             {
                 nextLine.Beat();
                 nextLine.IsEnd = true;
