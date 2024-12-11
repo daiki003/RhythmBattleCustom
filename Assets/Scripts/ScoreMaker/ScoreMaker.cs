@@ -4,7 +4,6 @@ using UnityEngine;
 using R3;
 using UnityEngine.UI;
 using System.Linq;
-using UnityEditor.iOS;
 
 public class ScoreMaker : MonoBehaviour
 {
