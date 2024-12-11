@@ -36,8 +36,7 @@ public class TitleManager : MonoBehaviour
         for (int i = 0; i < _menuButtonList.Count; i++)
         {
             var menuButton = _menuButtonList[i];
-            var button = menuButton.GetComponent<Button>();
-            button.OnClickAsObservable().Subscribe(_ =>
+            menuButton.OnWhenClicked.Subscribe(_ =>
             {
                 DarkeningMenuButton();
                 menuButton.OnClick();

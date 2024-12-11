@@ -4,6 +4,7 @@ using PlayFab.ClientModels;
 using PlayFab.Json;
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
 public class PlayFabController
 {
@@ -227,7 +228,7 @@ public class PlayFabController
         }
     }
 
-    public static void UpdateOverrideScore(StageMaster stageMaster)
+    public static async UniTask UpdateOverrideScore(StageMaster stageMaster)
     {
         string keyName = stageMaster.StageId + "Override";
         var request = new UpdateUserDataRequest()
@@ -238,10 +239,13 @@ public class PlayFabController
             }
         };
 
+        bool isSuccess = false;
         PlayFabClientAPI.UpdateUserData(request, OnSuccess, OnError);
+        await UniTask.WaitUntil(() => isSuccess);
 
         void OnSuccess(UpdateUserDataResult result)
         {
+            isSuccess = true;
             Debug.Log("UpdateStageOverride:" + keyName);
         }
 

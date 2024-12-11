@@ -35,8 +35,8 @@ public class StageMaster
 public static class MasterManager
 {
     public static SettingMaster SettingMaster;
-    public static  List<StageMaster> StageMasterList = new List<StageMaster>();
-    public static  List<StageMaster> OverrideMasterList = new List<StageMaster>();
+    public static List<StageMaster> StageMasterList = new List<StageMaster>();
+    public static List<StageMaster> OverrideMasterList = new List<StageMaster>();
     public static bool FinishGetMaster;
     public static void GetAllMasterData()
 	{
@@ -48,9 +48,18 @@ public static class MasterManager
         StageMasterList.AddRange(stageMasterList);
         PlayFabController.GetPlayerData();
 	}
+    public static void SetOverrideMaster(StageMaster master)
+    {
+        OverrideMasterList.RemoveAll(s => s.StageId == master.StageId);
+        OverrideMasterList.Add(master);
+    }
     public static StageMaster GetStageMaster(string stageId)
     {
-        var overrideMaster = OverrideMasterList.FirstOrDefault(s => s.StageId == stageId);
+        var overrideMaster = GetOverrideStageMaster(stageId);
         return overrideMaster ?? StageMasterList.FirstOrDefault(s => s.StageId == stageId);
+    }
+    public static StageMaster GetOverrideStageMaster(string stageId)
+    {
+        return OverrideMasterList.FirstOrDefault(s => s.StageId == stageId);
     }
 }

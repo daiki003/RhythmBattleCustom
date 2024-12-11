@@ -8,9 +8,25 @@ public class MenuButton : MonoBehaviour
 {
     [SerializeField] private Image _mainImage;
     [SerializeField] private TitlePanelType _buttonType;
+    [SerializeField] private Button _button;
+
     public TitlePanelType ButtonType => _buttonType;
+
     private Color32 _activeButtonColor = new Color32(255, 255, 255, 255);
     private Color32 _nonActiveButtonColor = new Color32(255, 255, 255, 140);
+
+    public Subject<Unit> OnWhenClicked = new Subject<Unit>();
+
+    void Awake()
+    {
+        if (_button != null)
+        {
+            _button.OnClickAsObservable().Subscribe(_ =>
+            {
+                OnWhenClicked.OnNext(default);
+            });
+        }
+    }
 
     public void OnClick()
     {

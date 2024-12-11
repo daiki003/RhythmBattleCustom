@@ -915,6 +915,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _mainImage: {fileID: 163828503}
   _buttonType: 2
+  _button: {fileID: 163828502}
 --- !u!1 &170633301
 GameObject:
   m_ObjectHideFlags: 0
@@ -1248,6 +1249,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _mainImage: {fileID: 237293162}
   _buttonType: 1
+  _button: {fileID: 237293165}
 --- !u!114 &237293165
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1610,6 +1612,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _mainImage: {fileID: 304252508}
   _buttonType: 3
+  _button: {fileID: 304252507}
 --- !u!1 &308117594
 GameObject:
   m_ObjectHideFlags: 0
@@ -2794,6 +2797,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _mainImage: {fileID: 568194058}
   _buttonType: 0
+  _button: {fileID: 568194061}
 --- !u!114 &568194061
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8862,6 +8866,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _mainImage: {fileID: 1633414482}
   _buttonType: 4
+  _button: {fileID: 1633414481}
 --- !u!1 &1640810274
 GameObject:
   m_ObjectHideFlags: 0

@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using R3;
 using UnityEngine.UI;
-using Unity.Collections.LowLevel.Unsafe;
 using System.Linq;
+using UnityEditor.iOS;
 
 public class ScoreMaker : MonoBehaviour
 {
+    [SerializeField] private Transform _dialogTransform;
     [SerializeField] private Transform _scoreLineTransform;
     [SerializeField] private Button _selectSingleBallButton;
     [SerializeField] private Button _selectLongBallButton;
@@ -18,7 +19,7 @@ public class ScoreMaker : MonoBehaviour
     [SerializeField] private Button _playBgmButton;
     [SerializeField] private Button _saveButton;
     [SerializeField] private Button _backButton;
-    [SerializeField] private List<Button> _levelButtonList = new List<Button>();
+    [SerializeField] private List<MenuButton> _levelButtonList = new List<MenuButton>();
 
     [SerializeField] private InputField _bpmInput;
     [SerializeField] private InputField _offsetInput;
@@ -58,15 +59,16 @@ public class ScoreMaker : MonoBehaviour
         });
         _selectSingleBallButton.OnClickAsObservable().Subscribe(ball =>
         {
+            SEManager.instance.PlayBeatSe();
             SwitchBallType(isLong: false);
         });
         _selectLongBallButton.OnClickAsObservable().Subscribe(ball =>
         {
+            SEManager.instance.PlayBeatSe();
             SwitchBallType(isLong: true);
         });
         _playBgmButton.OnClickAsObservable().Subscribe(_ =>
         {
-            // BGMManager.instance.SetTimeByRate(_scoreScrollRect.verticalNormalizedPosition, _offset);
             float posY = _scoreAreaRect.anchoredPosition.y;
             var lineNumber = (_scoreAreaBottom - posY) / (_scoreLineSpacing + _scoreLineHeight);
             BGMManager.instance.SetTime(lineNumber * _singleBeatTime + _offset);
@@ -76,12 +78,19 @@ public class ScoreMaker : MonoBehaviour
             }
             BGMManager.instance.Pause();
         });
-        _saveButton.OnClickAsObservable().Subscribe(_ =>
+        _saveButton.OnClickAsObservable().Subscribe(async _ =>
         {
-            PlayFabController.UpdateOverrideScore(CreateMaster());
+            SEManager.instance.PlayBeatSe();
+            var createdMaster = CreateMaster();
+            await PlayFabController.UpdateOverrideScore(createdMaster);
+            MasterManager.SetOverrideMaster(createdMaster);
+            // ダイアログを出す
+            var dialog = Instantiate(ResourceManager.LoadPrefab("Dialog"), _dialogTransform).GetComponent<Dialog>();
+            dialog.Init("保存しました", "閉じる");
         });
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {
+            SEManager.instance.PlayBeatSe();
             GameManager.instance.GoToTitle();
         });
         _bpmInput.OnEndEditAsObservable().Subscribe(bpm =>
@@ -95,10 +104,18 @@ public class ScoreMaker : MonoBehaviour
         for (int i = 0; i < _levelButtonList.Count; i++)
         {
             int level = i;
-            _levelButtonList[i].OnClickAsObservable().Subscribe(_ =>
+            var button = _levelButtonList[i];
+            button.OnWhenClicked.Subscribe(_ =>
             {
+                DarkeningLevelButton();
+                button.OnClick();
                 ChangeLevel(level);
             });
+            if (i == 2)
+            {
+                DarkeningLevelButton();
+                button.SetLight(true);
+            }
         }
 
         SwitchBallType(isLong: false);
@@ -197,8 +214,7 @@ public class ScoreMaker : MonoBehaviour
         _offsetInput.text = _offset.ToString();
         BGMManager.instance.SetClip(stageId);
         // 初期レベルは2
-        _currentLevel = 2;
-        CreateLine();
+        ChangeLevel(2);
         BGMManager.instance.Play();
     }
 
@@ -247,6 +263,14 @@ public class ScoreMaker : MonoBehaviour
         }
         newMaster.notes[2] = noteList;
         return newMaster;
+    }
+
+    private void DarkeningLevelButton()
+    {
+        for (int i = 0; i < _levelButtonList.Count; i++)
+        {
+            _levelButtonList[i].SetLight(false);
+        }
     }
 
     void Update()
