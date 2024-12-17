@@ -30,6 +30,23 @@ public class StageMaster
     public int LPB;
     public float NoteTimeOffset;
     public List<List<NoteMaster>> notes = new List<List<NoteMaster>>();
+    public StageMaster CreateCopy()
+    {
+        var noteList = new List<List<NoteMaster>>();
+        foreach (var note in notes)
+        {
+            noteList.Add(new List<NoteMaster>(note));
+        }
+        noteList.Add(new List<NoteMaster>(notes[0]));
+        return new StageMaster()
+        {
+            StageId = StageId,
+            BPM = BPM,
+            LPB = LPB,
+            NoteTimeOffset = NoteTimeOffset,
+            notes = noteList
+        };
+    }
 }
 
 public static class MasterManager

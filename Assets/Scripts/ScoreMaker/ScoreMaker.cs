@@ -18,7 +18,7 @@ public class ScoreMaker : MonoBehaviour
     [SerializeField] private Button _playBgmButton;
     [SerializeField] private Button _saveButton;
     [SerializeField] private Button _backButton;
-    [SerializeField] private List<MenuButton> _levelButtonList = new List<MenuButton>();
+    [SerializeField] private List<MenuButton> _levelButtonList = new();
 
     [SerializeField] private InputField _bpmInput;
     [SerializeField] private InputField _offsetInput;
@@ -26,13 +26,12 @@ public class ScoreMaker : MonoBehaviour
     [SerializeField] private RectTransform _scoreAreaRect;
     [SerializeField] private Transform _ballLineTransform;
 
-    private StageMaster _currentOriginalStageMaster;
-    private List<ScoreLine> _scoreLineList = new List<ScoreLine>();
+    private StageMaster _currentStageMaster;
+    private List<ScoreLine> _scoreLineList = new();
 
     private const float _scoreAreaBottom = -1500f;
     private const float _scoreLineSpacing = 150f;
     private const float _scoreLineHeight = 15f;
-
 
     public enum ScoreMakerBallType
     {
@@ -41,8 +40,8 @@ public class ScoreMaker : MonoBehaviour
         Long
     }
     private ScoreMakerBallType _currentSelectBallType;
-    private float _bpm = 520f;
-    private float _offset = 0f;
+    private float _bpm => _currentStageMaster != null ? _currentStageMaster.BPM : 520f;
+    private float _offset => _currentStageMaster != null ? _currentStageMaster.NoteTimeOffset : 0f;
     private float _singleBeatTime => 60f / _bpm;
     private int _currentLevel;
 
@@ -80,9 +79,10 @@ public class ScoreMaker : MonoBehaviour
         _saveButton.OnClickAsObservable().Subscribe(async _ =>
         {
             SEManager.instance.PlayBeatSe();
-            var createdMaster = CreateMaster();
-            await PlayFabController.UpdateOverrideScore(createdMaster);
-            MasterManager.SetOverrideMaster(createdMaster);
+            // 現在のレベルの譜面を保存
+            _currentStageMaster.notes[_currentLevel] = CreateNoteList();
+            await PlayFabController.UpdateOverrideScore(_currentStageMaster);
+            MasterManager.SetOverrideMaster(_currentStageMaster);
             // ダイアログを出す
             var dialog = Instantiate(ResourceManager.LoadPrefab("Dialog"), _dialogTransform).GetComponent<Dialog>();
             dialog.Init("保存しました", "閉じる");
@@ -94,11 +94,11 @@ public class ScoreMaker : MonoBehaviour
         });
         _bpmInput.OnEndEditAsObservable().Subscribe(bpm =>
         {
-            _bpm = float.Parse(bpm);
+            _currentStageMaster.BPM = float.Parse(bpm);
         });
         _offsetInput.OnEndEditAsObservable().Subscribe(offset =>
         {
-            _offset = float.Parse(offset);
+            _currentStageMaster.NoteTimeOffset = float.Parse(offset);
         });
         for (int i = 0; i < _levelButtonList.Count; i++)
         {
@@ -130,7 +130,7 @@ public class ScoreMaker : MonoBehaviour
             Destroy(destroyLine.gameObject);
         }
 
-        var masterList = _currentOriginalStageMaster.notes[_currentLevel];
+        var masterList = _currentStageMaster.notes[_currentLevel];
         int lineNumber = (int)(_bpm * (BGMManager.instance.CurrentClipLength / 60f));
         // ライン作成
         for (int i = 0; i < lineNumber; i++)
@@ -206,19 +206,22 @@ public class ScoreMaker : MonoBehaviour
     public void StartMake(string stageId)
     {
         _scoreScrollRect.verticalNormalizedPosition = 0;
-        _currentOriginalStageMaster = MasterManager.GetStageMaster(stageId);
-        _bpm = _currentOriginalStageMaster.BPM;
-        _offset = _currentOriginalStageMaster.NoteTimeOffset;
+        _currentStageMaster = MasterManager.GetStageMaster(stageId).CreateCopy();
         _bpmInput.text = _bpm.ToString();
         _offsetInput.text = _offset.ToString();
         BGMManager.instance.SetClip(stageId);
         // 初期レベルは2
-        ChangeLevel(2);
+        _currentLevel = 2;
+        CreateLine();
         BGMManager.instance.Play();
     }
 
     private void ChangeLevel(int level)
     {
+        // 現在のレベルの譜面を保存
+        _currentStageMaster.notes[_currentLevel] = CreateNoteList();
+
+        // レベル更新
         _currentLevel = level;
         BGMManager.instance.Pause(forcePause: true);
         CreateLine();
@@ -236,16 +239,8 @@ public class ScoreMaker : MonoBehaviour
         _longBallSelectedPanel.SetActive(isLong);
     }
 
-    public StageMaster CreateMaster()
+    public List<NoteMaster> CreateNoteList()
     {
-        var newMaster = new StageMaster()
-        {
-            StageId = _currentOriginalStageMaster.StageId,
-            BPM = _bpm,
-            LPB = _currentOriginalStageMaster.LPB,
-            NoteTimeOffset = _offset,
-            notes = _currentOriginalStageMaster.notes,
-        };
         var noteList = new List<NoteMaster>();
         foreach (var line in _scoreLineList)
         {
@@ -260,8 +255,7 @@ public class ScoreMaker : MonoBehaviour
                 noteList.Add(rightMaster);
             }
         }
-        newMaster.notes[2] = noteList;
-        return newMaster;
+        return noteList;
     }
 
     private void DarkeningLevelButton()

@@ -36,7 +36,6 @@ public class ScoreLine : MonoBehaviour
     {
         if (_leftPocket.InstalledBall != null || _rightPocket.InstalledBall != null)
         {
-            Debug.Log("打刻時間:" + BGMManager.instance.CurrentTime);
             SEManager.instance.PlayBeatSe();
         }
     }

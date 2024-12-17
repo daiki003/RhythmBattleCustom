@@ -479,7 +479,6 @@ public class GameManager : MonoBehaviour
     {
         if (_lastBeatTime != ball.CriticalTime)
         {
-            Debug.Log("打刻時間:" + BGMManager.instance.CurrentTime);
             SEManager.instance.PlayBeatSe();
         }
         _lastBeatTime = ball.CriticalTime;
