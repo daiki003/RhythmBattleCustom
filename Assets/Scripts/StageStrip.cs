@@ -9,21 +9,27 @@ using UnityEngine.UI;
 public class StageStrip : MonoBehaviour
 {
     [SerializeField] private Image _enemyImage;
+    [SerializeField] private Text _titleText;
     [SerializeField] private Button _startButton;
     [SerializeField] private Text _scoreText;
-    [SerializeField] private Text _comboText;
     [SerializeField] private Text _criticalText;
     [SerializeField] private Text _hitText;
     [SerializeField] private Text _missText;
+    [SerializeField] private ButtonWithBacklight _bgmButton;
+    public ButtonWithBacklight BgmButton => _bgmButton;
 
     private string _stageId;
     private int _level;
     private bool _isScoreMaker;
+    private bool _isBgmPlaying;
+
+    public Subject<(string stageId, bool isPlay)> OnClickedBgmButton { get; private set; } = new Subject<(string, bool)>();
 
     public void Init(string stageId, int level, bool isScoreMaker = false)
     {
         var enemySprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + stageId);
         _enemyImage.sprite = enemySprite;
+        _titleText.text = stageId;
         _stageId = stageId;
         _level = level;
         _isScoreMaker = isScoreMaker;
@@ -31,13 +37,19 @@ public class StageStrip : MonoBehaviour
         {
             if (_isScoreMaker)
             {
-                GameManager.instance.GoToScoreMaker(_stageId);
+                GameManager.instance.StartScoreMaker(_stageId);
             }
             else
             {
                 await StartBattle(_stageId, _level);
             }
-        });
+        }).AddTo(this);
+        _bgmButton.Button.OnClickAsObservable().Subscribe(_ =>
+        {
+            _isBgmPlaying = !_isBgmPlaying; 
+            OnClickedBgmButton.OnNext((_stageId, _isBgmPlaying));
+        }).AddTo(this);
+        _bgmButton.SetBacklight(false);
         UpdateScore();
     }
 
@@ -49,7 +61,6 @@ public class StageStrip : MonoBehaviour
             return;
         }
         _scoreText.text = FloatUtility.RoundDown(clearState.Score, 2).ToString();
-        _comboText.text = clearState.Combo.ToString();
         _criticalText.text = clearState.CriticalNumber.ToString();
         _hitText.text = clearState.HitNumber.ToString();
         _missText.text = clearState.MissNumber.ToString();

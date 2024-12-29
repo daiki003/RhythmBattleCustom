@@ -11,15 +11,12 @@ using UnityEngine.UI;
 
 public class LongBall : MonoBehaviour
 {
-    [SerializeField] private Image _ballImage;
     [SerializeField] private SingleBall _startBall;
     [SerializeField] private SingleBall _endBall;
     [SerializeField] private LineRenderer _lineRenderer;
     public SingleBall StartBall => _startBall;
     public SingleBall EndBall => _endBall;
-    public LineRenderer LineRenderer => _lineRenderer;
 
-    public bool IsEndBallLaunched;
     public bool IsStartBallClicked;
 
     private const float _lineWidth = 0.2f;

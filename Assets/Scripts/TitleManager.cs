@@ -18,6 +18,7 @@ public enum TitlePanelType
 public class TitleManager : MonoBehaviour
 {
     [SerializeField] private Text _totalScoreText;
+    [SerializeField] private Text _titleText;
     [SerializeField] private StageStrip _stageStripPrefab;
     [SerializeField] private List<Transform> _stripTransformList;
     [SerializeField] private Transform _scoreMakerTransform;
@@ -27,7 +28,9 @@ public class TitleManager : MonoBehaviour
     [SerializeField] private GameObject _Level3Panel;
     [SerializeField] private GameObject _scoreMakerPanel;
 
-    private List<GameObject> _stripList = new List<GameObject>();
+    private const string _titleBgmName = "WanderersCity";
+
+    private List<StageStrip> _stripList = new List<StageStrip>();
 
     public void Init()
     {
@@ -48,6 +51,8 @@ public class TitleManager : MonoBehaviour
                 SetLevelPanel(menuButton.ButtonType);
             }
         }
+        BGMManager.instance.SetClip(_titleBgmName, isLoop: true);
+        BGMManager.instance.Play();
     }
 
     public void RecreateStrip()
@@ -58,23 +63,38 @@ public class TitleManager : MonoBehaviour
             for (int j = 0; j < 3; j++)
             {
                 var strip = Instantiate(_stageStripPrefab, _stripTransformList[j]);
-                _stripList.Add(strip.gameObject);
+                _stripList.Add(strip);
                 strip.Init(MasterManager.StageMasterList[i].StageId, j);
+                strip.OnClickedBgmButton.Subscribe(x =>
+                {
+                    ResetBgmButtonBacklight();
+                    BGMManager.instance.SetClip(x.isPlay ? x.stageId : _titleBgmName);
+                    BGMManager.instance.Play();
+                    strip.BgmButton.SetBacklight(x.isPlay);
+                });
             }
             var scoreMakerStrip = Instantiate(_stageStripPrefab, _scoreMakerTransform);
-            _stripList.Add(scoreMakerStrip.gameObject);
+            _stripList.Add(scoreMakerStrip);
             scoreMakerStrip.Init(MasterManager.StageMasterList[i].StageId, 2, isScoreMaker: true);
         }
         _totalScoreText.text = SaveDataManager.GetTotalScore().ToString();
+    }
+
+    private void ResetBgmButtonBacklight()
+    {
+        foreach (var strip in _stripList)
+        {
+            strip.BgmButton.SetBacklight(false);
+        }
     }
 
     public void DestroyAllStrip()
     {
         while (_stripList.Count > 0)
         {
-            var gameObject = _stripList[0];
+            var strip = _stripList[0];
             _stripList.RemoveAt(0);
-            Destroy(gameObject);
+            Destroy(strip.gameObject);
         }
     }
 
@@ -92,5 +112,23 @@ public class TitleManager : MonoBehaviour
         _Level2Panel.SetActive(titlePanelType == TitlePanelType.Level2);
         _Level3Panel.SetActive(titlePanelType == TitlePanelType.Level3);
         _scoreMakerPanel.SetActive(titlePanelType == TitlePanelType.ScoreMaker);
+        _titleText.text = GetTitleText(titlePanelType);
+    }
+
+    private string GetTitleText(TitlePanelType titlePanelType)
+    {
+        switch (titlePanelType)
+        {
+            case TitlePanelType.Level1:
+                return "レベル1";
+            case TitlePanelType.Level2:
+                return "レベル2";
+            case TitlePanelType.Level3:
+                return "レベル3";
+            case TitlePanelType.ScoreMaker:
+                return "譜面作成";
+            default:
+                return "";
+        }
     }
 }

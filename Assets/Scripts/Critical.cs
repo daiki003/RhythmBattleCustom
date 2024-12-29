@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using Unity.VisualScripting;
@@ -13,7 +14,7 @@ public class Critical : MonoBehaviour
     private const float _fadeOutTime = 0.3f;
     private const float _liveTime = 0.5f;
 
-    public async UniTask InitAndStart(HitType hitType)
+    public async UniTask InitAndStart(HitType hitType, CancellationToken token)
     {
         switch (hitType)
         {
@@ -35,9 +36,9 @@ public class Critical : MonoBehaviour
         }
 
         transform.localScale = Vector3.zero;
-        await transform.DOScale(1, _fadeInTime);
-        await UniTask.WaitForSeconds(_liveTime);
-        await transform.DOScale(0, _fadeOutTime);
+        await transform.DOScale(1, _fadeInTime).ToUniTask(cancellationToken: token);
+        await UniTask.WaitForSeconds(_liveTime, cancellationToken: token);
+        await transform.DOScale(0, _fadeOutTime).ToUniTask(cancellationToken: token);
         Destroy(gameObject);
     }
 

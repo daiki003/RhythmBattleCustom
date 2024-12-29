@@ -50,21 +50,17 @@ public class ScoreMaker : MonoBehaviour
         GameManager.instance.ClickHandler.OnClickScoreLine.Subscribe(x =>
         {
             CreateBall(x.number, x.isLeft, _currentSelectBallType);
-        });
-        GameManager.instance.ClickHandler.OnDragSingleBall.Subscribe(ball =>
-        {
-            
-        });
+        }).AddTo(this);
         _selectSingleBallButton.OnClickAsObservable().Subscribe(ball =>
         {
             SEManager.instance.PlayBeatSe();
             SwitchBallType(isLong: false);
-        });
+        }).AddTo(this);
         _selectLongBallButton.OnClickAsObservable().Subscribe(ball =>
         {
             SEManager.instance.PlayBeatSe();
             SwitchBallType(isLong: true);
-        });
+        }).AddTo(this);
         _playBgmButton.OnClickAsObservable().Subscribe(_ =>
         {
             float posY = _scoreAreaRect.anchoredPosition.y;
@@ -75,7 +71,7 @@ public class ScoreMaker : MonoBehaviour
                 line.IsEnd = line.GetLineTime(_bpm, _offset) < BGMManager.instance.CurrentTime;
             }
             BGMManager.instance.Pause();
-        });
+        }).AddTo(this);
         _saveButton.OnClickAsObservable().Subscribe(async _ =>
         {
             SEManager.instance.PlayBeatSe();
@@ -91,15 +87,15 @@ public class ScoreMaker : MonoBehaviour
         {
             SEManager.instance.PlayBeatSe();
             GameManager.instance.GoToTitle();
-        });
+        }).AddTo(this);
         _bpmInput.OnEndEditAsObservable().Subscribe(bpm =>
         {
             _currentStageMaster.BPM = float.Parse(bpm);
-        });
+        }).AddTo(this);
         _offsetInput.OnEndEditAsObservable().Subscribe(offset =>
         {
             _currentStageMaster.NoteTimeOffset = float.Parse(offset);
-        });
+        }).AddTo(this);
         for (int i = 0; i < _levelButtonList.Count; i++)
         {
             int level = i;

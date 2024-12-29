@@ -13,10 +13,7 @@ public class ClickHandler
     public Subject<bool> OnReleaseButton = new Subject<bool>();
     public Subject<int> OnUpdateTouchCount = new Subject<int>();
     public Subject<(int number, bool isLeft)> OnClickScoreLine = new Subject<(int number, bool isLeft)>();
-    public Subject<SingleBall> OnDragSingleBall = new Subject<SingleBall>();
-    public Subject<SingleBall> OnReleaseSingleBall = new Subject<SingleBall>();
 
-    private SingleBall _movingBall;
     private Vector3 _startClickPosition;
     private const float _moveDiff = 5f;
 
