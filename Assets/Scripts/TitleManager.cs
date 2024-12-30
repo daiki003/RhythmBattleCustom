@@ -27,6 +27,8 @@ public class TitleManager : MonoBehaviour
     [SerializeField] private GameObject _Level2Panel;
     [SerializeField] private GameObject _Level3Panel;
     [SerializeField] private GameObject _scoreMakerPanel;
+    [SerializeField] private GameObject _settingPanel;
+    [SerializeField] private InputField _offsetSetting;
 
     private const string _titleBgmName = "WanderersCity";
 
@@ -53,6 +55,11 @@ public class TitleManager : MonoBehaviour
         }
         BGMManager.instance.SetClip(_titleBgmName, isLoop: true);
         BGMManager.instance.Play();
+        _offsetSetting.text = GameManager.instance.SettingOffset.ToString();
+        _offsetSetting.onValueChanged.AddListener(x =>
+        {
+            GameManager.instance.SettingOffset = float.Parse(x);
+        });
     }
 
     public void RecreateStrip()
@@ -112,6 +119,7 @@ public class TitleManager : MonoBehaviour
         _Level2Panel.SetActive(titlePanelType == TitlePanelType.Level2);
         _Level3Panel.SetActive(titlePanelType == TitlePanelType.Level3);
         _scoreMakerPanel.SetActive(titlePanelType == TitlePanelType.ScoreMaker);
+        _settingPanel.SetActive(titlePanelType == TitlePanelType.Setting);
         _titleText.text = GetTitleText(titlePanelType);
     }
 
@@ -127,6 +135,8 @@ public class TitleManager : MonoBehaviour
                 return "レベル3";
             case TitlePanelType.ScoreMaker:
                 return "譜面作成";
+            case TitlePanelType.Setting:
+                return "設定";
             default:
                 return "";
         }

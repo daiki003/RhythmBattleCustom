@@ -32,6 +32,7 @@ public class GameManager : MonoBehaviour
 
     private ClickHandler _clickHandler;
     public ClickHandler ClickHandler => _clickHandler;
+    public float SettingOffset;
 
     private const string _titlePrefab = "Prefabs/TitlePanel";
     private const string _battlePrefabPath = "Prefabs/BattlePanel";

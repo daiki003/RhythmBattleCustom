@@ -40,8 +40,8 @@ public class ScoreMaker : MonoBehaviour
         Long
     }
     private ScoreMakerBallType _currentSelectBallType;
-    private float _bpm => _currentStageMaster != null ? _currentStageMaster.BPM : 520f;
-    private float _offset => _currentStageMaster != null ? _currentStageMaster.NoteTimeOffset : 0f;
+    private float _bpm => _currentStageMaster?.BPM ?? 520f;
+    private float _offset => _currentStageMaster?.NoteTimeOffset + GameManager.instance.SettingOffset ?? GameManager.instance.SettingOffset;
     private float _singleBeatTime => 60f / _bpm;
     private int _currentLevel;
 

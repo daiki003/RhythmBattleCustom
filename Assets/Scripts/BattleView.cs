@@ -123,7 +123,7 @@ public class BattleView : MonoBehaviour
     private float CalcNoteTime(NoteMaster noteMaster, StageMaster stageMaster)
     {
         int noteNumber = noteMaster.num * (stageMaster.LPB / noteMaster.lpb);
-        return noteNumber * (60f / stageMaster.BPM) + stageMaster.NoteTimeOffset;
+        return noteNumber * (60f / stageMaster.BPM) + stageMaster.NoteTimeOffset + GameManager.instance.SettingOffset;
     }
 
     public void CreateBalls(List<NoteMaster> notes, StageMaster stageMaster, float startTime = 0f)
