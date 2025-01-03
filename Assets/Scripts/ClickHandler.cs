@@ -108,21 +108,18 @@ public class ClickHandler
 #if UNITY_EDITOR
                 position = Input.mousePosition;
 #else
-                Debug.Log("チェック1: " + touch.position);
                 position = touch.position;
 #endif
 
                 if (isClick)
                 {
-                    Debug.Log("チェック2");
                     _startClickPosition = Input.mousePosition;
                 }
                 else
                 {
                     if (!IsMovePosition(position))
                     {
-                        var pocket = GetTargetComponent<LinePocket>();
-                        Debug.Log("チェック3: " + pocket);
+                        var pocket = GetTargetComponent<LinePocket>(touch);
                         OnClickScoreLine.OnNext((pocket.Number, pocket.IsLeft));
                     }
                 }
