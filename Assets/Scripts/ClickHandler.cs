@@ -7,11 +7,26 @@ using UnityEngine.EventSystems;
 using System.Linq;
 using UnityEngine.UI;
 
+public enum PositionType
+{
+    None,
+    LeftButton,
+    RightButton,
+    LinePocket,
+    Line,
+}
+
+public enum ClickType
+{
+    None,
+    Click,
+    Release,
+}
+
 public class ClickHandler
 {
     public Subject<bool> OnClickButton = new Subject<bool>();
     public Subject<bool> OnReleaseButton = new Subject<bool>();
-    public Subject<int> OnUpdateTouchCount = new Subject<int>();
     public Subject<(int number, bool isLeft)> OnClickScoreLine = new Subject<(int number, bool isLeft)>();
 
     private Vector3 _startClickPosition;
@@ -20,41 +35,10 @@ public class ClickHandler
     public void Update()
     {
 #if UNITY_EDITOR
-        // Unity上ではタッチ操作ができないのでこちら
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (IsOnTargetTag("LeftButton"))
-            {
-                OnClickButton.OnNext(true);
-            }
-            if (IsOnTargetTag("RightButton"))
-            {
-                OnClickButton.OnNext(false);
-            }
-            if (IsOnTargetTag("LinePocket"))
-            {
-                _startClickPosition = Input.mousePosition;
-            }
-        }
-        if (Input.GetMouseButtonUp(0))
-        {
-            if (IsOnTargetTag("LeftButton"))
-            {
-                OnReleaseButton.OnNext(true);
-            }
-            if (IsOnTargetTag("RightButton"))
-            {
-                OnReleaseButton.OnNext(false);
-            }
-            if (IsOnTargetTag("LinePocket"))
-            {
-                if (!IsMovePosition(Input.mousePosition))
-                {
-                    var pocket = GetTargetComponent<LinePocket>();
-                    OnClickScoreLine.OnNext((pocket.Number, pocket.IsLeft));
-                }
-            }
-        }
+        // PCの場合
+        ClickAction();
+
+        // キーの検知
         if (Input.GetKeyDown(KeyCode.V))
         {
             OnClickButton.OnNext(true);
@@ -71,60 +55,120 @@ public class ClickHandler
         {
             OnReleaseButton.OnNext(false);
         }
-#endif
-
+#else
+        // スマホの場合
         var touchCount = Input.touchCount;
-        OnUpdateTouchCount.OnNext(touchCount);
         for (var i = 0; i < touchCount; i++)
         {
             var touch = Input.GetTouch(i);
-            switch (touch.phase)
-            {
-                case TouchPhase.Began:
-                    if (IsOnTargetTag("LeftButton", touch))
-                    {
-                        OnClickButton.OnNext(true);
-                    }
-                    if (IsOnTargetTag("RightButton", touch))
-                    {
-                        OnClickButton.OnNext(false);
-                    }
-                    if (IsOnTargetTag("LinePocket", touch))
-                    {
-                        _startClickPosition = Input.mousePosition;
-                    }
-                    break;
-                case TouchPhase.Moved:
-                    break;
-                case TouchPhase.Stationary:
-                    // 指が画面に触れているが動いてはいない時に行いたい処理をここに書く
-                    break;
-                case TouchPhase.Ended:
-                    // 画面から指が離れた時に行いたい処理をここに書く
-                    if (IsOnTargetTag("LeftButton", touch))
-                    {
-                        OnReleaseButton.OnNext(true);
-                    }
-                    if (IsOnTargetTag("RightButton", touch))
-                    {
-                        OnReleaseButton.OnNext(false);
-                    }
-                    if (IsOnTargetTag("LinePocket", touch))
-                    {
-                        if (!IsMovePosition(touch.position))
-                        {
-                            var pocket = GetTargetComponent<LinePocket>(touch);
-                            OnClickScoreLine.OnNext((pocket.Number, pocket.IsLeft));
-                        }
-                    }
-                    break;
-                case TouchPhase.Canceled:
-                    // システムがタッチの追跡をキャンセルした時に行いたい処理をここに書く
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            ClickAction(touch);
         }
+#endif
+    }
+
+    private void ClickAction(Touch touch = default)
+    {
+        var clickType = GetClickType(touch);
+        // クリックしていなければ何もしない
+        if (clickType == ClickType.None)
+        {
+            return;
+        }
+
+        // スワイプは考慮しない
+        bool isClick = clickType == ClickType.Click;
+        var clickPosition = GetClickPosition(touch);
+        switch (clickPosition)
+        {
+            // 演奏中左ボタン
+            case PositionType.LeftButton:
+                if (isClick)
+                {
+                    OnClickButton.OnNext(true);
+                }
+                else
+                {
+                    OnReleaseButton.OnNext(true);
+                }
+                break;
+            // 演奏中右ボタン
+            case PositionType.RightButton:
+                if (isClick)
+                {
+                    OnClickButton.OnNext(false);
+                }
+                else
+                {
+                    OnReleaseButton.OnNext(false);
+                }
+                break;
+            // 作成中ポケット
+            case PositionType.LinePocket:
+                if (isClick)
+                {
+                    _startClickPosition = Input.mousePosition;
+                }
+                else
+                {
+                    if (!IsMovePosition(Input.mousePosition))
+                    {
+                        var pocket = GetTargetComponent<LinePocket>();
+                        OnClickScoreLine.OnNext((pocket.Number, pocket.IsLeft));
+                    }
+                }
+                break;
+        }
+    }
+
+    // クリック位置の取得
+    private PositionType GetClickPosition(Touch touch = default)
+    {
+        if (IsOnTargetTag("LeftButton", touch))
+        {
+            return PositionType.LeftButton;
+        }
+        if (IsOnTargetTag("RightButton", touch))
+        {
+            return PositionType.RightButton;
+        }
+        if (IsOnTargetTag("LinePocket", touch))
+        {
+            return PositionType.LinePocket;
+        }
+        return PositionType.None;
+    }
+
+    // クリックの状態を取得
+    private ClickType GetClickType(Touch touch)
+    {
+#if UNITY_EDITOR
+        if (Input.GetMouseButtonDown(0))
+        {
+            return ClickType.Click;
+        }
+        if (Input.GetMouseButtonUp(0))
+        {
+            return ClickType.Release;
+        }
+#else
+        switch (touch.phase)
+        {
+            case TouchPhase.Began:
+                return ClickType.Click;
+            case TouchPhase.Ended:
+                return ClickType.Release;
+            // 以下未使用
+            case TouchPhase.Moved:
+            case TouchPhase.Stationary:
+                // 指が画面に触れているが動いてはいない時に行いたい処理をここに書く
+            case TouchPhase.Canceled:
+                // システムがタッチの追跡をキャンセルした時に行いたい処理をここに書く
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+#endif
+        return ClickType.None;
     }
 
     private List<RaycastResult> GetRaycastResults(Vector2 touchPosition)
@@ -153,15 +197,21 @@ public class ClickHandler
 		return returnResults;
 	}
 
-    public bool IsOnTargetTag(string tagName)
+    public bool IsOnTargetTag(string tagName, Touch touch = default)
 	{
-		return GetRaycastResults(Input.mousePosition).Any(r => r.gameObject.CompareTag(tagName));
+		return GetTagNames(touch).Any(n => n == tagName);
 	}
 
-    public bool IsOnTargetTag(string tagName, Touch touch)
-	{
-		return GetRaycastResults(touch.position).Any(r => r.gameObject.CompareTag(tagName));
-	}
+    public List<string> GetTagNames(Touch touch = default)
+    {
+        List<RaycastResult> results;
+#if UNITY_EDITOR
+        results = GetRaycastResults(Input.mousePosition);
+#else
+        results = GetRaycastResults(touch.position);
+#endif
+        return results.Select(r => r.gameObject.tag).ToList();
+    }
 
     public bool IsMovePosition(Vector3 currentPosition)
     {
