@@ -6,35 +6,23 @@ using UnityEngine;
 
 public class ScoreMakerBallLine : MonoBehaviour
 {
-    [SerializeField] private LineRenderer _lineRenderer;
-    private ScoreMakerBall _headBall;
-    private ScoreMakerBall _lastBall;
+    [SerializeField] private RectTransform _rectTransform;
 
-    private const float _lineWidth = 0.2f;
+    private const float _scoreLineSpacing = 150f;
+    private const float _scoreLineHeight = 15f;
 
     public void Init(ScoreMakerBall headBall, ScoreMakerBall lastBall)
     {
-        //線の幅を決める
-        _lineRenderer.startWidth = _lineWidth;
-        _lineRenderer.endWidth = _lineWidth;
+        transform.SetParent(headBall.transform.parent);
+        transform.localScale = Vector3.one;
+        headBall.AttachLine(this, lastBall, isLast: false);
+        lastBall.AttachLine(this, headBall, isLast: true);
 
-        //頂点の数を決める
-        _lineRenderer.positionCount = 2;
-
-        _headBall = headBall;
-        _lastBall = lastBall;
-        _headBall.AttachLine(this, _lastBall, isLast: false);
-        _lastBall.AttachLine(this, _headBall, isLast: true);
-        _lineRenderer.SetPosition(0, _headBall.transform.position);
-        _lineRenderer.SetPosition(1, _lastBall.transform.position);
-    }
-
-    void Update()
-    {
-        if (_headBall != null && _lastBall != null)
-        {
-            _lineRenderer.SetPosition(0, _headBall.transform.position);
-            _lineRenderer.SetPosition(1, _lastBall.transform.position);
-        }
+        // 線の下端をボールの位置に合わせる
+        _rectTransform.anchoredPosition = new Vector2(headBall.transform.position.x, headBall.transform.position.y);
+        // 線の長さをボール間の距離に合わせる
+        var sd = GetComponent<RectTransform>().sizeDelta;
+        sd.y = (_scoreLineSpacing + _scoreLineHeight) * Mathf.Abs(headBall.LineNumber - lastBall.LineNumber);
+        GetComponent<RectTransform>().sizeDelta = sd;
     }
 }

@@ -271,7 +271,6 @@ public class BattleView : MonoBehaviour
                 }
             }
         }
-        GameManager.instance.ClickHandler.Update();
     }
 
     public void StartResult(ClearState clearState, ClearState highScoreClearState, float criticalMultiple, float hitMultiple, float missMultiple)

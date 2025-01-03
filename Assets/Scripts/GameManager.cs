@@ -57,6 +57,11 @@ public class GameManager : MonoBehaviour
         GameStart().Forget();
     }
 
+    void Update()
+    {
+        _clickHandler.Update();
+    }
+
     public void SetLoadPanel(bool isActive)
     {
         _loadPanel.SetActive(isActive);

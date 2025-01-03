@@ -9,13 +9,10 @@ public class ScoreMaker : MonoBehaviour
 {
     [SerializeField] private Transform _dialogTransform;
     [SerializeField] private Transform _scoreLineTransform;
-    [SerializeField] private Button _selectSingleBallButton;
-    [SerializeField] private Button _selectLongBallButton;
     [SerializeField] private GameObject _singleBallSelectedPanel;
     [SerializeField] private GameObject _longBallSelectedPanel;
     [SerializeField] private ScoreLine _scoreLinePrefab; 
     [SerializeField] private ScrollRect _scoreScrollRect;
-    [SerializeField] private Button _playBgmButton;
     [SerializeField] private Button _saveButton;
     [SerializeField] private Button _backButton;
     [SerializeField] private List<MenuButton> _levelButtonList = new();
@@ -24,7 +21,21 @@ public class ScoreMaker : MonoBehaviour
     [SerializeField] private InputField _offsetInput;
 
     [SerializeField] private RectTransform _scoreAreaRect;
-    [SerializeField] private Transform _ballLineTransform;
+
+    // コントロールパネル関連
+    [SerializeField] private GameObject _controllPanelPage1;
+    [SerializeField] private GameObject _controllPanelPage2;
+    [SerializeField] private Button _playBgmButton;
+    [SerializeField] private Button _selectSingleBallButton;
+    [SerializeField] private Button _selectLongBallButton;
+    [SerializeField] private Button _copyButton;
+    [SerializeField] private Button _pasteButton;
+    [SerializeField] private Button _nextPageButton;
+    [SerializeField] private Button _backPageButton;
+    [SerializeField] private GameObject _messageMask;
+    [SerializeField] private Text _messageText;
+
+    [SerializeField] private Button _cancelButton;
 
     private StageMaster _currentStageMaster;
     private List<ScoreLine> _scoreLineList = new();
@@ -96,6 +107,40 @@ public class ScoreMaker : MonoBehaviour
         {
             _currentStageMaster.NoteTimeOffset = float.Parse(offset);
         }).AddTo(this);
+
+        // コントロールパネル内のページ送りボタン
+        OnClickControllPanelPageButton(isNext: false);
+        _nextPageButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            SEManager.instance.PlayBeatSe();
+            OnClickControllPanelPageButton(isNext: true);
+        }).AddTo(this);
+        _backPageButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            SEManager.instance.PlayBeatSe();
+            OnClickControllPanelPageButton(isNext: false);
+        }).AddTo(this);
+
+        // コピー、ペーストボタン
+        _messageMask.gameObject.SetActive(false);
+        _copyButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            SEManager.instance.PlayBeatSe();
+            _messageText.text = "コピーする範囲を選択してください";
+            _messageMask.gameObject.SetActive(true);
+        }).AddTo(this);
+        _pasteButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            SEManager.instance.PlayBeatSe();
+            _messageText.text = "貼り付け先の最初の列を選択してください";
+            _messageMask.gameObject.SetActive(true);
+        }).AddTo(this);
+        _cancelButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            _messageMask.gameObject.SetActive(false);
+        }).AddTo(this);
+
+        // レベルボタン初期化
         for (int i = 0; i < _levelButtonList.Count; i++)
         {
             int level = i;
@@ -114,6 +159,12 @@ public class ScoreMaker : MonoBehaviour
         }
 
         SwitchBallType(isLong: false);
+    }
+
+    private void OnClickControllPanelPageButton(bool isNext)
+    {
+        _controllPanelPage1.SetActive(!isNext);
+        _controllPanelPage2.SetActive(isNext);
     }
 
     private void CreateLine()
@@ -172,7 +223,7 @@ public class ScoreMaker : MonoBehaviour
             if (pairBall != null)
             {
                 var linePrefab = ResourceManager.LoadPrefab("ScoreMakerBallLine");
-                var line = Instantiate(linePrefab, _ballLineTransform).GetComponent<ScoreMakerBallLine>();
+                var line = Instantiate(linePrefab).GetComponent<ScoreMakerBallLine>();
                 line.Init(isHead ? createdBall : pairBall, isHead ? pairBall : createdBall);
             }
         }

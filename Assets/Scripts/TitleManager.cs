@@ -67,24 +67,28 @@ public class TitleManager : MonoBehaviour
         DestroyAllStrip();
         for (int i = 0; i < MasterManager.StageMasterList.Count; i++)
         {
+            string stageId = MasterManager.StageMasterList[i].StageId;
             for (int j = 0; j < 3; j++)
             {
-                var strip = Instantiate(_stageStripPrefab, _stripTransformList[j]);
-                _stripList.Add(strip);
-                strip.Init(MasterManager.StageMasterList[i].StageId, j);
-                strip.OnClickedBgmButton.Subscribe(x =>
-                {
-                    ResetBgmButtonBacklight();
-                    BGMManager.instance.SetClip(x.isPlay ? x.stageId : _titleBgmName);
-                    BGMManager.instance.Play();
-                    strip.BgmButton.SetBacklight(x.isPlay);
-                });
+                CreateStageStrip(stageId, j, isScoreMaker: false, _stripTransformList[j]);
             }
-            var scoreMakerStrip = Instantiate(_stageStripPrefab, _scoreMakerTransform);
-            _stripList.Add(scoreMakerStrip);
-            scoreMakerStrip.Init(MasterManager.StageMasterList[i].StageId, 2, isScoreMaker: true);
+            CreateStageStrip(stageId, 2, isScoreMaker: true, _scoreMakerTransform);
         }
         _totalScoreText.text = SaveDataManager.GetTotalScore().ToString();
+    }
+
+    private void CreateStageStrip(string stageId, int level, bool isScoreMaker, Transform parent)
+    {
+        var strip = Instantiate(_stageStripPrefab, parent);
+        _stripList.Add(strip);
+        strip.Init(stageId, level, isScoreMaker);
+        strip.OnClickedBgmButton.Subscribe(x =>
+        {
+            ResetBgmButtonBacklight();
+            BGMManager.instance.SetClip(x.isPlay ? x.stageId : _titleBgmName);
+            BGMManager.instance.Play();
+            strip.BgmButton.SetBacklight(x.isPlay);
+        });
     }
 
     private void ResetBgmButtonBacklight()
