@@ -110,9 +110,10 @@ public class ClickHandler
 #else
                 position = touch.position;
 #endif
+
                 if (isClick)
                 {
-                    _startClickPosition = position;
+                    _startClickPosition = Input.mousePosition;
                 }
                 else
                 {
