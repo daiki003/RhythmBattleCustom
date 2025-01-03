@@ -104,13 +104,19 @@ public class ClickHandler
                 break;
             // 作成中ポケット
             case PositionType.LinePocket:
+                Vector3 position;
+#if UNITY_EDITOR
+                position = Input.mousePosition;
+#else
+                position = touch.position;
+#endif
                 if (isClick)
                 {
-                    _startClickPosition = Input.mousePosition;
+                    _startClickPosition = position;
                 }
                 else
                 {
-                    if (!IsMovePosition(Input.mousePosition))
+                    if (!IsMovePosition(position))
                     {
                         var pocket = GetTargetComponent<LinePocket>();
                         OnClickScoreLine.OnNext((pocket.Number, pocket.IsLeft));
