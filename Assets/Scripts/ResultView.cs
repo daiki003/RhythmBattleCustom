@@ -24,8 +24,10 @@ public class ResultView : MonoBehaviour
     [SerializeField] private Text _highScoreText;
     [SerializeField] private Text _highScoreComboText;
 
+    [SerializeField] private Button _restartButton;
     [SerializeField] private Button _goHomeButton;
 
+    public Subject<Unit> OnWhenPushRestart = new Subject<Unit>();
     public Subject<Unit> OnWhenPushGoHome = new Subject<Unit>();
 
     public void SetScore(ClearState clearState, ClearState highScoreClearState, float criticalMultiple, float hitMultiple, float missMultiple)
@@ -49,6 +51,10 @@ public class ResultView : MonoBehaviour
         _highScoreText.text = FloatUtility.RoundDown(highScoreClearState.Score, 2).ToString();
         _highScoreComboText.text = highScoreClearState.Combo.ToString();
 
+        _restartButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            OnWhenPushRestart.OnNext(default);
+        });
         _goHomeButton.OnClickAsObservable().Subscribe(_ =>
         {
             OnWhenPushGoHome.OnNext(default);

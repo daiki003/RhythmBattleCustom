@@ -37,6 +37,16 @@ public class BattlePresenter : MonoBehaviour
         {
             CountUp(x.Item1, x.Item2);
         }).AddTo(this);
+        _battleView.OnReset.Subscribe(_ =>
+        {
+            _hitCount = 0;
+            _criticalCount = 0;
+            _missCount = 0;
+            _comboCount = 0;
+            _maxComboCount = 0;
+            _battleView.CreateBalls(_currentStageMaster.notes[level], _currentStageMaster);
+            BGMManager.instance.PlayFromIntro().Forget();
+        }).AddTo(this);
         _battleView.Init(stageId);
         _currentStageMaster = MasterManager.GetStageMaster(_stageId);
         _battleView.CreateBalls(_currentStageMaster.notes[level], _currentStageMaster);
@@ -81,15 +91,11 @@ public class BattlePresenter : MonoBehaviour
             clearState.Score = realScore;
             clearState.Combo = _maxComboCount;
         }
-
-        await UniTask.WaitForSeconds(2.5f);
-        _battleView.StartResult(clearState, SaveDataManager.GetClearState(_stageId, _level), criticalMultiple, hitMultiple, missMultiple);
-        BGMManager.instance.SetClip("Result", isLoop: true);
-        BGMManager.instance.Play();
         if (!_battleView.IsTest)
         {
             SaveDataManager.UpdateClearState(clearState);
         }
+        await _battleView.StartResultAsync(clearState, SaveDataManager.GetClearState(_stageId, _level), criticalMultiple, hitMultiple, missMultiple);
     }
 
     private void CountUp(HitType hitType, int count = 1)

@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 public class DebugPanel : MonoBehaviour
 {
+    [SerializeField] Button _closeButton;
     [SerializeField] InputField _changeMoveTimeInput;
     [SerializeField] Button _changeMoveTimeButton;
 
@@ -13,6 +14,10 @@ public class DebugPanel : MonoBehaviour
 
     void Start()
     {
+        _closeButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            gameObject.SetActive(false);
+        });
         _changeMoveTimeButton.OnClickAsObservable().Subscribe(_ =>
         {
             if (float.TryParse(_changeMoveTimeInput.text, out float time))

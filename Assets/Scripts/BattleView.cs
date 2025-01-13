@@ -52,6 +52,8 @@ public class BattleView : MonoBehaviour
     public Subject<Unit> OnWhenClickedBack { get; private set; } = new Subject<Unit>();
     public Subject<(HitType, int)> OnCountUp { get; private set; } = new Subject<(HitType, int)>();
 
+    private const float _beforeReultWaitTime = 1f;
+
     public void Init(string stageId)
     {
         _cts = new CancellationTokenSource();
@@ -79,6 +81,11 @@ public class BattleView : MonoBehaviour
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {
             OnWhenClickedBack.OnNext(default);
+        }).AddTo(this);
+        _resultView.OnWhenPushRestart.Subscribe(_ =>
+        {
+            Reset();
+            OnReset.OnNext(default);
         }).AddTo(this);
         _resultView.OnWhenPushGoHome.Subscribe(_ =>
         {
@@ -273,10 +280,13 @@ public class BattleView : MonoBehaviour
         }
     }
 
-    public void StartResult(ClearState clearState, ClearState highScoreClearState, float criticalMultiple, float hitMultiple, float missMultiple)
+    public async UniTask StartResultAsync(ClearState clearState, ClearState highScoreClearState, float criticalMultiple, float hitMultiple, float missMultiple)
     {
+        await UniTask.WaitForSeconds(_beforeReultWaitTime);
         _resultView.SetScore(clearState, highScoreClearState, criticalMultiple, hitMultiple, missMultiple);
         _resultView.gameObject.SetActive(true);
+        BGMManager.instance.SetClip("Result", isLoop: true);
+        BGMManager.instance.Play();
     }
 
     private void OnClickButton(bool isLeft)
