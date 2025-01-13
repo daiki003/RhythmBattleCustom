@@ -215,7 +215,7 @@ public class ClickHandler
 #if UNITY_EDITOR
         return Input.mousePosition;
 #else
-        return position = touch.position;
+        return touch.position;
 #endif
     }
 
