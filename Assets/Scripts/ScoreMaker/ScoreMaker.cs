@@ -25,6 +25,8 @@ public class ScoreMaker : MonoBehaviour
     [SerializeField] private RectTransform _scoreAreaRect;
     [SerializeField] private VerticalLayoutGroup _scoreAreaLayoutGroup;
 
+    [SerializeField] private Slider _bgmSlider;
+
     // コントロールパネル関連
     [SerializeField] private GameObject _controllPanelPage1;
     [SerializeField] private GameObject _controllPanelPage2;

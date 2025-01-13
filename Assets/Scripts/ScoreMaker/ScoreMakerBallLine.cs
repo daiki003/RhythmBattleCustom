@@ -24,14 +24,15 @@ public class ScoreMakerBallLine : MonoBehaviour
         _headBall.AttachLine(this, _lastBall, isLast: false);
         _lastBall.AttachLine(this, _headBall, isLast: true);
 
-        // 線の下端をボールの位置に合わせる
-        _rectTransform.anchoredPosition = new Vector2(_headBall.transform.position.x, _headBall.transform.position.y);
-        // 線の長さをボール間の距離に合わせる
         UpdateLineSpacing(lineSpacing);
     }
 
     public void UpdateLineSpacing(float spacing)
     {
+        // 線の下端をボールの位置に合わせる
+        _rectTransform.anchoredPosition = Vector2.zero;
+        // new Vector2(_headBall.transform.position.x, _headBall.transform.position.y);
+        // 線の長さをボール間の距離に合わせる
         var sd = GetComponent<RectTransform>().sizeDelta;
         sd.y = (spacing + _scoreLineHeight) * Mathf.Abs(_headBall.LineNumber - _lastBall.LineNumber);
         GetComponent<RectTransform>().sizeDelta = sd;
