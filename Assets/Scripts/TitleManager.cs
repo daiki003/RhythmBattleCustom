@@ -34,7 +34,7 @@ public class TitleManager : MonoBehaviour
 
     private List<StageStrip> _stripList = new List<StageStrip>();
 
-    public void Init()
+    public void Init(int lastLevel)
     {
         RecreateStrip();
         DarkeningMenuButton();
@@ -47,7 +47,7 @@ public class TitleManager : MonoBehaviour
                 menuButton.OnClick();
                 SetLevelPanel(menuButton.ButtonType);
             });
-            if (i == 0)
+            if (i == lastLevel)
             {
                 menuButton.SetLight(true);
                 SetLevelPanel(menuButton.ButtonType);

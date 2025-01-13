@@ -33,6 +33,7 @@ public class GameManager : MonoBehaviour
     private ClickHandler _clickHandler;
     public ClickHandler ClickHandler => _clickHandler;
     public float SettingOffset;
+    private int _lastBattleLevel;
 
     private const string _titlePrefab = "Prefabs/TitlePanel";
     private const string _battlePrefabPath = "Prefabs/BattlePanel";
@@ -87,7 +88,7 @@ public class GameManager : MonoBehaviour
         ResetPanel();
         var titlePrefab = Resources.Load<TitleManager>(_titlePrefab);
         var titleManager = Instantiate(titlePrefab, _panelTransform);
-        titleManager.Init();
+        titleManager.Init(_lastBattleLevel);
         SetLoadPanel(false);
     }
 
@@ -105,6 +106,7 @@ public class GameManager : MonoBehaviour
 
     public async UniTask StartBattle(string stageId, int level)
     {
+        _lastBattleLevel = level;
         ResetPanel();
         SetLoadPanel(true);
         var battlePrefab = Resources.Load<BattlePresenter>(_battlePrefabPath);
