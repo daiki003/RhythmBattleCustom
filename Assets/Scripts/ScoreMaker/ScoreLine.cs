@@ -46,6 +46,12 @@ public class ScoreLine : MonoBehaviour
         return targetPocket.Clicked(ballType);
     }
 
+    public void ClearLine()
+    {
+        _leftPocket.Clicked(ScoreMaker.ScoreMakerBallType.None);
+        _rightPocket.Clicked(ScoreMaker.ScoreMakerBallType.None);
+    }
+
     public ScoreMakerBall GetBall(bool isLeft)
     {
         var targetPocket = isLeft ? _leftPocket : _rightPocket;

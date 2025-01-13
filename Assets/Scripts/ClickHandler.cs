@@ -27,7 +27,8 @@ public class ClickHandler
 {
     public Subject<bool> OnClickButton = new Subject<bool>();
     public Subject<bool> OnReleaseButton = new Subject<bool>();
-    public Subject<(int number, bool isLeft)> OnClickScoreLine = new Subject<(int number, bool isLeft)>();
+    public Subject<(int number, bool isLeft)> OnClickScoreLinePocket = new Subject<(int number, bool isLeft)>();
+    public Subject<int> OnClickScoreLine = new Subject<int>();
 
     private Vector3 _startClickPosition;
     private const float _moveDiff = 5f;
@@ -75,60 +76,60 @@ public class ClickHandler
             return;
         }
 
-        // スワイプは考慮しない
-        bool isClick = clickType == ClickType.Click;
-        var clickPosition = GetClickPosition(touch);
-        switch (clickPosition)
+        var clickPosition = GetClickPositionType(touch);
+        if (clickType == ClickType.Click)
         {
-            // 演奏中左ボタン
-            case PositionType.LeftButton:
-                if (isClick)
-                {
+            switch (clickPosition)
+            {
+                // 演奏中左ボタン
+                case PositionType.LeftButton:
                     OnClickButton.OnNext(true);
-                }
-                else
-                {
-                    OnReleaseButton.OnNext(true);
-                }
-                break;
-            // 演奏中右ボタン
-            case PositionType.RightButton:
-                if (isClick)
-                {
+                    break;
+                // 演奏中右ボタン
+                case PositionType.RightButton:
                     OnClickButton.OnNext(false);
-                }
-                else
-                {
-                    OnReleaseButton.OnNext(false);
-                }
-                break;
-            // 作成中ポケット
-            case PositionType.LinePocket:
-                Vector3 position;
-#if UNITY_EDITOR
-                position = Input.mousePosition;
-#else
-                position = touch.position;
-#endif
-
-                if (isClick)
-                {
+                    break;
+                // 作成中ポケット
+                case PositionType.LinePocket:
+                case PositionType.Line:
                     _startClickPosition = Input.mousePosition;
-                }
-                else
-                {
+                    break;
+            }
+        }
+        else if (clickType == ClickType.Release)
+        {
+            var position = GetClickPosition(touch);
+            switch (clickPosition)
+            {
+                // 演奏中左ボタン
+                case PositionType.LeftButton:
+                    OnReleaseButton.OnNext(true);
+                    break;
+                // 演奏中右ボタン
+                case PositionType.RightButton:
+                    OnReleaseButton.OnNext(false);
+                    break;
+                // 作成中ポケット
+                case PositionType.LinePocket:
                     if (!IsMovePosition(position))
                     {
                         var pocket = GetTargetComponent<LinePocket>(touch);
-                        OnClickScoreLine.OnNext((pocket.Number, pocket.IsLeft));
+                        OnClickScoreLinePocket.OnNext((pocket.Number, pocket.IsLeft));
                     }
-                }
-                break;
+                    break;
+                case PositionType.Line:
+                    if (!IsMovePosition(position))
+                    {
+                        var line = GetTargetComponent<ScoreLine>(touch);
+                        OnClickScoreLine.OnNext(line.LineNumber);
+                    }
+                    break;
+            }
         }
     }
 
     // クリック位置の取得
-    private PositionType GetClickPosition(Touch touch = default)
+    private PositionType GetClickPositionType(Touch touch = default)
     {
         if (IsOnTargetTag("LeftButton", touch))
         {
@@ -141,6 +142,11 @@ public class ClickHandler
         if (IsOnTargetTag("LinePocket", touch))
         {
             return PositionType.LinePocket;
+        }
+        // Pocketのほうが優先
+        if (IsOnTargetTag("Line", touch))
+        {
+            return PositionType.Line;
         }
         return PositionType.None;
     }
@@ -203,6 +209,15 @@ public class ClickHandler
         }
 		return returnResults;
 	}
+
+    private Vector3 GetClickPosition(Touch touch = default)
+    {
+#if UNITY_EDITOR
+        return Input.mousePosition;
+#else
+        return position = touch.position;
+#endif
+    }
 
     public bool IsOnTargetTag(string tagName, Touch touch = default)
 	{

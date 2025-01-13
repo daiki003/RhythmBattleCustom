@@ -35,15 +35,17 @@ public class LinePocket : MonoBehaviour
 
     public ScoreMakerBall Clicked(ScoreMaker.ScoreMakerBallType ballType)
     {
-        if (InstalledBall == null)
-        {
-            CreateBall(ballType);
-        }
-        else
+        // ボールがあるところならタイプにかかわらず消す
+        if (InstalledBall != null)
         {
             Destroy(InstalledBall.gameObject);
             InstalledBall = null;
         }
+        else if (ballType != ScoreMaker.ScoreMakerBallType.None)
+        {
+            CreateBall(ballType);
+        }
+
         return InstalledBall;
     }
     public void DropedBall(ScoreMakerBall ball)

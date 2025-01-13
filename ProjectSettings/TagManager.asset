@@ -8,6 +8,7 @@ TagManager:
   - RightButton
   - Ball
   - LinePocket
+  - Line
   layers:
   - Default
   - TransparentFX
