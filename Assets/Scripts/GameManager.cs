@@ -113,7 +113,8 @@ public class GameManager : MonoBehaviour
         var battlePresenter = Instantiate(battlePrefab, _panelTransform);
         SEManager.instance.PlayBattleStartSe();
         BGMManager.instance.Stop();
-        battlePresenter.Init(stageId, level);
+        var stageMaster = MasterManager.GetSingleStageMaster(stageId, level);
+        battlePresenter.Init(stageMaster);
         await UniTask.WaitForSeconds(2f);
         SetLoadPanel(false);
         battlePresenter.StartBattle();

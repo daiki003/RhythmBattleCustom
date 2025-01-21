@@ -48,15 +48,18 @@ public class BattleView : MonoBehaviour
     private float _lastBeatTime;
     private CancellationTokenSource _cts;
 
+    private SingleStageMaster _stageMaster;
+
     public Subject<Unit> OnReset { get; private set; } = new Subject<Unit>();
     public Subject<Unit> OnWhenClickedBack { get; private set; } = new Subject<Unit>();
     public Subject<(HitType, int)> OnCountUp { get; private set; } = new Subject<(HitType, int)>();
 
     private const float _beforeReultWaitTime = 1f;
 
-    public void Init(string stageId)
+    public void Init(SingleStageMaster singleStageMaster)
     {
         _cts = new CancellationTokenSource();
+        _stageMaster = singleStageMaster;
         GameManager.instance.ClickHandler.OnClickButton.Subscribe(isLeft =>
         {
             OnClickButton(isLeft);
@@ -94,7 +97,7 @@ public class BattleView : MonoBehaviour
 
         _resultView.gameObject.SetActive(false);
         Reset();
-        _enemyImage.sprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + stageId);
+        _enemyImage.sprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + _stageMaster.StageId);
     }
 
     public void DestroyAllObjectInList<T>(List<T> ballList)
@@ -127,17 +130,17 @@ public class BattleView : MonoBehaviour
         _testButtonImage.color = _isTest ? Color.black : Color.white;
     }
 
-    private float CalcNoteTime(NoteMaster noteMaster, StageMaster stageMaster)
+    private float CalcNoteTime(NoteMaster noteMaster)
     {
-        int noteNumber = noteMaster.num * (stageMaster.LPB / noteMaster.lpb);
-        return noteNumber * (60f / stageMaster.BPM) + stageMaster.NoteTimeOffset + GameManager.instance.SettingOffset;
+        int noteNumber = noteMaster.num * (_stageMaster.LPB / noteMaster.lpb);
+        return noteNumber * (60f / _stageMaster.BPM) + _stageMaster.NoteTimeOffset + GameManager.instance.SettingOffset;
     }
 
-    public void CreateBalls(List<NoteMaster> notes, StageMaster stageMaster, float startTime = 0f)
+    public void CreateBalls(List<NoteMaster> notes, float startTime = 0f)
     {
         foreach (NoteMaster noteMaster in notes)
         {
-            float noteTime = CalcNoteTime(noteMaster, stageMaster);
+            float noteTime = CalcNoteTime(noteMaster);
             // 途中から曲を始める場合それより前のボールは作らない
             if (noteTime < startTime)
             {
@@ -160,7 +163,7 @@ public class BattleView : MonoBehaviour
                 longBall.EndBall.transform.position = startTransform.position;
                 longBall.gameObject.SetActive(false);
                 var endNote = noteMaster.notes[0];
-                float endNoteTime = CalcNoteTime(endNote, stageMaster);
+                float endNoteTime = CalcNoteTime(endNote);
                 longBall.Init(noteMaster, noteTime, endNoteTime);
                 SetBallToList(longBall.StartBall);
                 SetBallToList(longBall.EndBall);

@@ -41,7 +41,7 @@ public class StageStrip : MonoBehaviour
             }
             else
             {
-                await StartBattle(_stageId, _level);
+                await GameManager.instance.StartBattle(stageId, level);
             }
         }).AddTo(this);
         _bgmButton.Button.OnClickAsObservable().Subscribe(_ =>
@@ -64,10 +64,5 @@ public class StageStrip : MonoBehaviour
         _criticalText.text = clearState.CriticalNumber.ToString();
         _hitText.text = clearState.HitNumber.ToString();
         _missText.text = clearState.MissNumber.ToString();
-    }
-
-    private async UniTask StartBattle(string stageId, int level)
-    {
-        await GameManager.instance.StartBattle(stageId, level);
     }
 }

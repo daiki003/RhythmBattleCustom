@@ -16,6 +16,7 @@ public class ScoreMaker : MonoBehaviour
     [SerializeField] private ScoreLine _scoreLinePrefab; 
     [SerializeField] private ScrollRect _scoreScrollRect;
     [SerializeField] private Button _saveButton;
+    [SerializeField] private Button _addStageButton;
     [SerializeField] private Button _backButton;
     [SerializeField] private List<MenuButton> _levelButtonList = new();
 
@@ -134,6 +135,26 @@ public class ScoreMaker : MonoBehaviour
             _currentStageMaster.notes[_currentLevel] = CreateNoteList();
             await PlayFabController.UpdateOverrideScore(_currentStageMaster);
             MasterManager.SetOverrideMaster(_currentStageMaster);
+            // ダイアログを出す
+            var dialog = Instantiate(ResourceManager.LoadPrefab("Dialog"), _dialogTransform).GetComponent<Dialog>();
+            dialog.Init("保存しました", "閉じる");
+        });
+        _addStageButton.OnClickAsObservable().Subscribe(async _ =>
+        {
+            SEManager.instance.PlayButtonSe();
+            // SingleStageMasterを作成
+            var stageMaster = new SingleStageMaster()
+            {
+                StageId = _currentStageMaster.StageId,
+                StageName = _currentStageMaster.StageId,
+                LevelId = MasterManager.GetNextCustumStageLevel(_currentStageMaster.StageId),
+                BPM = _currentStageMaster.BPM,
+                LPB = _currentStageMaster.LPB,
+                NoteTimeOffset = _currentStageMaster.NoteTimeOffset,
+                notes = CreateNoteList()
+            };
+            MasterManager.AddCustomStageList(stageMaster);
+            await PlayFabController.UpdateCustomStageList();
             // ダイアログを出す
             var dialog = Instantiate(ResourceManager.LoadPrefab("Dialog"), _dialogTransform).GetComponent<Dialog>();
             dialog.Init("保存しました", "閉じる");

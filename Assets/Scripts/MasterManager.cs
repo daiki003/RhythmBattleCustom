@@ -49,12 +49,51 @@ public class StageMaster
     }
 }
 
+public class SingleStageMaster
+{
+    public string StageId;
+    public string StageName;
+    public int LevelId;
+    public float BPM;
+    public int LPB;
+    public float NoteTimeOffset;
+    public List<NoteMaster> notes = new List<NoteMaster>();
+    // StageMasterからSingleStageMasterを作成する
+    public SingleStageMaster() { }
+    public SingleStageMaster(StageMaster stageMaster, int level)
+    {
+        StageId = stageMaster.StageId;
+        LevelId = level;
+        BPM = stageMaster.BPM;
+        LPB = stageMaster.LPB;
+        NoteTimeOffset = stageMaster.NoteTimeOffset;
+        notes = stageMaster.notes[level];
+    }
+    public SingleStageMaster CreateCopy()
+    {
+        return new SingleStageMaster()
+        {
+            StageId = StageId,
+            StageName = StageName,
+            BPM = BPM,
+            LPB = LPB,
+            NoteTimeOffset = NoteTimeOffset,
+            notes = notes
+        };
+    }
+}
+
 public static class MasterManager
 {
     public static SettingMaster SettingMaster;
     public static List<StageMaster> StageMasterList = new List<StageMaster>();
     public static List<StageMaster> OverrideMasterList = new List<StageMaster>();
+    public static List<SingleStageMaster> SingleStageList = new List<SingleStageMaster>(); // 全てのステージを入れておくリスト
+    public static List<SingleStageMaster> CustomStageList = new List<SingleStageMaster>(); // カスタムステージを入れておくリスト
     public static bool FinishGetMaster;
+    // カスタムステージの最小レベルID
+    private static int _minCustomLevelId = 100;
+
     public static void GetAllMasterData()
 	{
 		PlayFabController.GetTitleData(SetMasterData);
@@ -63,12 +102,24 @@ public static class MasterManager
 	{
 		SettingMaster = settingMaster;
         StageMasterList.AddRange(stageMasterList);
+        foreach (var stage in StageMasterList)
+        {
+            for (int i = 0; i < stage.notes.Count; i++)
+            {
+                SingleStageList.Add(new SingleStageMaster(stage, i));
+            }
+        }
         PlayFabController.GetPlayerData();
 	}
     public static void SetOverrideMaster(StageMaster master)
     {
         OverrideMasterList.RemoveAll(s => s.StageId == master.StageId);
         OverrideMasterList.Add(master);
+    }
+    public static void AddCustomStageList(SingleStageMaster master)
+    {
+        CustomStageList.Add(master);
+        SingleStageList.Add(master);
     }
     public static StageMaster GetStageMaster(string stageId)
     {
@@ -78,5 +129,23 @@ public static class MasterManager
     public static StageMaster GetOverrideStageMaster(string stageId)
     {
         return OverrideMasterList.FirstOrDefault(s => s.StageId == stageId);
+    }
+    // stageIdとlevelIdからSingleStageMasterを取得する
+    public static SingleStageMaster GetSingleStageMaster(string stageId, int levelId)
+    {
+        return SingleStageList.FirstOrDefault(s => s.StageId == stageId && s.LevelId == levelId);
+    }
+    public static SingleStageMaster GetCustomStageMaster(string stageId, int levelId)
+    {
+        return CustomStageList.FirstOrDefault(s => s.StageId == stageId && s.LevelId == levelId);
+    }
+    public static int GetNextCustumStageLevel(string stageId)
+    {
+        var customStageList = CustomStageList.Where(s => s.StageId == stageId).ToList();
+        if (customStageList.Count == 0)
+        {
+            return _minCustomLevelId;
+        }
+        return customStageList.Max(s => s.LevelId) + 1;
     }
 }

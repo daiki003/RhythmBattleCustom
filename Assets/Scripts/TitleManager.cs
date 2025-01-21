@@ -74,6 +74,20 @@ public class TitleManager : MonoBehaviour
             }
             CreateStageStrip(stageId, 2, isScoreMaker: true, _scoreMakerTransform);
         }
+        for (int i = 0; i < MasterManager.CustomStageList.Count; i++)
+        {
+            string stageId = MasterManager.CustomStageList[i].StageId;
+            var strip = Instantiate(_stageStripPrefab, _stripTransformList[3]);
+            _stripList.Add(strip);
+            strip.Init(stageId, MasterManager.CustomStageList[i].LevelId);
+            strip.OnClickedBgmButton.Subscribe(x =>
+            {
+                ResetBgmButtonBacklight();
+                BGMManager.instance.SetClip(x.isPlay ? x.stageId : _titleBgmName);
+                BGMManager.instance.Play();
+                strip.BgmButton.SetBacklight(x.isPlay);
+            });
+        }
         _totalScoreText.text = SaveDataManager.GetTotalScore().ToString();
     }
 

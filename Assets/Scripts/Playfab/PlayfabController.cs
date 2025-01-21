@@ -137,6 +137,11 @@ public class PlayFabController
                     {
                         MasterManager.OverrideMasterList.Add(PlayFabSimpleJson.DeserializeObject<StageMaster>(item.Value.Value));
                     }
+                    if (item.Key == "CustomStageList")
+                    {
+                        MasterManager.CustomStageList = PlayFabSimpleJson.DeserializeObject<List<SingleStageMaster>>(item.Value.Value);
+                        MasterManager.SingleStageList.AddRange(MasterManager.CustomStageList);
+                    }
                 }
             }
             else
@@ -247,6 +252,33 @@ public class PlayFabController
         {
             isSuccess = true;
             Debug.Log("UpdateStageOverride:" + keyName);
+        }
+
+        void OnError(PlayFabError error)
+        {
+            Debug.Log("UpdateUserData: Fail...");
+            Debug.Log(error.GenerateErrorReport());
+        }
+    }
+
+    public static async UniTask UpdateCustomStageList()
+    {
+        var request = new UpdateUserDataRequest()
+        {
+            Data = new Dictionary<string, string>
+            {
+                // 現在のCustomStageListの状態をサーバーに保存
+                { "CustomStageList", PlayFabSimpleJson.SerializeObject(MasterManager.CustomStageList) }
+            }
+        };
+
+        bool isSuccess = false;
+        PlayFabClientAPI.UpdateUserData(request, OnSuccess, OnError);
+        await UniTask.WaitUntil(() => isSuccess);
+
+        void OnSuccess(UpdateUserDataResult result)
+        {
+            isSuccess = true;
         }
 
         void OnError(PlayFabError error)

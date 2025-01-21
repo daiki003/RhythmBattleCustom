@@ -11,8 +11,7 @@ public class BattlePresenter : MonoBehaviour
     [SerializeField] private BattleView _battleView;
 
     private string _stageId;
-    private int _level;
-    private StageMaster _currentStageMaster;
+    private SingleStageMaster _currentStageMaster;
 
     private bool _isDuaringBattle;
     private int _criticalCount = 0;
@@ -21,10 +20,10 @@ public class BattlePresenter : MonoBehaviour
     private int _comboCount = 0;
     private int _maxComboCount = 0;
 
-    public void Init(string stageId, int level)
+    public void Init(SingleStageMaster singleStageMaster)
     {
-        _stageId = stageId;
-        _level = level;
+        _currentStageMaster = singleStageMaster;
+        _stageId = singleStageMaster.StageId;
         _battleView.OnWhenClickedBack.Subscribe(_ =>
         {
             GameManager.instance.GoToTitle();
@@ -44,13 +43,12 @@ public class BattlePresenter : MonoBehaviour
             _missCount = 0;
             _comboCount = 0;
             _maxComboCount = 0;
-            _battleView.CreateBalls(_currentStageMaster.notes[level], _currentStageMaster);
+            _battleView.CreateBalls(singleStageMaster.notes);
             BGMManager.instance.PlayFromIntro().Forget();
         }).AddTo(this);
-        _battleView.Init(stageId);
-        _currentStageMaster = MasterManager.GetStageMaster(_stageId);
-        _battleView.CreateBalls(_currentStageMaster.notes[level], _currentStageMaster);
-        BGMManager.instance.SetClip(_stageId);
+        _battleView.Init(singleStageMaster);
+        _battleView.CreateBalls(singleStageMaster.notes);
+        BGMManager.instance.SetClip(_currentStageMaster.StageId);
     }
 
     public void StartBattle()
@@ -64,7 +62,7 @@ public class BattlePresenter : MonoBehaviour
     public void MoveTime(float time)
     {
         _battleView.Reset();
-        _battleView.CreateBalls(_currentStageMaster.notes[_level], _currentStageMaster, time);
+        _battleView.CreateBalls(_currentStageMaster.notes, time);
         BGMManager.instance.SetTime(time);
         BGMManager.instance.Play();
     }
@@ -75,8 +73,8 @@ public class BattlePresenter : MonoBehaviour
 
         var clearState = new ClearState()
         {
-            StageId = _stageId,
-            Level = _level,
+            StageId = _currentStageMaster.StageId,
+            Level = _currentStageMaster.LevelId,
         };
         float totalCount = _criticalCount + _hitCount + _missCount;
         float criticalMultiple = 100f / totalCount;
@@ -95,7 +93,7 @@ public class BattlePresenter : MonoBehaviour
         {
             SaveDataManager.UpdateClearState(clearState);
         }
-        await _battleView.StartResultAsync(clearState, SaveDataManager.GetClearState(_stageId, _level), criticalMultiple, hitMultiple, missMultiple);
+        await _battleView.StartResultAsync(clearState, SaveDataManager.GetClearState(_currentStageMaster.StageId, _currentStageMaster.LevelId), criticalMultiple, hitMultiple, missMultiple);
     }
 
     private void CountUp(HitType hitType, int count = 1)
