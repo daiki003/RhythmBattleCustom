@@ -52,9 +52,6 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        _clickHandler = new ClickHandler();
-        SetLoadPanel(true);
-        PlayFabController.Login();
         GameStart().Forget();
     }
 
@@ -79,7 +76,10 @@ public class GameManager : MonoBehaviour
     // ゲームスタート時の処理
 	private async UniTask GameStart()
 	{
-		await UniTask.WaitWhile(() => !MasterManager.FinishGetMaster);
+        _clickHandler = new ClickHandler();
+        SetLoadPanel(true);
+        await PlayFabController.LoginAsync();
+        await MasterManager.GetAllMasterData();
         GoToTitle();
 	}
 

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class SettingMaster
@@ -83,6 +84,19 @@ public class SingleStageMaster
     }
 }
 
+public class TitleDataResult
+{
+    public SettingMaster SettingeMaster;
+    public List<StageMaster> StageMasterList = new List<StageMaster>();
+}
+
+public class PlayerDataResult
+{
+    public List<ClearState> ClearStateList = new();
+    public List<StageMaster> OverrideStageMasterList = new();
+    public List<SingleStageMaster> CustomStageList= new();
+}
+
 public static class MasterManager
 {
     public static SettingMaster SettingMaster;
@@ -90,31 +104,52 @@ public static class MasterManager
     public static List<StageMaster> OverrideMasterList = new List<StageMaster>();
     public static List<SingleStageMaster> SingleStageList = new List<SingleStageMaster>(); // 全てのステージを入れておくリスト
     public static List<SingleStageMaster> CustomStageList = new List<SingleStageMaster>(); // カスタムステージを入れておくリスト
-    public static bool FinishGetMaster;
     // カスタムステージの最小レベルID
     private static int _minCustomLevelId = 100;
 
-    public static void GetAllMasterData()
+    public static async UniTask GetAllMasterData()
 	{
-		PlayFabController.GetTitleData(SetMasterData);
+		var titleDataResult = await PlayFabController.GetTitleData();
+        var playerDataResult = await PlayFabController.GetPlayerData();
+        if (titleDataResult != null)
+        {
+            SetMasterData(titleDataResult.SettingeMaster, titleDataResult.StageMasterList);
+        }
+        if (playerDataResult != null)
+        {
+            SetPlayerData(playerDataResult.ClearStateList, playerDataResult.OverrideStageMasterList, playerDataResult.CustomStageList);
+        }
+        CreateSingleStageList();
 	}
     public static void SetMasterData(SettingMaster settingMaster, List<StageMaster> stageMasterList)
 	{
 		SettingMaster = settingMaster;
         StageMasterList.AddRange(stageMasterList);
+	}
+    public static void SetPlayerData(List<ClearState> clearStateList, List<StageMaster> overrideMasterList, List<SingleStageMaster> customStageList)
+    {
+        SaveDataManager.ClearStateList = clearStateList;
+        OverrideMasterList.AddRange(OverrideMasterList);
+        CustomStageList = customStageList;
+        SingleStageList.AddRange(CustomStageList);
+    }
+    public static void CreateSingleStageList()
+    {
+        SingleStageList = new List<SingleStageMaster>();
         foreach (var stage in StageMasterList)
         {
+            var stageMaster = GetStageMaster(stage.StageId);
             for (int i = 0; i < stage.notes.Count; i++)
             {
-                SingleStageList.Add(new SingleStageMaster(stage, i));
+                SingleStageList.Add(new SingleStageMaster(stageMaster, i));
             }
         }
-        PlayFabController.GetPlayerData();
-	}
+    }
     public static void SetOverrideMaster(StageMaster master)
     {
         OverrideMasterList.RemoveAll(s => s.StageId == master.StageId);
         OverrideMasterList.Add(master);
+        CreateSingleStageList();
     }
     public static void AddCustomStageList(SingleStageMaster master)
     {

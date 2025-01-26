@@ -242,10 +242,6 @@ public class BattleView : MonoBehaviour
 
     void Update()
     {
-        if (!MasterManager.FinishGetMaster)
-        {
-            return;
-        }
         if (_leftBallList.Count > 0)
         {
             LaunchBall(_leftBallList);

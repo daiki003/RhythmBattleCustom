@@ -5,6 +5,7 @@ using PlayFab.Json;
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using UnityEditor.PackageManager;
 
 public class PlayFabController
 {
@@ -19,21 +20,24 @@ public class PlayFabController
     private static bool _finishGetMaster;
 
     // ログイン ---------------------------------------------------------------------------------------------------------------------------------------[]
-    public static void Login()
+    public static async UniTask LoginAsync()
     {
         InfoRequestParams = new GetPlayerCombinedInfoRequestParams();
         InfoRequestParams.GetUserData = true;
+        LoginResult loginResult = null;
         PlayFabAuthService.Instance.InfoRequestParams = InfoRequestParams;
         PlayFabAuthService.Instance.InitializeCallback();
-        PlayFabAuthService.OnLoginSuccess += loginSuccess;
+        PlayFabAuthService.OnLoginSuccess += (result) => loginResult = result;
         PlayFabAuthService.Instance.Authenticate(Authtypes.Silent);
+
+        await UniTask.WaitUntil(() => loginResult != null);
+        LoginSuccess(loginResult);
     }
 
-    public static void loginSuccess(LoginResult result)
+    public static void LoginSuccess(LoginResult result)
     {
         playFabId = result.PlayFabId;
         UpdateRandomPlayfabId();
-        MasterManager.GetAllMasterData();
         Debug.Log("ログイン" + playFabId);
     }
 
@@ -47,7 +51,7 @@ public class PlayFabController
             InfoRequestParameters = InfoRequestParams
         }, (result) =>
         {
-            loginSuccess(result);
+            LoginSuccess(result);
 
         }, (error) =>
         {
@@ -56,7 +60,7 @@ public class PlayFabController
         });
     }
 
-    public static void InitializePrivateData(Action callBack)
+    public static async UniTask InitializePrivateData()
     {
         var request = new UpdateUserDataRequest()
         {
@@ -66,22 +70,24 @@ public class PlayFabController
             }
         };
 
-        PlayFabClientAPI.UpdateUserData(request, OnSuccess, OnError);
+        UpdateUserDataResult result = null;
+        PlayFabError error = null;
+        PlayFabClientAPI.UpdateUserData(request, x => result = x, x => error = x);
 
-        void OnSuccess(UpdateUserDataResult result)
+        await UniTask.WaitUntil(() => result != null || error != null);
+
+        if (result != null)
         {
-            callBack();
             Debug.Log("InitializePlayerData");
         }
-
-        void OnError(PlayFabError error)
+        else if (error != null)
         {
             Debug.Log("InitializeUserData: Fail...");
             Debug.Log(error.GenerateErrorReport());
         }
     }
 
-    public static void InitializePublicData(Action callBack)
+    public static async UniTask InitializePublicData()
     {
         var clearStates = new List<ClearState>();
         for (int i = 0; i < MasterManager.StageMasterList.Count; i++)
@@ -104,15 +110,17 @@ public class PlayFabController
             },
             Permission = UserDataPermission.Public
         };
+        UpdateUserDataResult result = null;
+        PlayFabError error = null;
+        PlayFabClientAPI.UpdateUserData(request, x => result = x, x => error = x);
 
-        PlayFabClientAPI.UpdateUserData(request, OnSuccess, OnError);
+        await UniTask.WaitUntil(() => result != null || error != null);
 
-        void OnSuccess(UpdateUserDataResult result)
+        if (result != null)
         {
-            InitializePrivateData(callBack);
+            await InitializePrivateData();
         }
-
-        void OnError(PlayFabError error)
+        else if (error != null)
         {
             Debug.Log("InitializeUserData: Fail...");
             Debug.Log(error.GenerateErrorReport());
@@ -121,42 +129,55 @@ public class PlayFabController
 
 #region プレイヤーデータ取得
     // 自身の全てのデータを取得してSaveDataを更新
-    public static void GetPlayerData()
+    public static async UniTask<PlayerDataResult> GetPlayerData()
     {
         var request = new GetUserDataRequest();
-        PlayFabClientAPI.GetUserData(request, OnSuccess, OnError);
+        GetUserDataResult result = null;
+        PlayFabError error = null;
+        PlayFabClientAPI.GetUserData(request, x => result = x, x => error = x);
 
-        void OnSuccess(GetUserDataResult result)
+        // データ取得まで待機
+        await UniTask.WaitUntil(() => result != null || error != null);
+
+        if (result != null)
         {
+            Debug.Log("GetUserData: Success!");
             if (result.Data.ContainsKey("ClearStates"))
             {
-                SaveDataManager.ClearStateList = PlayFabSimpleJson.DeserializeObject<List<ClearState>>(result.Data["ClearStates"].Value);
+                var clearStateList = PlayFabSimpleJson.DeserializeObject<List<ClearState>>(result.Data["ClearStates"].Value);
+                var overrideMasterList = new List<StageMaster>();
+                var customStageList = new List<SingleStageMaster>();
                 foreach (var item in result.Data)
                 {
                     if (item.Key.Contains("Override"))
                     {
-                        MasterManager.OverrideMasterList.Add(PlayFabSimpleJson.DeserializeObject<StageMaster>(item.Value.Value));
+                        overrideMasterList.Add(PlayFabSimpleJson.DeserializeObject<StageMaster>(item.Value.Value));
                     }
                     if (item.Key == "CustomStageList")
                     {
-                        MasterManager.CustomStageList = PlayFabSimpleJson.DeserializeObject<List<SingleStageMaster>>(item.Value.Value);
-                        MasterManager.SingleStageList.AddRange(MasterManager.CustomStageList);
+                        customStageList.AddRange(PlayFabSimpleJson.DeserializeObject<List<SingleStageMaster>>(item.Value.Value));
                     }
                 }
+                return new PlayerDataResult
+                {
+                    ClearStateList = clearStateList,
+                    OverrideStageMasterList = overrideMasterList,
+                    CustomStageList = customStageList
+                };
             }
             else
             {
-                InitializePublicData(GetPlayerData);
+                await InitializePublicData();
+                // 初期データを作ってから再取得
+                return await GetPlayerData();
             }
-            Debug.Log("GetUserData: Success!");
-            MasterManager.FinishGetMaster = true;
         }
-
-        void OnError(PlayFabError error)
+        else if (error != null)
         {
             Debug.Log("GetUserData: Fail...");
             Debug.Log(error.GenerateErrorReport());
         }
+        return null;
     }
     public static StageMaster GetOverrideStageMaster(string stageId)
     {
@@ -183,31 +204,6 @@ public class PlayFabController
 #endregion
 
 #region プレイヤーデータ操作
-    public static void UpdatePlayerName(string playerName)
-    {
-        var request = new UpdateUserDataRequest()
-        {
-            Data = new Dictionary<string, string>
-            {
-                { "Name", playerName }
-            }
-        };
-
-        PlayFabClientAPI.UpdateUserData(request, OnSuccess, OnError);
-
-        void OnSuccess(UpdateUserDataResult result)
-        {
-            GetPlayerData();
-            Debug.Log("UpdateUserData: Success!");
-        }
-
-        void OnError(PlayFabError error)
-        {
-            Debug.Log("UpdateUserData: Fail...");
-            Debug.Log(error.GenerateErrorReport());
-        }
-    }
-
     public static void UpdateClearState(List<ClearState> clearStates)
     {
         var request = new UpdateUserDataRequest()
@@ -222,7 +218,6 @@ public class PlayFabController
 
         void OnSuccess(UpdateUserDataResult result)
         {
-            GetPlayerData();
             Debug.Log("UpdateUserData: Success!");
         }
 
@@ -290,12 +285,17 @@ public class PlayFabController
 #endregion
 
     // タイトルデータ取得 ------------------------------------------------------------------------------------------------------------------------------------
-    public static void GetTitleData(Action<SettingMaster, List<StageMaster>> callBack)
+    public static async UniTask<TitleDataResult> GetTitleData()
     {
         var request = new GetTitleDataRequest();
-        PlayFabClientAPI.GetTitleData(request, OnSuccess, OnError);
+        GetTitleDataResult result = null;
+        PlayFabError error = null;
+        PlayFabClientAPI.GetTitleData(request, x => result = x, x => error = x);
 
-        void OnSuccess(GetTitleDataResult result)
+        // データ取得まで待機
+        await UniTask.WaitUntil(() => result != null || error != null);
+
+        if (result != null)
         {
             Debug.Log("GetTitleData: Success!");
 
@@ -308,15 +308,18 @@ public class PlayFabController
                     stageMasterList.Add(PlayFabSimpleJson.DeserializeObject<StageMaster>(item.Value));
                 }
             }
-            callBack(settingData, stageMasterList);
-            _finishGetMaster = true;
+            return new TitleDataResult
+            {
+                SettingeMaster = settingData,
+                StageMasterList = stageMasterList
+            };
         }
-
-        void OnError(PlayFabError error)
+        else if (error != null)
         {
             Debug.Log("GetTitleData: Fail...");
             Debug.Log(error.GenerateErrorReport());
         }
+        return null;
     }
 
 #region ランキング関連
