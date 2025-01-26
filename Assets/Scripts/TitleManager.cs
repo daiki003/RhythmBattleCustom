@@ -70,32 +70,23 @@ public class TitleManager : MonoBehaviour
             string stageId = MasterManager.StageMasterList[i].StageId;
             for (int j = 0; j < 3; j++)
             {
-                CreateStageStrip(stageId, j, isScoreMaker: false, _stripTransformList[j]);
+                CreateStageStrip(stageId, stageId, j, isScoreMaker: false, _stripTransformList[j]);
             }
-            CreateStageStrip(stageId, 2, isScoreMaker: true, _scoreMakerTransform);
+            CreateStageStrip(stageId, stageId, 2, isScoreMaker: true, _scoreMakerTransform);
         }
         for (int i = 0; i < MasterManager.CustomStageList.Count; i++)
         {
-            string stageId = MasterManager.CustomStageList[i].StageId;
-            var strip = Instantiate(_stageStripPrefab, _stripTransformList[3]);
-            _stripList.Add(strip);
-            strip.Init(stageId, MasterManager.CustomStageList[i].LevelId);
-            strip.OnClickedBgmButton.Subscribe(x =>
-            {
-                ResetBgmButtonBacklight();
-                BGMManager.instance.SetClip(x.isPlay ? x.stageId : _titleBgmName);
-                BGMManager.instance.Play();
-                strip.BgmButton.SetBacklight(x.isPlay);
-            });
+            var stageMaster = MasterManager.CustomStageList[i];
+            CreateStageStrip(stageMaster.StageId, stageMaster.StageName, stageMaster.LevelId, isScoreMaker: false, _stripTransformList[3]);
         }
         _totalScoreText.text = SaveDataManager.GetTotalScore().ToString();
     }
 
-    private void CreateStageStrip(string stageId, int level, bool isScoreMaker, Transform parent)
+    private void CreateStageStrip(string stageId, string stageName, int level, bool isScoreMaker, Transform parent)
     {
         var strip = Instantiate(_stageStripPrefab, parent);
         _stripList.Add(strip);
-        strip.Init(stageId, level, isScoreMaker);
+        strip.Init(stageId, stageName, level, isScoreMaker);
         strip.OnClickedBgmButton.Subscribe(x =>
         {
             ResetBgmButtonBacklight();

@@ -25,11 +25,11 @@ public class StageStrip : MonoBehaviour
 
     public Subject<(string stageId, bool isPlay)> OnClickedBgmButton { get; private set; } = new Subject<(string, bool)>();
 
-    public void Init(string stageId, int level, bool isScoreMaker = false)
+    public void Init(string stageId, string stageName, int level, bool isScoreMaker = false)
     {
         var enemySprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + stageId);
         _enemyImage.sprite = enemySprite;
-        _titleText.text = stageId;
+        _titleText.text = stageName;
         _stageId = stageId;
         _level = level;
         _isScoreMaker = isScoreMaker;

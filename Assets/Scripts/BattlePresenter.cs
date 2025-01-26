@@ -10,7 +10,6 @@ public class BattlePresenter : MonoBehaviour
 {
     [SerializeField] private BattleView _battleView;
 
-    private string _stageId;
     private SingleStageMaster _currentStageMaster;
 
     private bool _isDuaringBattle;
@@ -23,7 +22,6 @@ public class BattlePresenter : MonoBehaviour
     public void Init(SingleStageMaster singleStageMaster)
     {
         _currentStageMaster = singleStageMaster;
-        _stageId = singleStageMaster.StageId;
         _battleView.OnWhenClickedBack.Subscribe(_ =>
         {
             GameManager.instance.GoToTitle();

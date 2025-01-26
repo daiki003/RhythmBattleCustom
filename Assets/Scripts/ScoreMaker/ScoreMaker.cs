@@ -139,25 +139,31 @@ public class ScoreMaker : MonoBehaviour
             var dialog = Instantiate(ResourceManager.LoadPrefab("Dialog"), _dialogTransform).GetComponent<Dialog>();
             dialog.Init("保存しました", "閉じる");
         });
-        _addStageButton.OnClickAsObservable().Subscribe(async _ =>
+        _addStageButton.OnClickAsObservable().Subscribe(_ =>
         {
             SEManager.instance.PlayButtonSe();
-            // SingleStageMasterを作成
-            var stageMaster = new SingleStageMaster()
+            // ステージ名入力ダイアログを出す
+            var inputDialog = Instantiate(ResourceManager.LoadPrefab("InputDialog"), _dialogTransform).GetComponent<InputDialog>();
+            inputDialog.Init("ステージ名を入力してください", _currentStageMaster.StageId, _currentStageMaster.StageId);
+            inputDialog.OnSubmit.Subscribe(async stageName =>
             {
-                StageId = _currentStageMaster.StageId,
-                StageName = _currentStageMaster.StageId,
-                LevelId = MasterManager.GetNextCustumStageLevel(_currentStageMaster.StageId),
-                BPM = _currentStageMaster.BPM,
-                LPB = _currentStageMaster.LPB,
-                NoteTimeOffset = _currentStageMaster.NoteTimeOffset,
-                notes = CreateNoteList()
-            };
-            MasterManager.AddCustomStageList(stageMaster);
-            await PlayFabController.UpdateCustomStageList();
-            // ダイアログを出す
-            var dialog = Instantiate(ResourceManager.LoadPrefab("Dialog"), _dialogTransform).GetComponent<Dialog>();
-            dialog.Init("保存しました", "閉じる");
+                // SingleStageMasterを作成
+                var stageMaster = new SingleStageMaster()
+                {
+                    StageId = _currentStageMaster.StageId,
+                    StageName = stageName,
+                    LevelId = MasterManager.GetNextCustumStageLevel(_currentStageMaster.StageId),
+                    BPM = _currentStageMaster.BPM,
+                    LPB = _currentStageMaster.LPB,
+                    NoteTimeOffset = _currentStageMaster.NoteTimeOffset,
+                    notes = CreateNoteList()
+                };
+                MasterManager.AddCustomStageList(stageMaster);
+                await PlayFabController.UpdateCustomStageList();
+                // ダイアログを出す
+                var dialog = Instantiate(ResourceManager.LoadPrefab("Dialog"), _dialogTransform).GetComponent<Dialog>();
+                dialog.Init("保存しました", "閉じる");
+            });
         });
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {

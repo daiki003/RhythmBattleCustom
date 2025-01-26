@@ -5207,7 +5207,7 @@ MonoBehaviour:
   _highScoreMissText: {fileID: 5646074159932855205}
   _highScoreText: {fileID: 7262976498463535589}
   _highScoreComboText: {fileID: 4757493044507106614}
-  _restartButton: {fileID: 0}
+  _restartButton: {fileID: 6489280904733267893}
   _goHomeButton: {fileID: 7458806361827886729}
 --- !u!1 &5767400780869970777
 GameObject:
