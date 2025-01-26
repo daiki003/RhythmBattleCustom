@@ -129,9 +129,8 @@ public static class MasterManager
     public static void SetPlayerData(List<ClearState> clearStateList, List<StageMaster> overrideMasterList, List<SingleStageMaster> customStageList)
     {
         SaveDataManager.ClearStateList = clearStateList;
-        OverrideMasterList.AddRange(OverrideMasterList);
+        OverrideMasterList.AddRange(overrideMasterList);
         CustomStageList = customStageList;
-        SingleStageList.AddRange(CustomStageList);
     }
     public static void CreateSingleStageList()
     {
@@ -144,6 +143,7 @@ public static class MasterManager
                 SingleStageList.Add(new SingleStageMaster(stageMaster, i));
             }
         }
+        SingleStageList.AddRange(CustomStageList);
     }
     public static void SetOverrideMaster(StageMaster master)
     {

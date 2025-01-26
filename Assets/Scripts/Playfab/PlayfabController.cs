@@ -7,14 +7,9 @@ using Cysharp.Threading.Tasks;
 
 public class PlayFabController
 {
-    private static bool newAccount; //アカウントを新規作成したかどうか
     private static string playFabId; //自分のID
     public static string randomPlayFabId; //直近で取得した他の人のID
-    private static readonly string ID_CHARACTERS = "0123456789"; //IDに使用する文字
     [SerializeField] static GetPlayerCombinedInfoRequestParams InfoRequestParams;
-
-    [HideInInspector] static public string PlayerName { get; private set; }
-    [HideInInspector] static public List<CharacterResult> Characters { get; private set; }
 
     // ログイン ---------------------------------------------------------------------------------------------------------------------------------------[]
     public static async UniTask LoginAsync()
