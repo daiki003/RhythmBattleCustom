@@ -41,8 +41,6 @@ public class BattlePresenter : MonoBehaviour
             _missCount = 0;
             _comboCount = 0;
             _maxComboCount = 0;
-            _battleView.CreateBalls(singleStageMaster.notes);
-            BGMManager.instance.PlayFromIntro().Forget();
         }).AddTo(this);
         _battleView.Init(singleStageMaster);
         _battleView.CreateBalls(singleStageMaster.notes);
@@ -54,7 +52,7 @@ public class BattlePresenter : MonoBehaviour
         // 曲が始まる前にGC.Collect
         GC.Collect();
         _isDuaringBattle = true;
-        BGMManager.instance.PlayFromIntro().Forget();
+        _battleView.BattleStart().Forget();
     }
 
     public void MoveTime(float time)

@@ -45,9 +45,11 @@ public class BattleView : MonoBehaviour
 
     private bool _isTest;
     public bool IsTest => _isTest;
+    private bool _isStartBattle;
+    private bool _isStartBgm;
+    private float _startBgmTime;
     private float _lastBeatTime;
     private CancellationTokenSource _cts;
-
     private SingleStageMaster _stageMaster;
 
     public Subject<Unit> OnReset { get; private set; } = new Subject<Unit>();
@@ -72,6 +74,8 @@ public class BattleView : MonoBehaviour
         {
             Reset();
             OnReset.OnNext(default);
+            CreateBalls(singleStageMaster.notes);
+            BattleStart().Forget();
         }).AddTo(this);
         _testButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -88,7 +92,10 @@ public class BattleView : MonoBehaviour
         _resultView.OnWhenPushRestart.Subscribe(_ =>
         {
             Reset();
+            BGMManager.instance.SetClip(_stageMaster.StageId);
             OnReset.OnNext(default);
+            CreateBalls(singleStageMaster.notes);
+            BattleStart().Forget();
         }).AddTo(this);
         _resultView.OnWhenPushGoHome.Subscribe(_ =>
         {
@@ -134,6 +141,17 @@ public class BattleView : MonoBehaviour
     {
         int noteNumber = noteMaster.num * (_stageMaster.LPB / noteMaster.lpb);
         return noteNumber * (60f / _stageMaster.BPM) + _stageMaster.NoteTimeOffset + GameManager.instance.SettingOffset;
+    }
+
+    public async UniTask BattleStart()
+    {
+        _isStartBattle = true;
+        _isStartBgm = false;
+        // BallTimeOffset分遅れてBGMスタート
+        _startBgmTime = Time.time + MasterManager.SettingMaster.BallTimeOffset;
+        await UniTask.WaitUntil(() => Time.time >= _startBgmTime);
+        BGMManager.instance.PlayFromIntro().Forget();
+        _isStartBgm = true;
     }
 
     public void CreateBalls(List<NoteMaster> notes, float startTime = 0f)
@@ -225,7 +243,8 @@ public class BattleView : MonoBehaviour
     private void LaunchBall(List<SingleBall> ballList)
     {
         var launchBall = ballList.FirstOrDefault(b => b.BallState == BallState.Wait);
-        if (launchBall != null && BGMManager.instance.CurrentTime >= launchBall.LaunchTime)
+        float currentTime = _isStartBgm ? BGMManager.instance.CurrentTime : Time.time - _startBgmTime;
+        if (launchBall != null && currentTime >= launchBall.LaunchTime)
         {
             launchBall.gameObject.SetActive(true);
             launchBall.OnWhenLaunched.OnNext(default);
@@ -242,6 +261,10 @@ public class BattleView : MonoBehaviour
 
     void Update()
     {
+        if (!_isStartBattle)
+        {
+            return;
+        }
         if (_leftBallList.Count > 0)
         {
             LaunchBall(_leftBallList);

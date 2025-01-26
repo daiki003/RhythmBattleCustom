@@ -60,7 +60,7 @@ public class StageStrip : MonoBehaviour
         {
             return;
         }
-        _scoreText.text = FloatUtility.RoundDown(clearState.Score, 2).ToString();
+        _scoreText.text = FloatUtility.RoundDown(clearState.Score, 1).ToString();
         _criticalText.text = clearState.CriticalNumber.ToString();
         _hitText.text = clearState.HitNumber.ToString();
         _missText.text = clearState.MissNumber.ToString();

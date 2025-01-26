@@ -54,6 +54,7 @@ public class ResultView : MonoBehaviour
         _restartButton.OnClickAsObservable().Subscribe(_ =>
         {
             OnWhenPushRestart.OnNext(default);
+            gameObject.SetActive(false);
         });
         _goHomeButton.OnClickAsObservable().Subscribe(_ =>
         {
