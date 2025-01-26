@@ -2,10 +2,8 @@ using UnityEngine;
 using PlayFab;
 using PlayFab.ClientModels;
 using PlayFab.Json;
-using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
-using UnityEditor.PackageManager;
 
 public class PlayFabController
 {
@@ -17,7 +15,6 @@ public class PlayFabController
 
     [HideInInspector] static public string PlayerName { get; private set; }
     [HideInInspector] static public List<CharacterResult> Characters { get; private set; }
-    private static bool _finishGetMaster;
 
     // ログイン ---------------------------------------------------------------------------------------------------------------------------------------[]
     public static async UniTask LoginAsync()
