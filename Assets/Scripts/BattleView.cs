@@ -10,6 +10,35 @@ using DG.Tweening;
 using Cysharp.Threading.Tasks.Triggers;
 using System.Threading;
 
+public class Score
+{
+    public int CriticalCount;
+    public int HitCount;
+    public int MissCount;
+    public int ComboCount;
+    public int MaxComboCount;
+
+    public void CountUp(HitType hitType, int count = 1)
+    {
+        if (hitType == HitType.Hit)
+        {
+            HitCount += count;
+            ComboCount += count;
+        }
+        else if (hitType == HitType.Critical)
+        {
+            CriticalCount += count;
+            ComboCount += count;
+        }
+        else
+        {
+            MissCount += count;
+            MaxComboCount = Math.Max(ComboCount, MaxComboCount);
+            ComboCount = 0;
+        }
+    }
+}
+
 public class BattleView : MonoBehaviour
 {
     [SerializeField] private Image _enemyImage;
@@ -46,15 +75,18 @@ public class BattleView : MonoBehaviour
     private bool _isTest;
     public bool IsTest => _isTest;
     private bool _isStartBattle;
+    private bool _isFinishBattle;
     private bool _isStartBgm;
     private float _startBgmTime;
     private float _lastBeatTime;
     private CancellationTokenSource _cts;
     private SingleStageMaster _stageMaster;
 
-    public Subject<Unit> OnReset { get; private set; } = new Subject<Unit>();
+    // スコア
+    private Score _currentScore;
+
     public Subject<Unit> OnWhenClickedBack { get; private set; } = new Subject<Unit>();
-    public Subject<(HitType, int)> OnCountUp { get; private set; } = new Subject<(HitType, int)>();
+    public Subject<Score> OnWhenFinishBattle { get; private set; } = new Subject<Score>();
 
     private const float _beforeReultWaitTime = 1f;
 
@@ -72,9 +104,7 @@ public class BattleView : MonoBehaviour
         }).AddTo(this);
         _resetButton.OnClickAsObservable().Subscribe(_ =>
         {
-            Reset();
-            OnReset.OnNext(default);
-            CreateBalls(singleStageMaster.notes);
+            PrepareBattle();
             BattleStart().Forget();
         }).AddTo(this);
         _testButton.OnClickAsObservable().Subscribe(_ =>
@@ -91,10 +121,7 @@ public class BattleView : MonoBehaviour
         }).AddTo(this);
         _resultView.OnWhenPushRestart.Subscribe(_ =>
         {
-            Reset();
-            BGMManager.instance.SetClip(_stageMaster.StageId);
-            OnReset.OnNext(default);
-            CreateBalls(singleStageMaster.notes);
+            PrepareBattle();
             BattleStart().Forget();
         }).AddTo(this);
         _resultView.OnWhenPushGoHome.Subscribe(_ =>
@@ -103,7 +130,6 @@ public class BattleView : MonoBehaviour
         }).AddTo(this);
 
         _resultView.gameObject.SetActive(false);
-        Reset();
         _enemyImage.sprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + _stageMaster.StageId);
     }
 
@@ -124,10 +150,8 @@ public class BattleView : MonoBehaviour
     {
         DestroyAllObjectInList(_leftBallList);
         DestroyAllObjectInList(_rightBallList);
-        _criticalCountText.text = "0";
-        _hitCountText.text = "0";
-        _missCountText.text = "0";
-        _comboText.text = "0";
+        _currentScore = new Score();
+        UpdateScoreText(_currentScore);
         BGMManager.instance.Stop();
     }
 
@@ -143,9 +167,17 @@ public class BattleView : MonoBehaviour
         return noteNumber * (60f / _stageMaster.BPM) + _stageMaster.NoteTimeOffset + GameManager.instance.SettingOffset;
     }
 
+    public void PrepareBattle()
+    {
+        Reset();
+        BGMManager.instance.SetClip(_stageMaster.StageId);
+        CreateBalls(_stageMaster.notes);
+    }
+
     public async UniTask BattleStart()
     {
         _isStartBattle = true;
+        _isFinishBattle = false;
         _isStartBgm = false;
         // BallTimeOffset分遅れてBGMスタート
         _startBgmTime = Time.time + MasterManager.SettingMaster.BallTimeOffset;
@@ -224,7 +256,8 @@ public class BattleView : MonoBehaviour
         {
             RemoveBallFromList(ball);
             CreateLetter(ball.IsLeft, HitType.None);
-            OnCountUp.OnNext((HitType.None, ball.BallType == BallType.LongStart ? 2 : 1));
+            _currentScore.CountUp(HitType.None, ball.BallType == BallType.LongStart ? 2 : 1);
+            UpdateScoreText(_currentScore);
         });
     }
 
@@ -300,11 +333,16 @@ public class BattleView : MonoBehaviour
                 }
             }
         }
+        if (BGMManager.instance.IsFinishBgm && !_isFinishBattle)
+        {
+            _isFinishBattle = true;
+            OnWhenFinishBattle.OnNext(_currentScore);
+        }
     }
 
     public async UniTask StartResultAsync(ClearState clearState, ClearState highScoreClearState, float criticalMultiple, float hitMultiple, float missMultiple)
     {
-        await UniTask.WaitForSeconds(_beforeReultWaitTime);
+        await UniTask.WaitForSeconds(_beforeReultWaitTime, cancellationToken: _cts.Token);
         _resultView.SetScore(clearState, highScoreClearState, criticalMultiple, hitMultiple, missMultiple);
         _resultView.gameObject.SetActive(true);
         BGMManager.instance.SetClip("Result", isLoop: true);
@@ -339,7 +377,8 @@ public class BattleView : MonoBehaviour
             targetList.Remove(firstBall);
             Destroy(firstBall.gameObject);
             CreateLetter(isLeft, HitType.None);
-            OnCountUp.OnNext((HitType.None, 1));
+            _currentScore.CountUp(HitType.None);
+            UpdateScoreText(_currentScore);
         }
         var firstActiveBall = targetList.FirstOrDefault(b => b.JudgeBall() >= HitType.Hit);
         if (firstActiveBall != null)
@@ -362,7 +401,8 @@ public class BattleView : MonoBehaviour
         }
         _lastBeatTime = ball.CriticalTime;
         CreateLetter(ball.IsLeft, ball.JudgeBall());
-        OnCountUp.OnNext((ball.JudgeBall(), 1));
+        _currentScore.CountUp(ball.JudgeBall());
+        UpdateScoreText(_currentScore);
     }
 
     private void CreateLetter(bool isLeft, HitType hitType)
@@ -371,12 +411,12 @@ public class BattleView : MonoBehaviour
         letter.InitAndStart(hitType, _cts.Token).Forget();
     }
 
-    public void CountUpText(int criticalCount, int hitCount, int missCount, int comboCount)
+    public void UpdateScoreText(Score score)
     {
-        _criticalCountText.text = criticalCount.ToString();
-        _hitCountText.text = hitCount.ToString();
-        _missCountText.text = missCount.ToString();
-        _comboText.text = comboCount.ToString();
+        _criticalCountText.text = score.CriticalCount.ToString();
+        _hitCountText.text = score.HitCount.ToString();
+        _missCountText.text = score.MissCount.ToString();
+        _comboText.text = score.ComboCount.ToString();
     }
 
     void OnDestroy()

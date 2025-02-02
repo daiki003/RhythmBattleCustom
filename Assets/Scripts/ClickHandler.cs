@@ -14,6 +14,7 @@ public enum PositionType
     RightButton,
     LinePocket,
     Line,
+    LineNumber,
 }
 
 public enum ClickType
@@ -29,6 +30,7 @@ public class ClickHandler
     public Subject<bool> OnReleaseButton = new Subject<bool>();
     public Subject<(int number, bool isLeft)> OnClickScoreLinePocket = new Subject<(int number, bool isLeft)>();
     public Subject<int> OnClickScoreLine = new Subject<int>();
+    public Subject<int> OnClickScoreLineNumber = new Subject<int>();
 
     private Vector3 _startClickPosition;
     private const float _moveDiff = 5f;
@@ -92,6 +94,7 @@ public class ClickHandler
                 // 作成中ポケット
                 case PositionType.LinePocket:
                 case PositionType.Line:
+                case PositionType.LineNumber:
                     _startClickPosition = Input.mousePosition;
                     break;
             }
@@ -124,6 +127,13 @@ public class ClickHandler
                         OnClickScoreLine.OnNext(line.LineNumber);
                     }
                     break;
+                case PositionType.LineNumber:
+                    if (!IsMovePosition(position))
+                    {
+                        var line = GetTargetComponent<ScoreLine>(touch);
+                        OnClickScoreLineNumber.OnNext(line.LineNumber);
+                    }
+                    break;
             }
         }
     }
@@ -142,6 +152,10 @@ public class ClickHandler
         if (IsOnTargetTag("LinePocket", touch))
         {
             return PositionType.LinePocket;
+        }
+        if (IsOnTargetTag("LineNumber", touch))
+        {
+            return PositionType.LineNumber;
         }
         // Pocketのほうが優先
         if (IsOnTargetTag("Line", touch))

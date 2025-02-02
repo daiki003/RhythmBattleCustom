@@ -8,12 +8,14 @@ public class ScoreLine : MonoBehaviour
 {
     [SerializeField] private LinePocket _leftPocket;
     [SerializeField] private LinePocket _rightPocket;
+    [SerializeField] private Image _moveButton;
     [SerializeField] private Text _numberText;
     public LinePocket LeftPocket => _leftPocket;
     public LinePocket RightPocket => _rightPocket;
 
     public int LineNumber { get; private set; }
     public bool IsEnd;
+    public bool HasBall => _leftPocket.InstalledBall != null || _rightPocket.InstalledBall != null;
 
     public void Init(int number)
     {
@@ -67,6 +69,11 @@ public class ScoreLine : MonoBehaviour
     {
         var ball = GetBall(isLeft);
         return ball != null ? ball.CreateMaster() : null;
+    }
+
+    public void SetMoveButton(bool isActive)
+    {
+        _moveButton.gameObject.SetActive(isActive);
     }
 
     void OnDestroy()

@@ -12,13 +12,6 @@ public class BattlePresenter : MonoBehaviour
 
     private SingleStageMaster _currentStageMaster;
 
-    private bool _isDuaringBattle;
-    private int _criticalCount = 0;
-    private int _hitCount = 0;
-    private int _missCount = 0;
-    private int _comboCount = 0;
-    private int _maxComboCount = 0;
-
     public void Init(SingleStageMaster singleStageMaster)
     {
         _currentStageMaster = singleStageMaster;
@@ -26,32 +19,22 @@ public class BattlePresenter : MonoBehaviour
         {
             GameManager.instance.GoToTitle();
         }).AddTo(this);
+        _battleView.OnWhenFinishBattle.Subscribe(score =>
+        {
+            FinishBattle(score).Forget();
+        }).AddTo(this);
         _battleView.DebugPanel.OnChangeMoveTime.Subscribe(time =>
         {
             MoveTime(time);
         }).AddTo(this);
-        _battleView.OnCountUp.Subscribe(x =>
-        {
-            CountUp(x.Item1, x.Item2);
-        }).AddTo(this);
-        _battleView.OnReset.Subscribe(_ =>
-        {
-            _hitCount = 0;
-            _criticalCount = 0;
-            _missCount = 0;
-            _comboCount = 0;
-            _maxComboCount = 0;
-        }).AddTo(this);
         _battleView.Init(singleStageMaster);
-        _battleView.CreateBalls(singleStageMaster.notes);
-        BGMManager.instance.SetClip(_currentStageMaster.StageId);
+        _battleView.PrepareBattle();
     }
 
     public void StartBattle()
     {
         // 曲が始まる前にGC.Collect
         GC.Collect();
-        _isDuaringBattle = true;
         _battleView.BattleStart().Forget();
     }
 
@@ -63,62 +46,30 @@ public class BattlePresenter : MonoBehaviour
         BGMManager.instance.Play();
     }
 
-    public async UniTask FinishBattle()
+    public async UniTask FinishBattle(Score score)
     {
-        _maxComboCount = Math.Max(_comboCount, _maxComboCount);
-
         var clearState = new ClearState()
         {
             StageId = _currentStageMaster.StageId,
             Level = _currentStageMaster.LevelId,
         };
-        float totalCount = _criticalCount + _hitCount + _missCount;
+        float totalCount = score.CriticalCount + score.HitCount + score.MissCount;
         float criticalMultiple = 100f / totalCount;
         float hitMultiple = 50f / totalCount;
         float missMultiple = -100f / totalCount;
-        float realScore = Mathf.Max(0, _criticalCount * criticalMultiple + _hitCount * hitMultiple + _missCount * missMultiple);
+        float realScore = Mathf.Max(0, score.CriticalCount * criticalMultiple + score.HitCount * hitMultiple + score.MissCount * missMultiple);
         if (clearState != null && clearState.Score <= realScore)
         {
-            clearState.CriticalNumber = _criticalCount;
-            clearState.HitNumber = _hitCount;
-            clearState.MissNumber = _missCount;
+            clearState.CriticalNumber = score.CriticalCount;
+            clearState.HitNumber = score.HitCount;
+            clearState.MissNumber = score.MissCount;
             clearState.Score = realScore;
-            clearState.Combo = _maxComboCount;
+            clearState.Combo = Math.Max(score.ComboCount, score.MaxComboCount);;
         }
         if (!_battleView.IsTest)
         {
             SaveDataManager.UpdateClearState(clearState);
         }
         await _battleView.StartResultAsync(clearState, SaveDataManager.GetClearState(_currentStageMaster.StageId, _currentStageMaster.LevelId), criticalMultiple, hitMultiple, missMultiple);
-    }
-
-    private void CountUp(HitType hitType, int count = 1)
-    {
-        if (hitType == HitType.Hit)
-        {
-            _hitCount += count;
-            _comboCount += count;
-        }
-        else if (hitType == HitType.Critical)
-        {
-            _criticalCount += count;
-            _comboCount += count;
-        }
-        else
-        {
-            _missCount += count;
-            _maxComboCount = Math.Max(_comboCount, _maxComboCount);
-            _comboCount = 0;
-        }
-        _battleView.CountUpText(_criticalCount, _hitCount, _missCount, _comboCount);
-    }
-
-    void Update()
-    {
-        if (BGMManager.instance.IsFinishBgm && _isDuaringBattle)
-        {
-            _isDuaringBattle = false;
-            FinishBattle().Forget();
-        }
     }
 }

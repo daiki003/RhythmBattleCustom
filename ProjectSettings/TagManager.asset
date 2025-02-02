@@ -9,6 +9,7 @@ TagManager:
   - Ball
   - LinePocket
   - Line
+  - LineNumber
   layers:
   - Default
   - TransparentFX
