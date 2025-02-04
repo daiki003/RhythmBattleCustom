@@ -30,8 +30,6 @@ public class TitleManager : MonoBehaviour
     [SerializeField] private GameObject _settingPanel;
     [SerializeField] private InputField _offsetSetting;
 
-    private const string _titleBgmName = "WanderersCity";
-
     private List<StageStrip> _stripList = new List<StageStrip>();
 
     public void Init(int lastLevel)
@@ -53,8 +51,7 @@ public class TitleManager : MonoBehaviour
                 SetLevelPanel(menuButton.ButtonType);
             }
         }
-        BGMManager.instance.SetClip(_titleBgmName, isLoop: true);
-        BGMManager.instance.Play();
+        BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true);
         _offsetSetting.text = GameManager.instance.SettingOffset.ToString();
         _offsetSetting.onValueChanged.AddListener(x =>
         {
@@ -90,8 +87,14 @@ public class TitleManager : MonoBehaviour
         strip.OnClickedBgmButton.Subscribe(x =>
         {
             ResetBgmButtonBacklight();
-            BGMManager.instance.SetClip(x.isPlay ? x.stageId : _titleBgmName);
-            BGMManager.instance.Play();
+            if (x.isPlay)
+            {
+                BGMManager.instance.SetClip(x.stageId);
+            }
+            else
+            {
+                BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true);
+            }
             strip.BgmButton.SetBacklight(x.isPlay);
         });
     }

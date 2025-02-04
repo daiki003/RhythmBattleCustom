@@ -33,8 +33,6 @@ public class BattlePresenter : MonoBehaviour
 
     public void StartBattle()
     {
-        // 曲が始まる前にGC.Collect
-        GC.Collect();
         _battleView.BattleStart().Forget();
     }
 

@@ -170,7 +170,7 @@ public class BattleView : MonoBehaviour
     public void PrepareBattle()
     {
         Reset();
-        BGMManager.instance.SetClip(_stageMaster.StageId);
+        BGMManager.instance.SetClip(_stageMaster.StageId, immediatePlay: false);
         CreateBalls(_stageMaster.notes);
     }
 
@@ -182,7 +182,7 @@ public class BattleView : MonoBehaviour
         // BallTimeOffset分遅れてBGMスタート
         _startBgmTime = Time.time + MasterManager.SettingMaster.BallTimeOffset;
         await UniTask.WaitUntil(() => Time.time >= _startBgmTime);
-        BGMManager.instance.PlayFromIntro().Forget();
+        BGMManager.instance.Play();
         _isStartBgm = true;
     }
 
@@ -345,8 +345,7 @@ public class BattleView : MonoBehaviour
         await UniTask.WaitForSeconds(_beforeReultWaitTime, cancellationToken: _cts.Token);
         _resultView.SetScore(clearState, highScoreClearState, criticalMultiple, hitMultiple, missMultiple);
         _resultView.gameObject.SetActive(true);
-        BGMManager.instance.SetClip("Result", isLoop: true);
-        BGMManager.instance.Play();
+        BGMManager.instance.SetClip(BgmName.Result, isLoop: true);
     }
 
     private void OnClickButton(bool isLeft)

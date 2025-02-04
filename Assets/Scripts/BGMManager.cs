@@ -1,14 +1,22 @@
 using System;
 using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Profiling;
+
+public enum BgmName
+{
+	WanderersCity,
+	Result
+}
 
 public class BGMManager : MonoBehaviour
 {
 	[SerializeField] private AudioSource _bgmSource;
 	private AudioClip _currentBgmClip;
-	private AudioClip _currentIntroClip;
+	private Dictionary<string, AudioClip> _chachClipDict = new();
 
 	public bool IsFinishBgm => _currentBgmClip != null && _currentBgmClip.length <= _bgmSource.time;
 	public float CurrentTime => _bgmSource.time;
@@ -24,22 +32,48 @@ public class BGMManager : MonoBehaviour
 		}
 	}
 
-	public void SetClip(string clipPath, bool isLoop = false)
+	public void PreloadBgm()
 	{
-		_currentBgmClip = Resources.Load<AudioClip>(string.Format("BGM/{0}", clipPath));
-		_bgmSource.loop = isLoop;
+		foreach (string name in Enum.GetNames(typeof(BgmName)))
+		{
+			LoadClip(name);
+		}
+		foreach (string name in MasterManager.StageMasterList.Select(m => m.StageId))
+		{
+			LoadClip(name);
+		}
 	}
 
-	public async UniTask PlayFromIntro()
+	private AudioClip GetClip(string clipName)
 	{
-		if (_currentIntroClip != null)
+		if (_chachClipDict.TryGetValue(clipName, out var clip))
 		{
-			_bgmSource.clip = _currentIntroClip;
-			_bgmSource.Play();
+			return clip;
 		}
-		await UniTask.WaitWhile(() => _bgmSource.isPlaying);
-		_bgmSource.clip = _currentBgmClip;
-		_bgmSource.Play();
+		// キャッシュになければロード
+		return LoadClip(clipName);
+	}
+
+	private AudioClip LoadClip(string clipName)
+	{
+		var newClip = Resources.Load<AudioClip>(string.Format("BGM/{0}", clipName));
+		_chachClipDict.Add(clipName, newClip);
+		return newClip;
+	}
+
+	public void SetClip(BgmName bgmName, bool isLoop = false, bool immediatePlay = true)
+	{
+		SetClip(bgmName.ToString(), isLoop, immediatePlay);
+	}
+
+	public void SetClip(string clipName, bool isLoop = false, bool immediatePlay = true)
+	{
+		_currentBgmClip = GetClip(clipName);
+		_bgmSource.loop = isLoop;
+		if (immediatePlay)
+		{
+			Play();
+		}
 	}
 
 	public void Play()

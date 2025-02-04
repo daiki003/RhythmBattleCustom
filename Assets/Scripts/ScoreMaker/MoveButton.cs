@@ -6,12 +6,13 @@ using UnityEngine.UI;
 public class MoveButton : Button
 {
     public int TargetLineNumber { get; private set; }
-    private const float _timeBarLength = 960f; // 時間移動バーの長さ
+    private const float _timeBarLength = 935f; // 時間移動バーの長さ
+    private const float _timeBarOffset = 13f; // 時間移動バー位置補正
 
     public void SetLineNumber(int number, int totalLineNumber)
     {
         TargetLineNumber = number;
         var rectTransform = GetComponent<RectTransform>();
-        rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, _timeBarLength * ((float)number / totalLineNumber));
+        rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, _timeBarLength * ((float)number / totalLineNumber) + _timeBarOffset);
     }
 }

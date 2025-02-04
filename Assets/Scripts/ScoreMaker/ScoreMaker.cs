@@ -439,11 +439,10 @@ public class ScoreMaker : MonoBehaviour
         _currentStageMaster = MasterManager.GetStageMaster(stageId).CreateCopy();
         _bpmInput.text = _bpm.ToString();
         _offsetInput.text = _offset.ToString();
-        BGMManager.instance.SetClip(stageId);
         // 初期レベルは2
         _currentLevel = 2;
         CreateLine();
-        BGMManager.instance.Play();
+        BGMManager.instance.SetClip(stageId);
     }
 
     private void ChangeLevel(int level)

@@ -80,6 +80,7 @@ public class GameManager : MonoBehaviour
         SetLoadPanel(true);
         await PlayFabController.LoginAsync();
         await MasterManager.GetAllMasterData();
+        BGMManager.instance.PreloadBgm();
         GoToTitle();
 	}
 
@@ -99,7 +100,6 @@ public class GameManager : MonoBehaviour
         var scoreMaker = Instantiate(scoreNakerPrefab, _panelTransform);
         scoreMaker.Init();
         BGMManager.instance.SetClip(stageId, isLoop: true);
-        BGMManager.instance.Play();
         SetLoadPanel(false);
         scoreMaker.StartMake(stageId);
     }
@@ -115,6 +115,8 @@ public class GameManager : MonoBehaviour
         BGMManager.instance.Stop();
         var stageMaster = MasterManager.GetSingleStageMaster(stageId, level);
         battlePresenter.Init(stageMaster);
+        // 曲が始まる前にGC.Collect
+        GC.Collect();
         await UniTask.WaitForSeconds(2f);
         SetLoadPanel(false);
         battlePresenter.StartBattle();
