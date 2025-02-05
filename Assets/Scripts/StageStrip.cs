@@ -60,9 +60,10 @@ public class StageStrip : MonoBehaviour
         {
             return;
         }
-        _scoreText.text = FloatUtility.RoundDown(clearState.Score, 1).ToString();
-        _criticalText.text = clearState.CriticalNumber.ToString();
-        _hitText.text = clearState.HitNumber.ToString();
-        _missText.text = clearState.MissNumber.ToString();
+        bool isCleared = clearState.Score > 0;
+        _scoreText.text = isCleared ? string.Format("{0:F1}", FloatUtility.RoundDown(clearState.Score, 1)) : "-";
+        _criticalText.text = isCleared ? clearState.CriticalNumber.ToString() : "-";
+        _hitText.text = isCleared ? clearState.HitNumber.ToString() : "-";
+        _missText.text = isCleared ? clearState.MissNumber.ToString() : "-";
     }
 }
