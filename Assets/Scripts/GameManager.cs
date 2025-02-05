@@ -96,8 +96,8 @@ public class GameManager : MonoBehaviour
     public void StartScoreMaker(string stageId)
     {
         ResetPanel();
-        var scoreNakerPrefab = Resources.Load<ScoreMaker>(_scoreMakerPrefab);
-        var scoreMaker = Instantiate(scoreNakerPrefab, _panelTransform);
+        var scoreMakerPrefab = Resources.Load<ScoreMaker>(_scoreMakerPrefab);
+        var scoreMaker = Instantiate(scoreMakerPrefab, _panelTransform);
         scoreMaker.Init();
         BGMManager.instance.SetClip(stageId, isLoop: true);
         SetLoadPanel(false);

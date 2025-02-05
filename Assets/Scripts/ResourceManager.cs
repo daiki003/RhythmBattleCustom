@@ -7,18 +7,18 @@ public static class ResourceManager
     private static Dictionary<string, GameObject> _loadedPrefabDic = new Dictionary<string, GameObject>();
     private static Dictionary<string, Sprite> _loadedSpriteDic = new Dictionary<string, Sprite>();
 
-    private static string _prefabPath = "Prefabs/";
+    private static string _basePrefabPath = "Prefabs/";
 
-    public static GameObject LoadPrefab(string prefabName)
+    public static GameObject LoadPrefab(string prefabPath)
     {
-        if (_loadedPrefabDic.ContainsKey(prefabName))
+        if (_loadedPrefabDic.ContainsKey(prefabPath))
         {
-            return _loadedPrefabDic[prefabName];
+            return _loadedPrefabDic[prefabPath];
         }
         else
         {
-            var prefab = Resources.Load<GameObject>(_prefabPath + prefabName);
-            _loadedPrefabDic.Add(prefabName, prefab);
+            var prefab = Resources.Load<GameObject>(_basePrefabPath + prefabPath);
+            _loadedPrefabDic.Add(prefabPath, prefab);
             return prefab;
         }
     }

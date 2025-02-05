@@ -355,7 +355,7 @@ public class ScoreMaker : MonoBehaviour
             }
             if (pairBall != null)
             {
-                var linePrefab = ResourceManager.LoadPrefab("ScoreMakerBallLine");
+                var linePrefab = ResourceManager.LoadPrefab("ScoreMaker/ScoreMakerBallLine");
                 var longBallLine = Instantiate(linePrefab).GetComponent<ScoreMakerBallLine>();
                 longBallLine.Init(isHead ? createdBall : pairBall, isHead ? pairBall : createdBall, _scoreAreaLayoutGroup.spacing);
                 _longBallLineList.Add(longBallLine);

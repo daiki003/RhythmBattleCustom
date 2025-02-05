@@ -22,7 +22,7 @@ public class LinePocket : MonoBehaviour
 
     public void CreateBall(ScoreMaker.ScoreMakerBallType ballType)
     {
-        var ballPrefab = ResourceManager.LoadPrefab("ScoreMakerBall");
+        var ballPrefab = ResourceManager.LoadPrefab("ScoreMaker/ScoreMakerBall");
         var ball = Instantiate(ballPrefab, _ballTransform);
         InstalledBall = ball.GetComponent<ScoreMakerBall>();
         InstalledBall.Init(ballType, Number, IsLeft);
