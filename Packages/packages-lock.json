@@ -23,6 +23,13 @@
       "dependencies": {},
       "url": "https://package.openupm.com"
     },
+    "com.masyo-lab.favorites-asset": {
+      "version": "https://github.com/MasyoLab/UnityTools-FavoritesAsset.git?path=Assets/MasyoLab/FavoritesAsset",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "b5999c4b327a351bab859ca740e9cf508b22e782"
+    },
     "com.unity.2d.animation": {
       "version": "9.1.1",
       "depth": 1,

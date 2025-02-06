@@ -37,7 +37,7 @@ public class GameManager : MonoBehaviour
 
     private const string _titlePrefab = "Prefabs/TitlePanel";
     private const string _battlePrefabPath = "Prefabs/BattlePanel";
-    private const string _scoreMakerPrefab = "Prefabs/ScoreMaker";
+    private const string _scoreMakerPrefab = "Prefabs/ScoreMaker/ScoreMaker";
 
     public static GameManager instance;
 	public void Awake()
