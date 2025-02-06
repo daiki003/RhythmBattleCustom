@@ -89,6 +89,7 @@ public class ScoreMaker : MonoBehaviour
     private float _offset => _currentStageMaster?.NoteTimeOffset + GameManager.instance.SettingOffset ?? GameManager.instance.SettingOffset;
     private float _singleBeatTime => 60f / _bpm;
     private int _currentLevel;
+    private bool _isStartMake;
 
     public void Init()
     {
@@ -442,7 +443,8 @@ public class ScoreMaker : MonoBehaviour
         // 初期レベルは2
         _currentLevel = 2;
         CreateLine();
-        BGMManager.instance.SetClip(stageId);
+        _isStartMake = true;
+        BGMManager.instance.Play();
     }
 
     private void ChangeLevel(int level)
@@ -667,6 +669,10 @@ public class ScoreMaker : MonoBehaviour
 
     void Update()
     {
+        if (!_isStartMake)
+        {
+            return;
+        }
         if (BGMManager.instance.IsPlaying)
         {
             float currentLineNumber = GetCurrentLineNumber();

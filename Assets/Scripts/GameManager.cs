@@ -28,7 +28,7 @@ public enum SceneType
 public class GameManager : MonoBehaviour
 {
     [SerializeField] private Transform _panelTransform;
-    [SerializeField] private GameObject _loadPanel;
+    [SerializeField] private Image _loadPanel;
 
     private ClickHandler _clickHandler;
     public ClickHandler ClickHandler => _clickHandler;
@@ -60,9 +60,17 @@ public class GameManager : MonoBehaviour
         _clickHandler.Update();
     }
 
-    public void SetLoadPanel(bool isActive)
+    public async UniTask FadeLoadPanel(bool isActive, float fadeTime)
     {
-        _loadPanel.SetActive(isActive);
+        if (isActive)
+        {
+            _loadPanel.gameObject.SetActive(true);
+        }
+        await _loadPanel.DOFade(isActive ? 1 : 0, fadeTime).ToUniTask();
+        if (!isActive)
+        {
+            _loadPanel.gameObject.SetActive(false);
+        }
     }
 
     public void ResetPanel()
@@ -77,7 +85,7 @@ public class GameManager : MonoBehaviour
 	private async UniTask GameStart()
 	{
         _clickHandler = new ClickHandler();
-        SetLoadPanel(true);
+        await FadeLoadPanel(true, 0f);
         await PlayFabController.LoginAsync();
         await MasterManager.GetAllMasterData();
         BGMManager.instance.PreloadBgm();
@@ -90,35 +98,35 @@ public class GameManager : MonoBehaviour
         var titlePrefab = Resources.Load<TitleManager>(_titlePrefab);
         var titleManager = Instantiate(titlePrefab, _panelTransform);
         titleManager.Init(_lastBattleLevel);
-        SetLoadPanel(false);
+        FadeLoadPanel(false, 1.5f).Forget();
     }
 
     public void StartScoreMaker(string stageId)
     {
+        BGMManager.instance.Stop();
+        BGMManager.instance.SetClip(stageId, immediatePlay: false);
         ResetPanel();
         var scoreMakerPrefab = Resources.Load<ScoreMaker>(_scoreMakerPrefab);
         var scoreMaker = Instantiate(scoreMakerPrefab, _panelTransform);
         scoreMaker.Init();
-        BGMManager.instance.SetClip(stageId, isLoop: true);
-        SetLoadPanel(false);
         scoreMaker.StartMake(stageId);
     }
 
     public async UniTask StartBattle(string stageId, int level)
     {
         _lastBattleLevel = level;
-        ResetPanel();
-        SetLoadPanel(true);
-        var battlePrefab = Resources.Load<BattlePresenter>(_battlePrefabPath);
-        var battlePresenter = Instantiate(battlePrefab, _panelTransform);
         SEManager.instance.PlayBattleStartSe();
         BGMManager.instance.Stop();
+        await FadeLoadPanel(true, 0.5f);
+        ResetPanel();
+        var battlePrefab = Resources.Load<BattlePresenter>(_battlePrefabPath);
+        var battlePresenter = Instantiate(battlePrefab, _panelTransform);
         var stageMaster = MasterManager.GetSingleStageMaster(stageId, level);
         battlePresenter.Init(stageMaster);
         // 曲が始まる前にGC.Collect
         GC.Collect();
-        await UniTask.WaitForSeconds(2f);
-        SetLoadPanel(false);
+        await UniTask.WaitForSeconds(1f);
+        await FadeLoadPanel(false, 0.5f);
         battlePresenter.StartBattle();
     }
 }
