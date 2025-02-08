@@ -38,7 +38,6 @@ public class StageMaster
         {
             noteList.Add(new List<NoteMaster>(note));
         }
-        noteList.Add(new List<NoteMaster>(notes[0]));
         return new StageMaster()
         {
             StageId = StageId,
