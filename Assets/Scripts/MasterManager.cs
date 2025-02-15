@@ -9,7 +9,7 @@ public class SettingMaster
     public float CriticalTimeBuffer;
     public float HitTimeBuffer;
     public float BallTimeOffset;
-    public float BallSpeed;
+    public float BallSpeedCoefficient;
     public float TestNoteTimeBuffer;
     public float ScoreMakerNoteTimeBuffer;
 }

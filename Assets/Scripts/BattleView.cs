@@ -42,13 +42,13 @@ public class Score
 public class BattleView : MonoBehaviour
 {
     [SerializeField] private Image _enemyImage;
-    [SerializeField] private RectTransform _leftTransform;
-    [SerializeField] private RectTransform _rightTransform;
-    [SerializeField] private RectTransform _leftStartTransform;
-    [SerializeField] private RectTransform _rightStartTransform;
-    [SerializeField] private RectTransform _leftLetterTransform;
-    [SerializeField] private RectTransform _rightLetterTransform;
-    [SerializeField] private RectTransform _ballTransform;
+    [SerializeField] private Transform _leftTargetPoint;
+    [SerializeField] private Transform _rightTargetPoint;
+    [SerializeField] private Transform _leftStartTransform;
+    [SerializeField] private Transform _rightStartTransform;
+    [SerializeField] private Transform _leftLetterTransform;
+    [SerializeField] private Transform _rightLetterTransform;
+    [SerializeField] private Transform _ballTransform;
 
     [SerializeField] private SingleBall _ballPrefab;
     [SerializeField] private LongBall _longBallPrefab;
@@ -69,8 +69,8 @@ public class BattleView : MonoBehaviour
 
     public DebugPanel DebugPanel => _debugPanel;
 
-    private List<SingleBall> _leftBallList = new List<SingleBall>();
-    private List<SingleBall> _rightBallList = new List<SingleBall>();
+    private List<SingleBall> _leftBallList = new();
+    private List<SingleBall> _rightBallList = new();
 
     private bool _isTest;
     public bool IsTest => _isTest;
@@ -81,6 +81,13 @@ public class BattleView : MonoBehaviour
     private float _lastBeatTime;
     private CancellationTokenSource _cts;
     private SingleStageMaster _stageMaster;
+
+    private Vector3 _leftEndPosition;
+    private Vector3 _rightEndPosition;
+    private float _targetDistance;
+    private float _endPointDistance;
+    private float _ballSpeed => _stageMaster?.BPM * MasterManager.SettingMaster.BallSpeedCoefficient ?? 1000f;
+    private float _ballTimeOffset => _targetDistance / _ballSpeed;
 
     // スコア
     private Score _currentScore;
@@ -94,6 +101,12 @@ public class BattleView : MonoBehaviour
     {
         _cts = new CancellationTokenSource();
         _stageMaster = singleStageMaster;
+
+        _leftEndPosition = GetEndPointPosition(_leftStartTransform.localPosition, _leftTargetPoint.localPosition);
+        _rightEndPosition = GetEndPointPosition(_rightStartTransform.localPosition, _rightTargetPoint.localPosition);
+        _targetDistance = Vector3.Distance(_leftStartTransform.localPosition, _leftTargetPoint.localPosition);
+        _endPointDistance = Vector3.Distance(_leftStartTransform.localPosition, _leftEndPosition);
+
         GameManager.instance.ClickHandler.OnClickButton.Subscribe(isLeft =>
         {
             OnClickButton(isLeft);
@@ -131,6 +144,11 @@ public class BattleView : MonoBehaviour
 
         _resultView.gameObject.SetActive(false);
         _enemyImage.sprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + _stageMaster.StageId);
+    }
+
+    private Vector3 GetEndPointPosition(Vector3 startPosition, Vector3 targetPosition)
+    {
+        return startPosition + (targetPosition - startPosition) * 1.5f;
     }
 
     public void DestroyAllObjectInList<T>(List<T> ballList)
@@ -203,7 +221,7 @@ public class BattleView : MonoBehaviour
                 var newBall = Instantiate(_ballPrefab, _ballTransform);
                 newBall.transform.localPosition = startTransform.localPosition;
                 newBall.gameObject.SetActive(false);
-                newBall.Init(noteMaster, noteTime, BallType.Single);
+                newBall.Init(noteMaster, noteTime, BallType.Single, _ballTimeOffset);
                 SetBallToList(newBall);
             }
             else
@@ -214,7 +232,7 @@ public class BattleView : MonoBehaviour
                 longBall.gameObject.SetActive(false);
                 var endNote = noteMaster.notes[0];
                 float endNoteTime = CalcNoteTime(endNote);
-                longBall.Init(noteMaster, noteTime, endNoteTime);
+                longBall.Init(noteMaster, noteTime, endNoteTime, _ballTimeOffset);
                 SetBallToList(longBall.StartBall);
                 SetBallToList(longBall.EndBall);
             }
@@ -273,6 +291,8 @@ public class BattleView : MonoBehaviour
         }
     }
 
+#region ボールの移動関連
+
     private void LaunchBall(List<SingleBall> ballList)
     {
         var launchBall = ballList.FirstOrDefault(b => b.BallState == BallState.Wait);
@@ -288,9 +308,11 @@ public class BattleView : MonoBehaviour
 
     private void CreateMoveTween(SingleBall ball)
     {
-        var tween = ball.transform.DOMove(ball.IsLeft ? _leftTransform.transform.position : _rightTransform.transform.position, MasterManager.SettingMaster.BallSpeed).SetEase(Ease.Linear);
+        var tween = ball.transform.DOLocalMove(ball.IsLeft ? _leftEndPosition : _rightEndPosition, _endPointDistance / _ballSpeed).SetEase(Ease.Linear);
         ball.SetTween(tween);
     }
+
+#endregion
 
     void Update()
     {

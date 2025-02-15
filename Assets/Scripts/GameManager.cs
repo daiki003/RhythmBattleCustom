@@ -47,7 +47,7 @@ public class GameManager : MonoBehaviour
 			instance = this;
 		}
         // フレームレート設定（FPS60にしたい場合）
-        Application.targetFrameRate = 60;
+        Application.targetFrameRate = 120;
 	}
 
     void Start()

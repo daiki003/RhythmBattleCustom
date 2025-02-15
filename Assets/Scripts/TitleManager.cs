@@ -51,7 +51,7 @@ public class TitleManager : MonoBehaviour
                 SetLevelPanel(menuButton.ButtonType);
             }
         }
-        BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true);
+        BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true, isFade: true);
         _offsetSetting.text = GameManager.instance.SettingOffset.ToString();
         _offsetSetting.onValueChanged.AddListener(x =>
         {
@@ -93,7 +93,7 @@ public class TitleManager : MonoBehaviour
             }
             else
             {
-                BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true);
+                BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true, isFade: true);
             }
             strip.BgmButton.SetBacklight(x.isPlay);
         });

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Profiling;
+using DG.Tweening;
 
 public enum BgmName
 {
@@ -22,6 +23,8 @@ public class BGMManager : MonoBehaviour
 	public float CurrentTime => _bgmSource.time;
 	public float CurrentClipLength => _currentBgmClip.length;
 	public bool IsPlaying => _bgmSource.isPlaying;
+
+	private const float _fadeInTime = 3.0f;
 
     public static BGMManager instance;
 	public void Awake()
@@ -61,25 +64,38 @@ public class BGMManager : MonoBehaviour
 		return newClip;
 	}
 
-	public void SetClip(BgmName bgmName, bool isLoop = false, bool immediatePlay = true)
+	public void SetClip(BgmName bgmName, bool isLoop = false, bool immediatePlay = true, bool isFade = false)
 	{
-		SetClip(bgmName.ToString(), isLoop, immediatePlay);
+		SetClip(bgmName.ToString(), isLoop, immediatePlay, isFade);
 	}
 
-	public void SetClip(string clipName, bool isLoop = false, bool immediatePlay = true)
+	public void SetClip(string clipName, bool isLoop = false, bool immediatePlay = true, bool isFade = false)
 	{
 		_currentBgmClip = GetClip(clipName);
 		_bgmSource.loop = isLoop;
 		if (immediatePlay)
 		{
-			Play();
+			Play(isFade);
 		}
 	}
 
-	public void Play()
+	public void Play(bool isFade = false)
 	{
 		_bgmSource.clip = _currentBgmClip;
 		_bgmSource.Play();
+		if (isFade)
+		{
+			_bgmSource.volume = 0f;
+			DOTween.To(() => _bgmSource.volume, (value) => _bgmSource.volume = value, 1f, 1f);
+		}
+	}
+
+	public void PlayFadeInAsync()
+	{
+		_bgmSource.clip = _currentBgmClip;
+		_bgmSource.volume = 0f;
+		_bgmSource.Play();
+		DOTween.To(() => _bgmSource.volume, (value) => _bgmSource.volume = value, 1f, 1f);
 	}
 
 	public void Stop()

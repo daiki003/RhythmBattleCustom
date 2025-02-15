@@ -19,13 +19,13 @@ public class SingleBall : MonoBehaviour
 
     public Tweener MoveTween;
 
-    public void Init(NoteMaster noteMaster, float criticalTime, BallType ballType)
+    public void Init(NoteMaster noteMaster, float criticalTime, BallType ballType, float ballTimeOffset)
     {
         string ballSpritePath = ballType == BallType.Single ? "Ball/Single" : "Ball/Long";
         _ballImage.sprite = Resources.Load<Sprite>(ballSpritePath);
         _ballImage.color = ballType == BallType.Single ? Color.red : Color.blue;
         CriticalTime = criticalTime;
-        LaunchTime = criticalTime - MasterManager.SettingMaster.BallTimeOffset;
+        LaunchTime = criticalTime - ballTimeOffset;
         BallType = ballType;
         IsLeft = noteMaster.block <= 3;
     }
@@ -112,6 +112,5 @@ public class SingleBall : MonoBehaviour
         }
         float timeRate = 1 - (CriticalTime - currentTime) / MasterManager.SettingMaster.BallTimeOffset;
         int xDirection = IsLeft ? -1 : 1;
-        // transform.localPosition = new Vector3(xDirection * (70 + (140 * timeRate)), 400 - (970 * timeRate), 0);
     }
 }
