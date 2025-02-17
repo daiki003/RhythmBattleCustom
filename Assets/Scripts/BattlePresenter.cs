@@ -23,10 +23,6 @@ public class BattlePresenter : MonoBehaviour
         {
             FinishBattle(score).Forget();
         }).AddTo(this);
-        _battleView.DebugPanel.OnChangeMoveTime.Subscribe(time =>
-        {
-            MoveTime(time);
-        }).AddTo(this);
         _battleView.Init(singleStageMaster);
         _battleView.PrepareBattle();
     }
@@ -34,14 +30,6 @@ public class BattlePresenter : MonoBehaviour
     public void StartBattle()
     {
         _battleView.BattleStart().Forget();
-    }
-
-    public void MoveTime(float time)
-    {
-        _battleView.Reset();
-        _battleView.CreateBalls(_currentStageMaster.notes, time);
-        BGMManager.instance.SetTime(time);
-        BGMManager.instance.Play();
     }
 
     public async UniTask FinishBattle(Score score)

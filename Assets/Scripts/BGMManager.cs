@@ -21,10 +21,9 @@ public class BGMManager : MonoBehaviour
 
 	public bool IsFinishBgm => _currentBgmClip != null && _currentBgmClip.length <= _bgmSource.time;
 	public float CurrentTime => _bgmSource.time;
+	public float Length => _currentBgmClip.length;
 	public float CurrentClipLength => _currentBgmClip.length;
 	public bool IsPlaying => _bgmSource.isPlaying;
-
-	private const float _fadeInTime = 3.0f;
 
     public static BGMManager instance;
 	public void Awake()

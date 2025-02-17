@@ -87,13 +87,34 @@ public class SingleBall : MonoBehaviour
         return true;
     }
 
-    void OnDestroy()
+    public void PauseMove()
     {
-        OnWhenDestroyed.OnNext(this);
-        if (MoveTween != null)
+        if (MoveTween != null && MoveTween.IsActive())
+        {
+            MoveTween.Pause();
+        }
+    }
+
+    public void PlayMove()
+    {
+        if (MoveTween != null && MoveTween.IsActive())
+        {
+            MoveTween.Play();
+        }
+    }
+
+    public void StopMove()
+    {
+        if (MoveTween != null && MoveTween.IsActive())
         {
             MoveTween.Kill();
         }
+    }
+
+    void OnDestroy()
+    {
+        OnWhenDestroyed.OnNext(this);
+        StopMove();
     }
 
     void Update()
@@ -101,7 +122,7 @@ public class SingleBall : MonoBehaviour
         float currentTime = BGMManager.instance.CurrentTime;
         if (BallState == BallState.Holded || currentTime < LaunchTime)
         {
-            MoveTween.Kill();
+            StopMove();
             return;
         }
         if (currentTime > CriticalTime + MasterManager.SettingMaster.HitTimeBuffer)

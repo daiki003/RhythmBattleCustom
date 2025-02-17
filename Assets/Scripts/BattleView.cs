@@ -60,23 +60,23 @@ public class BattleView : MonoBehaviour
     [SerializeField] private Text _comboText;
     [SerializeField] private Button _resetButton;
     [SerializeField] private Button _testButton;
-    [SerializeField] private Button _debugButton;
+    [SerializeField] private Button _pauseButton;
     [SerializeField] private Button _backButton;
     [SerializeField] private Image _testButtonImage;
+    [SerializeField] private Slider _timeSlider;
 
-    [SerializeField] private DebugPanel _debugPanel;
     [SerializeField] private ResultView _resultView;
-
-    public DebugPanel DebugPanel => _debugPanel;
 
     private List<SingleBall> _leftBallList = new();
     private List<SingleBall> _rightBallList = new();
+    private List<SingleBall> _launchedBallStashList = new();
 
     private bool _isTest;
     public bool IsTest => _isTest;
     private bool _isStartBattle;
     private bool _isFinishBattle;
     private bool _isStartBgm;
+    private bool _isPausedBgm;
     private float _startBgmTime;
     private float _lastBeatTime;
     private CancellationTokenSource _cts;
@@ -106,6 +106,7 @@ public class BattleView : MonoBehaviour
         _rightEndPosition = GetEndPointPosition(_rightStartTransform.localPosition, _rightTargetPoint.localPosition);
         _targetDistance = Vector3.Distance(_leftStartTransform.localPosition, _leftTargetPoint.localPosition);
         _endPointDistance = Vector3.Distance(_leftStartTransform.localPosition, _leftEndPosition);
+        _timeSlider.gameObject.SetActive(false);
 
         GameManager.instance.ClickHandler.OnClickButton.Subscribe(isLeft =>
         {
@@ -124,10 +125,6 @@ public class BattleView : MonoBehaviour
         {
             ChangeTest();
         }).AddTo(this);
-        _debugButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            _debugPanel.gameObject.SetActive(true);
-        }).AddTo(this);
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {
             OnWhenClickedBack.OnNext(default);
@@ -141,6 +138,31 @@ public class BattleView : MonoBehaviour
         {
             OnWhenClickedBack.OnNext(default);
         }).AddTo(this);
+        _pauseButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            // 変更前に曲が止まっている（これから曲を流す）場合はボール作り直し
+            if (!BGMManager.instance.IsPlaying)
+            {
+                DestroyAllObjectInList(_leftBallList);
+                DestroyAllObjectInList(_rightBallList);
+                CreateBalls(_stageMaster.notes, BGMManager.instance.CurrentTime + _ballTimeOffset);
+            }
+            BGMManager.instance.Pause();
+            _isPausedBgm = !BGMManager.instance.IsPlaying;
+            // 変更後に曲が止まっている場合はボールの動きを止める
+            if (!BGMManager.instance.IsPlaying)
+            {
+                PauseLaunchedBall(_leftBallList);
+                PauseLaunchedBall(_rightBallList);
+            }
+            // 曲再生中はスライダー非表示
+            _timeSlider.value = BGMManager.instance.CurrentTime / BGMManager.instance.Length;
+            _timeSlider.gameObject.SetActive(!BGMManager.instance.IsPlaying);
+        }).AddTo(this);
+        _timeSlider.OnValueChangedAsObservable().Subscribe(x =>
+        {
+            BGMManager.instance.SetTime(BGMManager.instance.Length * x);
+        }).AddTo(this);
 
         _resultView.gameObject.SetActive(false);
         _enemyImage.sprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + _stageMaster.StageId);
@@ -151,15 +173,42 @@ public class BattleView : MonoBehaviour
         return startPosition + (targetPosition - startPosition) * 1.5f;
     }
 
-    public void DestroyAllObjectInList<T>(List<T> ballList)
+    public void DestroyAllObjectInList(List<SingleBall> ballList, bool withoutLaunched = false)
     {
         while (ballList.Count > 0)
         {
             var ball = ballList[0];
             ballList.RemoveAt(0);
-            if (ball is MonoBehaviour monoBehaviour)
+            if (withoutLaunched && ball.BallState == BallState.Launched)
             {
-                Destroy(monoBehaviour.gameObject);
+                // 発射されたボールを破棄しない場合、スタッシュしておく
+                _launchedBallStashList.Add(ball);
+            }
+            else
+            {
+                Destroy(ball.gameObject);
+            }
+        }
+    }
+
+    private void PlayLaunchedBall(List<SingleBall> ballList)
+    {
+        foreach (var ball in ballList)
+        {
+            if (ball.BallState == BallState.Launched)
+            {
+                ball.PlayMove();
+            }
+        }
+    }
+
+    private void PauseLaunchedBall(List<SingleBall> ballList)
+    {
+        foreach (var ball in ballList)
+        {
+            if (ball.BallState == BallState.Launched)
+            {
+                ball.PauseMove();
             }
         }
     }
@@ -206,6 +255,12 @@ public class BattleView : MonoBehaviour
 
     public void CreateBalls(List<NoteMaster> notes, float startTime = 0f)
     {
+        // スタッシュしておいたボールをリストに入れる
+        foreach (var ball in _launchedBallStashList)
+        {
+            var targetList = ball.IsLeft ? _leftBallList : _rightBallList;
+            targetList.Add(ball);
+        }
         foreach (NoteMaster noteMaster in notes)
         {
             float noteTime = CalcNoteTime(noteMaster);
@@ -320,6 +375,16 @@ public class BattleView : MonoBehaviour
         {
             return;
         }
+        if (BGMManager.instance.IsFinishBgm && !_isFinishBattle)
+        {
+            _isFinishBattle = true;
+            OnWhenFinishBattle.OnNext(_currentScore);
+            return;
+        }
+        if (_isPausedBgm)
+        {
+            return;
+        }
         if (_leftBallList.Count > 0)
         {
             LaunchBall(_leftBallList);
@@ -354,11 +419,6 @@ public class BattleView : MonoBehaviour
                     OnClickButton(isLeft: false);
                 }
             }
-        }
-        if (BGMManager.instance.IsFinishBgm && !_isFinishBattle)
-        {
-            _isFinishBattle = true;
-            OnWhenFinishBattle.OnNext(_currentScore);
         }
     }
 
