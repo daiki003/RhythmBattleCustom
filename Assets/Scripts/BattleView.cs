@@ -92,6 +92,7 @@ public class BattleView : MonoBehaviour
     private float _surplusDistance;
     private float _ballSpeed => _stageMaster?.BPM * MasterManager.SettingMaster.BallSpeedCoefficient ?? 1000f;
     private float _ballTimeOffset => _targetDistance / _ballSpeed;
+    private float _currentTime => _isStartBgm ? BGMManager.instance.CurrentTime : Time.time - _startBgmTime;
 
     // スコア
     private Score _currentScore;
@@ -363,8 +364,7 @@ public class BattleView : MonoBehaviour
     private void LaunchBall(List<SingleBall> ballList)
     {
         var launchBall = ballList.FirstOrDefault(b => b.BallState == BallState.Wait);
-        float currentTime = _isStartBgm ? BGMManager.instance.CurrentTime : Time.time - _startBgmTime;
-        if (launchBall != null && currentTime >= launchBall.LaunchTime)
+        if (launchBall != null && _currentTime >= launchBall.LaunchTime)
         {
             launchBall.Launch();
             CreateMoveTween(launchBall);
@@ -380,7 +380,7 @@ public class BattleView : MonoBehaviour
 
     private float GetPositionRate(SingleBall ball)
     {
-        return (BGMManager.instance.CurrentTime - ball.LaunchTime) / _ballTimeOffset;;
+        return (_currentTime - ball.LaunchTime) / _ballTimeOffset;;
     }
 
 #endregion
