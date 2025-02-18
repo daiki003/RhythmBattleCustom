@@ -17,8 +17,6 @@ public class LongBall : MonoBehaviour
     public SingleBall StartBall => _startBall;
     public SingleBall EndBall => _endBall;
 
-    public bool IsStartBallClicked;
-
     private const float _lineWidth = 0.2f;
 
     public void Init(NoteMaster noteMaster, float criticalTime, float endCriticalTime, float ballTimeOffset)
@@ -28,11 +26,7 @@ public class LongBall : MonoBehaviour
         _startBall.OnWhenLaunched.Subscribe(_ =>
         {
             gameObject.SetActive(true);
-            IsStartBallClicked = true;
-        });
-        _startBall.OnWhenClicked.Subscribe(_ =>
-        {
-            IsStartBallClicked = true;
+            _endBall.gameObject.SetActive(true);
         });
         _startBall.OnWhenDestroyed.Subscribe(_ =>
         {
@@ -41,6 +35,22 @@ public class LongBall : MonoBehaviour
         _endBall.OnWhenDestroyed.Subscribe(_ =>
         {
             Destroy(gameObject);
+        });
+        _startBall.OnWhenEnd.Subscribe(_ =>
+        {
+            if (_endBall.BallState != BallState.End)
+            {
+                _endBall.SetEnd();
+            }
+            gameObject.SetActive(false);
+        });
+        _endBall.OnWhenEnd.Subscribe(_ =>
+        {
+            if (_startBall.BallState != BallState.End)
+            {
+                _startBall.SetEnd();
+            }
+            gameObject.SetActive(false);
         });
 
         //線の幅を決める

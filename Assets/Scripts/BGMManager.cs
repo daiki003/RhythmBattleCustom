@@ -102,9 +102,19 @@ public class BGMManager : MonoBehaviour
 		_bgmSource.Stop();
 	}
 
-	public void Pause(bool forcePause = false)
+	public void Restart()
 	{
-		if (_bgmSource.isPlaying || forcePause)
+		_bgmSource.Play();
+	}
+
+	public void Pause()
+	{
+		_bgmSource.Pause();
+	}
+
+	public void ChangePause()
+	{
+		if (_bgmSource.isPlaying)
 		{
 			_bgmSource.Pause();
 		}

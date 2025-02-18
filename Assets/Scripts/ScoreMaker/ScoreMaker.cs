@@ -135,7 +135,7 @@ public class ScoreMaker : MonoBehaviour
             {
                 line.IsEnd = line.GetLineTime(_bpm, _offset) < BGMManager.instance.CurrentTime;
             }
-            BGMManager.instance.Pause();
+            BGMManager.instance.ChangePause();
         }).AddTo(this);
         _saveButton.OnClickAsObservable().Subscribe(async _ =>
         {
@@ -145,14 +145,14 @@ public class ScoreMaker : MonoBehaviour
             await PlayFabController.UpdateOverrideScore(_currentStageMaster);
             MasterManager.SetOverrideMaster(_currentStageMaster);
             // ダイアログを出す
-            var dialog = Instantiate(ResourceManager.LoadPrefab("Dialog"), _dialogTransform).GetComponent<Dialog>();
+            var dialog = Instantiate(ResourceManager.LoadPrefab<Dialog>("Dialog"), _dialogTransform);
             dialog.Init("保存しました", "閉じる");
         });
         _addStageButton.OnClickAsObservable().Subscribe(_ =>
         {
             SEManager.instance.PlayButtonSe();
             // ステージ名入力ダイアログを出す
-            var inputDialog = Instantiate(ResourceManager.LoadPrefab("InputDialog"), _dialogTransform).GetComponent<InputDialog>();
+            var inputDialog = Instantiate(ResourceManager.LoadPrefab<InputDialog>("InputDialog"), _dialogTransform);
             inputDialog.Init("ステージ名を入力してください", _currentStageMaster.StageId, _currentStageMaster.StageId);
             inputDialog.OnSubmit.Subscribe(async stageName =>
             {
@@ -170,7 +170,7 @@ public class ScoreMaker : MonoBehaviour
                 MasterManager.AddCustomStageList(stageMaster);
                 await PlayFabController.UpdateCustomStageList();
                 // ダイアログを出す
-                var dialog = Instantiate(ResourceManager.LoadPrefab("Dialog"), _dialogTransform).GetComponent<Dialog>();
+                var dialog = Instantiate(ResourceManager.LoadPrefab<Dialog>("Dialog"), _dialogTransform);
                 dialog.Init("保存しました", "閉じる");
             });
         });
@@ -356,8 +356,8 @@ public class ScoreMaker : MonoBehaviour
             }
             if (pairBall != null)
             {
-                var linePrefab = ResourceManager.LoadPrefab("ScoreMaker/ScoreMakerBallLine");
-                var longBallLine = Instantiate(linePrefab).GetComponent<ScoreMakerBallLine>();
+                var linePrefab = ResourceManager.LoadPrefab<ScoreMakerBallLine>("ScoreMaker/ScoreMakerBallLine");
+                var longBallLine = Instantiate(linePrefab);
                 longBallLine.Init(isHead ? createdBall : pairBall, isHead ? pairBall : createdBall, _scoreAreaLayoutGroup.spacing);
                 _longBallLineList.Add(longBallLine);
                 longBallLine.OnWhenDestroyed.Subscribe(line =>
@@ -454,7 +454,7 @@ public class ScoreMaker : MonoBehaviour
 
         // レベル更新
         _currentLevel = level;
-        BGMManager.instance.Pause(forcePause: true);
+        BGMManager.instance.Pause();
         CreateLine();
     }
 
@@ -677,7 +677,7 @@ public class ScoreMaker : MonoBehaviour
         {
             float currentLineNumber = GetCurrentLineNumber();
             float anchorY = _scoreAreaBottom - (_scoreAreaLayoutGroup.spacing + _scoreLineHeight) * currentLineNumber;
-            _scoreAreaRect.anchoredPosition = new Vector3(0, anchorY, 0);
+            _scoreAreaRect.anchoredPosition = new Vector2(0, anchorY);
             var nextLine = _scoreLineList.FirstOrDefault(l => !l.IsEnd);
             if (nextLine != null && BGMManager.instance.CurrentTime > nextLine.GetLineTime(_bpm, _offset) - MasterManager.SettingMaster.ScoreMakerNoteTimeBuffer)
             {

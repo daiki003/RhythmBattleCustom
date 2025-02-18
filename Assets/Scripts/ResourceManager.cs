@@ -9,17 +9,17 @@ public static class ResourceManager
 
     private static string _basePrefabPath = "Prefabs/";
 
-    public static GameObject LoadPrefab(string prefabPath)
+    public static T LoadPrefab<T>(string prefabPath)
     {
         if (_loadedPrefabDic.ContainsKey(prefabPath))
         {
-            return _loadedPrefabDic[prefabPath];
+            return _loadedPrefabDic[prefabPath].GetComponent<T>();
         }
         else
         {
             var prefab = Resources.Load<GameObject>(_basePrefabPath + prefabPath);
             _loadedPrefabDic.Add(prefabPath, prefab);
-            return prefab;
+            return prefab.GetComponent<T>();
         }
     }
 

@@ -12,10 +12,13 @@ public class SingleBall : MonoBehaviour
     public BallType BallType;
     public BallState BallState;
 
+    public bool IsAlive => BallState < BallState.Holded;
+    public bool IsActive => IsAlive && JudgeBall() >= HitType.Hit;
+
     public Subject<Unit> OnWhenLaunched = new Subject<Unit>();
-    public Subject<Unit> OnWhenClicked = new Subject<Unit>();
     public Subject<Unit> OnWhenMiss = new Subject<Unit>();
     public Subject<SingleBall> OnWhenDestroyed = new Subject<SingleBall>();
+    public Subject<SingleBall> OnWhenEnd = new Subject<SingleBall>();
 
     public Tweener MoveTween;
 
@@ -51,55 +54,30 @@ public class SingleBall : MonoBehaviour
         MoveTween = tweener;
     }
 
-    public bool OnClickButton()
+    public void Launch()
     {
-        if (BallType == BallType.LongEnd)
+        gameObject.SetActive(true);
+        OnWhenLaunched.OnNext(default);
+        BallState = BallState.Launched;
+    }
+
+    public void SetEnd()
+    {
+        BallState = BallState.End;
+        gameObject.SetActive(false);
+        OnWhenEnd.OnNext(this);
+    }
+
+    public void AfterBeat(bool isRelease)
+    {
+        if (isRelease && BallType == BallType.LongEnd ||
+            !isRelease && BallType == BallType.Single)
         {
-            return false;
+            SetEnd();
         }
-        OnWhenClicked.OnNext(default);
-        if (BallType == BallType.Single)
-        {
-            Destroy(gameObject);
-        }
-        else if (BallType == BallType.LongStart)
+        else if (!isRelease && BallType == BallType.LongStart)
         {
             BallState = BallState.Holded;
-        }
-        return true;
-    }
-
-    public bool OnReleaseButton()
-    {
-        if (BallType == BallType.LongEnd)
-        {
-            return false;
-        }
-        OnWhenClicked.OnNext(default);
-        if (BallType == BallType.Single)
-        {
-            Destroy(gameObject);
-        }
-        else if (BallType == BallType.LongStart)
-        {
-            BallState = BallState.Holded;
-        }
-        return true;
-    }
-
-    public void PauseMove()
-    {
-        if (MoveTween != null && MoveTween.IsActive())
-        {
-            MoveTween.Pause();
-        }
-    }
-
-    public void PlayMove()
-    {
-        if (MoveTween != null && MoveTween.IsActive())
-        {
-            MoveTween.Play();
         }
     }
 
@@ -117,21 +95,24 @@ public class SingleBall : MonoBehaviour
         StopMove();
     }
 
-    void Update()
+    public void ViewUpdate(float bgmTime, bool isPause)
     {
-        float currentTime = BGMManager.instance.CurrentTime;
-        if (BallState == BallState.Holded || currentTime < LaunchTime)
+        if (isPause)
+        {
+            return;
+        }
+        if (BallState == BallState.Holded || bgmTime < LaunchTime)
         {
             StopMove();
             return;
         }
-        if (currentTime > CriticalTime + MasterManager.SettingMaster.HitTimeBuffer)
+        if (BallState != BallState.End && bgmTime > CriticalTime + MasterManager.SettingMaster.HitTimeBuffer)
         {
             OnWhenMiss.OnNext(default);
-            Destroy(gameObject);
+            SetEnd();
             return;
         }
-        float timeRate = 1 - (CriticalTime - currentTime) / MasterManager.SettingMaster.BallTimeOffset;
+        float timeRate = 1 - (CriticalTime - bgmTime) / MasterManager.SettingMaster.BallTimeOffset;
         int xDirection = IsLeft ? -1 : 1;
     }
 }

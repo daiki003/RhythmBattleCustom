@@ -12,7 +12,6 @@ public class MoveButton : Button
     public void SetLineNumber(int number, int totalLineNumber)
     {
         TargetLineNumber = number;
-        var rectTransform = GetComponent<RectTransform>();
-        rectTransform.anchoredPosition = new Vector2(rectTransform.anchoredPosition.x, _timeBarLength * ((float)number / totalLineNumber) + _timeBarOffset);
+        transform.SetAnchoredPositionY(_timeBarLength * ((float)number / totalLineNumber) + _timeBarOffset);
     }
 }

@@ -22,10 +22,9 @@ public class LinePocket : MonoBehaviour
 
     public void CreateBall(ScoreMaker.ScoreMakerBallType ballType)
     {
-        var ballPrefab = ResourceManager.LoadPrefab("ScoreMaker/ScoreMakerBall");
+        var ballPrefab = ResourceManager.LoadPrefab<ScoreMakerBall>("ScoreMaker/ScoreMakerBall");
         var ball = Instantiate(ballPrefab, _ballTransform);
-        InstalledBall = ball.GetComponent<ScoreMakerBall>();
-        InstalledBall.Init(ballType, Number, IsLeft);
+        ball.Init(ballType, Number, IsLeft);
     }
     public void SetBall(ScoreMakerBall ball)
     {
