@@ -29,6 +29,7 @@ public class TitleManager : MonoBehaviour
     [SerializeField] private GameObject _scoreMakerPanel;
     [SerializeField] private GameObject _settingPanel;
     [SerializeField] private InputField _offsetSetting;
+    [SerializeField] private Button _deleteDataButton;
 
     private List<StageStrip> _stripList = new List<StageStrip>();
 

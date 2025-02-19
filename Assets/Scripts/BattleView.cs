@@ -63,10 +63,6 @@ public class BattleView : MonoBehaviour
     [SerializeField] private Image _testButtonImage;
 
     [SerializeField] private BattlePracticeUI _practiceUi;
-
-
-    [SerializeField] private Slider _timeSlider;
-
     [SerializeField] private ResultView _resultView;
 
     private List<SingleBall> _leftBallList = new();
@@ -168,7 +164,7 @@ public class BattleView : MonoBehaviour
                 StopLaunchedBall(_rightBallList);
             }
             // 曲再生中はスライダー非表示
-            _timeSlider.value = BGMManager.instance.CurrentTime / BGMManager.instance.Length;
+            _practiceUi.SetSlider(BGMManager.instance.CurrentTimeLate);
         }).AddTo(this);
         _practiceUi.OnSliderValueChange.Subscribe(x =>
         {
@@ -179,7 +175,7 @@ public class BattleView : MonoBehaviour
         }).AddTo(this);
         _practiceUi.OnTimeJump.Subscribe(timeRate =>
         {
-            _timeSlider.value = timeRate;
+            _practiceUi.SetSlider(timeRate);
         });
 
         _resultView.gameObject.SetActive(false);
@@ -253,6 +249,16 @@ public class BattleView : MonoBehaviour
         await UniTask.WaitUntil(() => Time.time >= _startBgmTime);
         BGMManager.instance.Play();
         _isStartBgm = true;
+    }
+
+    public void BattleStartFromMiddle(float timeRate)
+    {
+        _isStartBattle = true;
+        _isFinishBattle = false;
+        _isStartBgm = true;
+        _practiceUi.Pause(true);
+        _practiceUi.SetSlider(timeRate);
+        _practiceUi.RegisterTime(0);
     }
 
     public void CreateBalls(List<NoteMaster> notes, float startTime = 0f)

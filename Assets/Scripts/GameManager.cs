@@ -35,6 +35,9 @@ public class GameManager : MonoBehaviour
     public float SettingOffset;
     private int _lastBattleLevel;
 
+    private ScoreMaker _scoreMaker;
+    private BattlePresenter _battlePresenter;
+
     private const string _titlePrefab = "Prefabs/TitlePanel";
     private const string _battlePrefabPath = "Prefabs/BattlePanel";
     private const string _scoreMakerPrefab = "Prefabs/ScoreMaker/ScoreMaker";
@@ -107,9 +110,9 @@ public class GameManager : MonoBehaviour
         BGMManager.instance.SetClip(stageId, immediatePlay: false);
         ResetPanel();
         var scoreMakerPrefab = Resources.Load<ScoreMaker>(_scoreMakerPrefab);
-        var scoreMaker = Instantiate(scoreMakerPrefab, _panelTransform);
-        scoreMaker.Init();
-        scoreMaker.StartMake(stageId);
+        _scoreMaker = Instantiate(scoreMakerPrefab, _panelTransform);
+        _scoreMaker.Init();
+        _scoreMaker.StartMake(stageId);
     }
 
     public async UniTask StartBattle(string stageId, int level)
@@ -120,13 +123,28 @@ public class GameManager : MonoBehaviour
         await FadeLoadPanel(true, 0.5f);
         ResetPanel();
         var battlePrefab = Resources.Load<BattlePresenter>(_battlePrefabPath);
-        var battlePresenter = Instantiate(battlePrefab, _panelTransform);
+        _battlePresenter = Instantiate(battlePrefab, _panelTransform);
         var stageMaster = MasterManager.GetSingleStageMaster(stageId, level);
-        battlePresenter.Init(stageMaster);
+        _battlePresenter.Init(stageMaster);
         // 曲が始まる前にGC.Collect
         GC.Collect();
         await UniTask.WaitForSeconds(1f);
         await FadeLoadPanel(false, 0.5f);
-        battlePresenter.StartBattle();
+        _battlePresenter.StartBattle();
+    }
+
+    public void StartBattleFromScoreMaker(SingleStageMaster stageMaster, float timeRate)
+    {
+        BGMManager.instance.Stop();
+        var battlePrefab = Resources.Load<BattlePresenter>(_battlePrefabPath);
+        _battlePresenter = Instantiate(battlePrefab, _panelTransform);
+        _battlePresenter.Init(stageMaster);
+        _battlePresenter.StartBattleFromScoreMaker(timeRate);
+    }
+
+    public void BackToScoreMaker()
+    {
+        Destroy(_battlePresenter.gameObject);
+        _scoreMaker.RestartMake();
     }
 }

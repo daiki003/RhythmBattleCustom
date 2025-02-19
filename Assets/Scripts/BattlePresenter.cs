@@ -11,13 +11,21 @@ public class BattlePresenter : MonoBehaviour
     [SerializeField] private BattleView _battleView;
 
     private SingleStageMaster _currentStageMaster;
+    private bool _isFromScoreMaker;
 
     public void Init(SingleStageMaster singleStageMaster)
     {
         _currentStageMaster = singleStageMaster;
         _battleView.OnWhenClickedBack.Subscribe(_ =>
         {
-            GameManager.instance.GoToTitle();
+            if (_isFromScoreMaker)
+            {
+                GameManager.instance.BackToScoreMaker();
+            }
+            else
+            {
+                GameManager.instance.GoToTitle();
+            }
         }).AddTo(this);
         _battleView.OnWhenFinishBattle.Subscribe(score =>
         {
@@ -30,6 +38,13 @@ public class BattlePresenter : MonoBehaviour
     public void StartBattle()
     {
         _battleView.BattleStart().Forget();
+    }
+
+    // 途中から開始
+    public void StartBattleFromScoreMaker(float timeRate)
+    {
+        _isFromScoreMaker = true;
+        _battleView.BattleStartFromMiddle(timeRate);
     }
 
     public async UniTask FinishBattle(Score score)

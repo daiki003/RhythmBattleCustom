@@ -22,6 +22,7 @@ public class BGMManager : MonoBehaviour
 	public bool IsFinishBgm => _currentBgmClip != null && _currentBgmClip.length <= _bgmSource.time;
 	public float CurrentTime => _bgmSource.time;
 	public float Length => _currentBgmClip.length;
+	public float CurrentTimeLate => CurrentTime / Length;
 	public float CurrentClipLength => _currentBgmClip.length;
 	public bool IsPlaying => _bgmSource.isPlaying;
 

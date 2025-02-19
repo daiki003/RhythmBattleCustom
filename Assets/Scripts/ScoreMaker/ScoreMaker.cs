@@ -17,6 +17,7 @@ public class ScoreMaker : MonoBehaviour
     [SerializeField] private ScrollRect _scoreScrollRect;
     [SerializeField] private Button _saveButton;
     [SerializeField] private Button _addStageButton;
+    [SerializeField] private Button _practiceButton;
     [SerializeField] private Button _backButton;
     [SerializeField] private List<MenuButton> _levelButtonList = new();
 
@@ -25,6 +26,7 @@ public class ScoreMaker : MonoBehaviour
 
     [SerializeField] private RectTransform _scoreAreaRect;
     [SerializeField] private VerticalLayoutGroup _scoreAreaLayoutGroup;
+    [SerializeField] private Scrollbar _bgmScrollBar;
 
     [SerializeField] private MoveButton _moveButtonPrefab;
     [SerializeField] private Transform _moveButtonArea;
@@ -90,6 +92,7 @@ public class ScoreMaker : MonoBehaviour
     private float _singleBeatTime => 60f / _bpm;
     private int _currentLevel;
     private bool _isStartMake;
+    private bool _isDuringPractice;
 
     public void Init()
     {
@@ -173,6 +176,14 @@ public class ScoreMaker : MonoBehaviour
                 var dialog = Instantiate(ResourceManager.LoadPrefab<Dialog>("Dialog"), _dialogTransform);
                 dialog.Init("保存しました", "閉じる");
             });
+        });
+        _practiceButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            _isDuringPractice = true;
+            _currentStageMaster.notes[_currentLevel] = CreateNoteList();
+            var singleMaster = new SingleStageMaster(_currentStageMaster, _currentLevel);
+            GameManager.instance.StartBattleFromScoreMaker(singleMaster, _bgmScrollBar.value);
+            gameObject.SetActive(false);
         });
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -447,6 +458,13 @@ public class ScoreMaker : MonoBehaviour
         BGMManager.instance.Play();
     }
 
+    // 練習モードから戻ってきたとき
+    public void RestartMake()
+    {
+        _isDuringPractice = false;
+        gameObject.SetActive(true);
+    }
+
     private void ChangeLevel(int level)
     {
         // 現在のレベルの譜面を保存
@@ -669,7 +687,7 @@ public class ScoreMaker : MonoBehaviour
 
     void Update()
     {
-        if (!_isStartMake)
+        if (!_isStartMake || _isDuringPractice)
         {
             return;
         }
