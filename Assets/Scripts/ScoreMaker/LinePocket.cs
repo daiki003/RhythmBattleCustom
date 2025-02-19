@@ -24,7 +24,8 @@ public class LinePocket : MonoBehaviour
     {
         var ballPrefab = ResourceManager.LoadPrefab<ScoreMakerBall>("ScoreMaker/ScoreMakerBall");
         var ball = Instantiate(ballPrefab, _ballTransform);
-        ball.Init(ballType, Number, IsLeft);
+        InstalledBall = ball;
+        InstalledBall.Init(ballType, Number, IsLeft);
     }
     public void SetBall(ScoreMakerBall ball)
     {
