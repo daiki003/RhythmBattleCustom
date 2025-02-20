@@ -183,7 +183,6 @@ public class ScoreMaker : MonoBehaviour
             _currentStageMaster.notes[_currentLevel] = CreateNoteList();
             var singleMaster = new SingleStageMaster(_currentStageMaster, _currentLevel);
             GameManager.instance.StartBattleFromScoreMaker(singleMaster, _bgmScrollBar.value);
-            gameObject.SetActive(false);
         });
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {

@@ -28,19 +28,20 @@ public enum SceneType
 public class GameManager : MonoBehaviour
 {
     [SerializeField] private Transform _panelTransform;
+    [SerializeField] private Transform _additionalPanelTransform;
     [SerializeField] private Image _loadPanel;
+
+    private const string _titleScenePath = "TitlePanel";
+    private const string _battleScenePath = "BattlePanel";
+    private const string _scoreMakerScenePath = "ScoreMaker/ScoreMaker";
 
     private ClickHandler _clickHandler;
     public ClickHandler ClickHandler => _clickHandler;
     public float SettingOffset;
-    private int _lastBattleLevel;
 
-    private ScoreMaker _scoreMaker;
-    private BattlePresenter _battlePresenter;
-
-    private const string _titlePrefab = "Prefabs/TitlePanel";
-    private const string _battlePrefabPath = "Prefabs/BattlePanel";
-    private const string _scoreMakerPrefab = "Prefabs/ScoreMaker/ScoreMaker";
+    private IScene _currentScene;
+    private IScene _additionalScene;
+    private SceneInfoBase _currentSceneInfo;
 
     public static GameManager instance;
 	public void Awake()
@@ -92,59 +93,96 @@ public class GameManager : MonoBehaviour
         await PlayFabController.LoginAsync();
         await MasterManager.GetAllMasterData();
         BGMManager.instance.PreloadBgm();
-        GoToTitle();
+        await OpenScene(SceneType.Title, new TitleSceneInfo());
 	}
+
+    // 次のシーンを開く
+    public async UniTask OpenScene(SceneType sceneType, SceneInfoBase nextSceneInfo)
+    {
+        BGMManager.instance.Stop();
+        if (!_loadPanel.gameObject.activeSelf)
+        {
+            await FadeLoadPanel(true, 0.5f);
+        }
+        // 前シーンを破棄
+        _currentScene?.Dispose();
+        // 新しいシーンを作成
+        _currentScene = CreateScene(sceneType, isAdditional: false);
+        await _currentScene.InitAsync(_currentSceneInfo, nextSceneInfo);
+        _currentSceneInfo = nextSceneInfo;
+        await FadeLoadPanel(false, 0.5f);
+        _currentScene.StartScene();
+    }
+
+    // 追加のシーンを開く
+    public async UniTask OpenAdditionalScene(SceneType sceneType, SceneInfoBase nextSceneInfo)
+    {
+        if (!_loadPanel.gameObject.activeSelf)
+        {
+            await FadeLoadPanel(true, 0.5f);
+        }
+        // 現在のシーンはいったん停止
+        _currentScene.Pause();
+        // 既に追加シーンがあれば破棄
+        _additionalScene?.Dispose();
+        // 新しいシーンを作成
+        _additionalScene = CreateScene(sceneType, isAdditional: true);
+        await _additionalScene.InitAsync(new SceneInfoBase(), nextSceneInfo);
+        await FadeLoadPanel(false, 0.5f);
+        _additionalScene.StartScene();
+    }
+
+    private IScene CreateScene(SceneType sceneType, bool isAdditional)
+    {
+        var parent = isAdditional ? _additionalPanelTransform : _panelTransform;
+        return sceneType switch
+        {
+            SceneType.Battle => Instantiate(ResourceManager.LoadPrefab<BattleScene>(_battleScenePath), parent),
+            SceneType.Title => Instantiate(ResourceManager.LoadPrefab<TitleScene>(_titleScenePath), parent),
+            SceneType.ScoreMaker => Instantiate(ResourceManager.LoadPrefab<ScoreMakerScene>(_scoreMakerScenePath), parent),
+            _ => throw new Exception("想定外のsceneTypeです")
+        };
+    }
 
     public void GoToTitle()
     {
-        ResetPanel();
-        var titlePrefab = Resources.Load<TitleManager>(_titlePrefab);
-        var titleManager = Instantiate(titlePrefab, _panelTransform);
-        titleManager.Init(_lastBattleLevel);
-        FadeLoadPanel(false, 1.5f).Forget();
+        OpenScene(SceneType.Title, new TitleSceneInfo()).Forget();
     }
 
     public void StartScoreMaker(string stageId)
     {
-        BGMManager.instance.Stop();
-        BGMManager.instance.SetClip(stageId, immediatePlay: false);
-        ResetPanel();
-        var scoreMakerPrefab = Resources.Load<ScoreMaker>(_scoreMakerPrefab);
-        _scoreMaker = Instantiate(scoreMakerPrefab, _panelTransform);
-        _scoreMaker.Init();
-        _scoreMaker.StartMake(stageId);
+        var sceneInfo = new ScoreMakerSceneInfo
+        {
+            StageId = stageId
+        };
+        OpenScene(SceneType.ScoreMaker, sceneInfo).Forget();
     }
 
     public async UniTask StartBattle(string stageId, int level)
     {
-        _lastBattleLevel = level;
+        var sceneInfo = new BattleSceneInfo
+        {
+            StageMaster = MasterManager.GetSingleStageMaster(stageId, level)
+        };
         SEManager.instance.PlayBattleStartSe();
-        BGMManager.instance.Stop();
-        await FadeLoadPanel(true, 0.5f);
-        ResetPanel();
-        var battlePrefab = Resources.Load<BattlePresenter>(_battlePrefabPath);
-        _battlePresenter = Instantiate(battlePrefab, _panelTransform);
-        var stageMaster = MasterManager.GetSingleStageMaster(stageId, level);
-        _battlePresenter.Init(stageMaster);
-        // 曲が始まる前にGC.Collect
-        GC.Collect();
-        await UniTask.WaitForSeconds(1f);
-        await FadeLoadPanel(false, 0.5f);
-        _battlePresenter.StartBattle();
+        await OpenScene(SceneType.Battle, sceneInfo);
     }
 
-    public void StartBattleFromScoreMaker(SingleStageMaster stageMaster, float timeRate)
+    public async UniTask StartBattleFromScoreMaker(SingleStageMaster stageMaster, float timeRate)
     {
-        BGMManager.instance.Stop();
-        var battlePrefab = Resources.Load<BattlePresenter>(_battlePrefabPath);
-        _battlePresenter = Instantiate(battlePrefab, _panelTransform);
-        _battlePresenter.Init(stageMaster);
-        _battlePresenter.StartBattleFromScoreMaker(timeRate);
+        var sceneInfo = new BattleSceneInfo
+        {
+            StageMaster = stageMaster,
+            TimeRate = timeRate,
+            IsAdditional = true
+        };
+        await OpenAdditionalScene(SceneType.Battle, sceneInfo);
     }
 
-    public void BackToScoreMaker()
+    public void BackToMainScene()
     {
-        Destroy(_battlePresenter.gameObject);
-        _scoreMaker.RestartMake();
+        _additionalScene.Dispose();
+        _additionalScene = null;
+        _currentScene.Restart();
     }
 }

@@ -20,7 +20,7 @@ public class BattlePresenter : MonoBehaviour
         {
             if (_isFromScoreMaker)
             {
-                GameManager.instance.BackToScoreMaker();
+                GameManager.instance.BackToMainScene();
             }
             else
             {
