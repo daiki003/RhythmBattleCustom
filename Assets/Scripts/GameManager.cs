@@ -149,17 +149,6 @@ public class GameManager : MonoBehaviour
         OpenScene(SceneType.Title, new TitleSceneInfo()).Forget();
     }
 
-    public async UniTask StartBattleFromScoreMaker(SingleStageMaster stageMaster, float timeRate)
-    {
-        var sceneInfo = new BattleSceneInfo
-        {
-            StageMaster = stageMaster,
-            TimeRate = timeRate,
-            IsAdditional = true
-        };
-        await OpenAdditionalScene(SceneType.Battle, sceneInfo);
-    }
-
     public void BackToMainScene()
     {
         _additionalScene.Dispose();

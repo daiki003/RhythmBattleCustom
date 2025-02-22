@@ -65,8 +65,7 @@ public class BattleView : MonoBehaviour
     [SerializeField] private BattlePracticeUI _practiceUi;
     [SerializeField] private ResultView _resultView;
 
-    private List<SingleBall> _leftBallList = new();
-    private List<SingleBall> _rightBallList = new();
+    private List<SingleBall> _ballList = new();
     private List<SingleBall> _launchedBallStashList = new();
 
     private bool _isTest;
@@ -89,7 +88,17 @@ public class BattleView : MonoBehaviour
     private float _surplusDistance;
     private float _ballSpeed => _stageMaster?.BPM * MasterManager.SettingMaster.BallSpeedCoefficient ?? 1000f;
     private float _ballTimeOffset => _targetDistance / _ballSpeed;
-    private float _currentTime => _isStartBgm ? BGMManager.instance.CurrentTime : Time.time - _startBgmTime;
+    private float _currentTime
+    {
+        get
+        {
+            if (_isStartBgm)
+            {
+                return BGMManager.instance.IsPlaying ? BGMManager.instance.CurrentTime : BGMManager.instance.Length * _practiceUi.SliderValue;
+            }
+            return Time.time - _startBgmTime;
+        }
+    }
 
     // スコア
     private Score _currentScore;
@@ -147,36 +156,26 @@ public class BattleView : MonoBehaviour
             _practiceUi.Init();
             _practiceUi.OnClickPauseButton.Subscribe(isPause =>
             {
-                // 曲を再開する場合はボール作り直し
-                if (!isPause)
-                {
-                    RefreshBalls(_leftBallList, isLaunch: true);
-                    RefreshBalls(_rightBallList, isLaunch: true);
-                }
+                _isPausedBgm = isPause;
                 if (isPause)
                 {
                     BGMManager.instance.Pause();
+                    // 曲を止める場合はボールの動きを止める
+                    StopLaunchedBall();
+                    _practiceUi.SetSlider(BGMManager.instance.CurrentTimeLate);
                 }
                 else
                 {
+                    // 始める場合は動きを再開
+                    AttachMoveTween();
                     BGMManager.instance.Play();
                 }
-                _isPausedBgm = isPause;
-                // 曲を止める場合はボールの動きを止める
-                if (isPause)
-                {
-                    StopLaunchedBall(_leftBallList);
-                    StopLaunchedBall(_rightBallList);
-                }
-                // 曲再生中はスライダー非表示
-                _practiceUi.SetSlider(BGMManager.instance.CurrentTimeLate);
             }).AddTo(this);
             _practiceUi.OnSliderValueChange.Subscribe(x =>
             {
                 float time = BGMManager.instance.Length * x;
                 BGMManager.instance.SetTime(time);
-                RefreshBalls(_leftBallList, isLaunch: false);
-                RefreshBalls(_rightBallList, isLaunch: false);
+                RefreshBalls(time);
             }).AddTo(this);
             _practiceUi.OnTimeJump.Subscribe(timeRate =>
             {
@@ -188,12 +187,12 @@ public class BattleView : MonoBehaviour
         _enemyImage.sprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + _stageMaster.StageId);
     }
 
-    public void DestroyAllObjectInList(List<SingleBall> ballList, bool withoutLaunched = false)
+    public void DestroyAllObjectInList(bool withoutLaunched = false)
     {
-        while (ballList.Count > 0)
+        while (_ballList.Count > 0)
         {
-            var ball = ballList[0];
-            ballList.RemoveAt(0);
+            var ball = _ballList[0];
+            _ballList.RemoveAt(0);
             if (withoutLaunched && ball.BallState == BallState.Launched)
             {
                 // 発射されたボールを破棄しない場合、スタッシュしておく
@@ -206,9 +205,9 @@ public class BattleView : MonoBehaviour
         }
     }
 
-    private void StopLaunchedBall(List<SingleBall> ballList)
+    private void StopLaunchedBall()
     {
-        foreach (var ball in ballList)
+        foreach (var ball in _ballList)
         {
             if (ball.BallState == BallState.Launched)
             {
@@ -219,8 +218,7 @@ public class BattleView : MonoBehaviour
 
     public void Reset()
     {
-        DestroyAllObjectInList(_leftBallList);
-        DestroyAllObjectInList(_rightBallList);
+        DestroyAllObjectInList();
         _currentScore = new Score();
         UpdateScoreText(_currentScore);
         BGMManager.instance.Stop();
@@ -272,8 +270,7 @@ public class BattleView : MonoBehaviour
         // スタッシュしておいたボールをリストに入れる
         foreach (var ball in _launchedBallStashList)
         {
-            var targetList = ball.IsLeft ? _leftBallList : _rightBallList;
-            targetList.Add(ball);
+            _ballList.Add(ball);
         }
         foreach (NoteMaster noteMaster in notes)
         {
@@ -311,27 +308,13 @@ public class BattleView : MonoBehaviour
     // ボールをリストに入れる
     private void SetBallToList(SingleBall ball, bool isInsert = false)
     {
-        if (ball.IsLeft)
+        if (isInsert)
         {
-            if (isInsert)
-            {
-                _leftBallList.Insert(0, ball);
-            }
-            else
-            {
-                _leftBallList.Add(ball);
-            }
+            _ballList.Insert(0, ball);
         }
         else
         {
-            if (isInsert)
-            {
-                _rightBallList.Insert(0, ball);
-            }
-            else
-            {
-                _rightBallList.Add(ball);
-            }
+            _ballList.Add(ball);
         }
         // ボールを打ち損ねたらミス判定
         ball.OnWhenMiss.Subscribe(_ => 
@@ -342,10 +325,21 @@ public class BattleView : MonoBehaviour
         });
     }
 
-    private void RefreshBalls(List<SingleBall> ballList, bool isLaunch)
+    private void AttachMoveTween()
     {
-        var currentTime = BGMManager.instance.CurrentTime;
-        foreach (var ball in ballList)
+        foreach (var ball in _ballList)
+        {
+            if (ball.BallState == BallState.Launched)
+            {
+                CreateMoveTween(ball);
+            }
+        }
+    }
+
+    private void RefreshBalls(float time)
+    {
+        var currentTime = time;
+        foreach (var ball in _ballList)
         {
             var startTransform = ball.IsLeft ? _leftStartTransform : _rightStartTransform;
             var startToTargetVector = ball.IsLeft ? _startToTargetVectorLeft : _startToTargetVectorRight;
@@ -357,10 +351,6 @@ public class BattleView : MonoBehaviour
             {
                 ball.Launch();
                 ball.transform.localPosition = startTransform.localPosition + startToTargetVector * GetPositionRate(ball);
-                if (isLaunch)
-                {
-                    CreateMoveTween(ball);
-                }
             }
             else
             {
@@ -373,21 +363,24 @@ public class BattleView : MonoBehaviour
 
 #region ボールの移動関連
 
-    private void LaunchBall(List<SingleBall> ballList)
+    private void LaunchBall()
     {
-        var launchBall = ballList.FirstOrDefault(b => b.BallState == BallState.Wait);
-        if (launchBall != null && _currentTime >= launchBall.LaunchTime)
+        var launchBallList = _ballList.Where(b => b.BallState == BallState.Wait && _currentTime >= b.LaunchTime);
+        foreach (var ball in launchBallList)
         {
-            launchBall.Launch();
-            CreateMoveTween(launchBall);
+            ball.Launch();
+            CreateMoveTween(ball);
         }
     }
 
     private void CreateMoveTween(SingleBall ball)
     {
-        float distance = _targetDistance * (1 - GetPositionRate(ball)) + _surplusDistance;
-        var tween = ball.transform.DOLocalMove(ball.IsLeft ? _leftEndPosition : _rightEndPosition, distance / _ballSpeed).SetEase(Ease.Linear);
-        ball.SetTween(tween);
+        if (ball.MoveTween == null)
+        {
+            float distance = _targetDistance * (1 - GetPositionRate(ball)) + _surplusDistance;
+            var tween = ball.transform.DOLocalMove(ball.IsLeft ? _leftEndPosition : _rightEndPosition, distance / _ballSpeed).SetEase(Ease.Linear);
+            ball.SetTween(tween);
+        }
     }
 
     private float GetPositionRate(SingleBall ball)
@@ -409,11 +402,7 @@ public class BattleView : MonoBehaviour
             OnWhenFinishBattle.OnNext(_currentScore);
             return;
         }
-        foreach (var ball in _leftBallList)
-        {
-            ball.ViewUpdate(BGMManager.instance.CurrentTime, _isPausedBgm);
-        }
-        foreach (var ball in _rightBallList)
+        foreach (var ball in _ballList)
         {
             ball.ViewUpdate(BGMManager.instance.CurrentTime, _isPausedBgm);
         }
@@ -421,38 +410,22 @@ public class BattleView : MonoBehaviour
         {
             return;
         }
-        if (_leftBallList.Count > 0)
+        if (_ballList.Count > 0)
         {
-            LaunchBall(_leftBallList);
-        }
-        if (_rightBallList.Count > 0)
-        {
-            LaunchBall(_rightBallList);
+            LaunchBall();
         }
         if (_isTest)
         {
-            var leftFirstBall = _leftBallList.FirstOrDefault();
-            if (leftFirstBall != null && leftFirstBall.CriticalTime > BGMManager.instance.CurrentTime - MasterManager.SettingMaster.TestNoteTimeBuffer && leftFirstBall.CriticalTime < BGMManager.instance.CurrentTime + MasterManager.SettingMaster.TestNoteTimeBuffer)
+            var activeBallList = _ballList.Where(b => Mathf.Abs(b.CriticalTime - BGMManager.instance.CurrentTime) < MasterManager.SettingMaster.TestNoteTimeBuffer);
+            foreach (var ball in activeBallList)
             {
-                if (leftFirstBall.BallType == BallType.LongEnd)
+                if (ball.BallType == BallType.LongEnd)
                 {
-                    OnReleaseButton(isLeft: true);
+                    OnReleaseButton(ball.IsLeft);
                 }
                 else
                 {
-                    OnClickButton(isLeft: true);
-                }
-            }
-            var rightFirstBall = _rightBallList.FirstOrDefault();
-            if (rightFirstBall != null && rightFirstBall.CriticalTime > BGMManager.instance.CurrentTime - MasterManager.SettingMaster.TestNoteTimeBuffer && rightFirstBall.CriticalTime < BGMManager.instance.CurrentTime + MasterManager.SettingMaster.TestNoteTimeBuffer)
-            {
-                if (rightFirstBall.BallType == BallType.LongEnd)
-                {
-                    OnReleaseButton(isLeft: false);
-                }
-                else
-                {
-                    OnClickButton(isLeft: false);
+                    OnClickButton(ball.IsLeft);
                 }
             }
         }
@@ -469,8 +442,7 @@ public class BattleView : MonoBehaviour
     private void OnClickButton(bool isLeft)
     {
         float time = BGMManager.instance.CurrentTime;
-        var targetList = isLeft ? _leftBallList : _rightBallList;
-        var firstActiveBall = targetList.FirstOrDefault(b => b.IsActive);
+        var firstActiveBall = _ballList.FirstOrDefault(b => b.IsActive && b.IsLeft == isLeft);
         if (firstActiveBall != null)
         {
             if (firstActiveBall.BallType == BallType.LongEnd)
@@ -484,8 +456,7 @@ public class BattleView : MonoBehaviour
     private void OnReleaseButton(bool isLeft)
     {
         float time = BGMManager.instance.CurrentTime;
-        var targetList = isLeft ? _leftBallList : _rightBallList;
-        var firstBall = targetList.FirstOrDefault(b => b.IsAlive);
+        var firstBall = _ballList.FirstOrDefault(b => b.IsAlive && b.IsLeft == isLeft);
         // ロングノーツの終端の前で離したらそれを破棄
         if (firstBall != null && firstBall.BallType == BallType.LongEnd && firstBall.JudgeBall() == HitType.None)
         {
@@ -494,7 +465,7 @@ public class BattleView : MonoBehaviour
             _currentScore.CountUp(HitType.None);
             UpdateScoreText(_currentScore);
         }
-        var firstActiveBall = targetList.FirstOrDefault(b => b.IsActive);
+        var firstActiveBall = _ballList.FirstOrDefault(b => b.IsActive && b.IsLeft == isLeft);
         if (firstActiveBall != null)
         {
             if (firstActiveBall.BallType != BallType.LongEnd)

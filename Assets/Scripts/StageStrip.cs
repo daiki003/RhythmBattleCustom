@@ -44,7 +44,7 @@ public class StageStrip : MonoBehaviour
             return;
         }
         bool isCleared = clearState.Score > 0;
-        _scoreText.text = isCleared ? string.Format("{0:F1}", FloatUtility.RoundDown(clearState.Score, 1)) : "-";
+        _scoreText.text = isCleared ? string.Format("{0:F1}", clearState.Score.RoundDown(1)) : "-";
         _criticalText.text = isCleared ? clearState.CriticalNumber.ToString() : "-";
         _hitText.text = isCleared ? clearState.HitNumber.ToString() : "-";
         _missText.text = isCleared ? clearState.MissNumber.ToString() : "-";

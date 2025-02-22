@@ -35,20 +35,20 @@ public class ResultView : MonoBehaviour
         _criticalNumberText.text = clearState.CriticalNumber.ToString();
         _hitNumberText.text = clearState.HitNumber.ToString();
         _missNumberText.text = clearState.MissNumber.ToString();
-        _totalScoreText.text = FloatUtility.RoundDown(clearState.Score, 2).ToString();
+        _totalScoreText.text = clearState.Score.RoundDown(2).ToString();
         _comboText.text = clearState.Combo.ToString();
 
-        _criticalMultipleText.text = FloatUtility.RoundDown(criticalMultiple, 2).ToString();
-        _hitMultipleText.text = FloatUtility.RoundDown(hitMultiple, 2).ToString();
-        _missMultipleText.text = FloatUtility.RoundDown(missMultiple, 2).ToString();
-        _criticalScoreText.text = FloatUtility.RoundDown(clearState.CriticalNumber * criticalMultiple, 2).ToString();
-        _hitScoreText.text = FloatUtility.RoundDown(clearState.HitNumber * hitMultiple, 2).ToString();
-        _missScoreText.text = FloatUtility.RoundDown(clearState.MissNumber * missMultiple, 2).ToString();
+        _criticalMultipleText.text = criticalMultiple.RoundDown(2).ToString();
+        _hitMultipleText.text = hitMultiple.RoundDown(2).ToString();
+        _missMultipleText.text = missMultiple.RoundDown(2).ToString();
+        _criticalScoreText.text = (clearState.CriticalNumber * criticalMultiple).RoundDown(2).ToString();
+        _hitScoreText.text = (clearState.HitNumber * hitMultiple).RoundDown(2).ToString();
+        _missScoreText.text = (clearState.MissNumber * missMultiple).RoundDown(2).ToString();
 
         _highScoreCriticalText.text = highScoreClearState.CriticalNumber.ToString();
         _highScoreHitText.text = highScoreClearState.HitNumber.ToString();
         _highScoreMissText.text = highScoreClearState.MissNumber.ToString();
-        _highScoreText.text = FloatUtility.RoundDown(highScoreClearState.Score, 2).ToString();
+        _highScoreText.text = highScoreClearState.Score.RoundDown(2).ToString();
         _highScoreComboText.text = highScoreClearState.Combo.ToString();
 
         _restartButton.OnClickAsObservable().Subscribe(_ =>

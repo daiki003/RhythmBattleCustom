@@ -22,6 +22,8 @@ public class BattlePracticeUI : MonoBehaviour
     public Subject<float> OnSliderValueChange = new();
     public Subject<float> OnTimeJump = new();
 
+    public float SliderValue => _timeSlider.value;
+
     public void Init()
     {
         _isPause = false;

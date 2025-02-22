@@ -132,11 +132,12 @@ public class ScoreMaker : MonoBehaviour
         {
             float posY = _scoreAreaRect.anchoredPosition.y;
             var lineNumber = (_scoreAreaBottom - posY) / (_scoreAreaLayoutGroup.spacing + _scoreLineHeight);
-            BGMManager.instance.SetTime(lineNumber * _singleBeatTime + _offset);
+            float currentTime = lineNumber * _singleBeatTime + _offset;
+            BGMManager.instance.SetTime(currentTime);
             // BGMの現在時刻より前のラインは全て終わった判定にする
             foreach (var line in _scoreLineList)
             {
-                line.IsEnd = line.GetLineTime(_bpm, _offset) < BGMManager.instance.CurrentTime;
+                line.IsEnd = line.GetLineTime(_bpm, _offset) < currentTime;
             }
             BGMManager.instance.ChangePause();
         }).AddTo(this);
@@ -182,7 +183,14 @@ public class ScoreMaker : MonoBehaviour
             _isDuringPractice = true;
             _currentStageMaster.notes[_currentLevel - 1] = CreateNoteList();
             var singleMaster = new SingleStageMaster(_currentStageMaster, _currentLevel);
-            await GameManager.instance.StartBattleFromScoreMaker(singleMaster, _bgmScrollBar.value);
+            var sceneInfo = new BattleSceneInfo
+            {
+                StageMaster = singleMaster,
+                TimeRate = _bgmScrollBar.value,
+                IsPractice = true,
+                IsAdditional = true
+            };
+            await GameManager.instance.OpenAdditionalScene(SceneType.Battle, sceneInfo);
         });
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {

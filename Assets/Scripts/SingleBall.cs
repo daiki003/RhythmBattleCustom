@@ -86,6 +86,7 @@ public class SingleBall : MonoBehaviour
         if (MoveTween != null && MoveTween.IsActive())
         {
             MoveTween.Kill();
+            MoveTween = null;
         }
     }
 
@@ -112,7 +113,5 @@ public class SingleBall : MonoBehaviour
             SetEnd();
             return;
         }
-        float timeRate = 1 - (CriticalTime - bgmTime) / MasterManager.SettingMaster.BallTimeOffset;
-        int xDirection = IsLeft ? -1 : 1;
     }
 }
