@@ -73,7 +73,7 @@ public class HomeManager : MonoBehaviour
                 menuButton.OnClick();
                 SetLevelPanel(menuButton.ButtonType);
             });
-            if (i == lastLevel)
+            if (i == lastLevel - 1)
             {
                 menuButton.SetLight(true);
                 SetLevelPanel(menuButton.ButtonType);
