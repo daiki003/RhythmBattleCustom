@@ -94,7 +94,7 @@ public class ScoreMaker : MonoBehaviour
     private bool _isStartMake;
     private bool _isDuringPractice;
 
-    public void Init()
+    public void Init(int firstLevel)
     {
         GameManager.instance.ClickHandler.OnClickScoreLinePocket.Subscribe(x =>
         {
@@ -144,7 +144,7 @@ public class ScoreMaker : MonoBehaviour
         {
             SEManager.instance.PlayButtonSe();
             // 現在のレベルの譜面を保存
-            _currentStageMaster.notes[_currentLevel] = CreateNoteList();
+            _currentStageMaster.notes[_currentLevel - 1] = CreateNoteList();
             await PlayFabController.UpdateOverrideScore(_currentStageMaster);
             MasterManager.SetOverrideMaster(_currentStageMaster);
             // ダイアログを出す
@@ -177,12 +177,12 @@ public class ScoreMaker : MonoBehaviour
                 dialog.Init("保存しました", "閉じる");
             });
         });
-        _practiceButton.OnClickAsObservable().Subscribe(_ =>
+        _practiceButton.OnClickAsObservable().Subscribe(async _ =>
         {
             _isDuringPractice = true;
-            _currentStageMaster.notes[_currentLevel] = CreateNoteList();
+            _currentStageMaster.notes[_currentLevel - 1] = CreateNoteList();
             var singleMaster = new SingleStageMaster(_currentStageMaster, _currentLevel);
-            GameManager.instance.StartBattleFromScoreMaker(singleMaster, _bgmScrollBar.value);
+            await GameManager.instance.StartBattleFromScoreMaker(singleMaster, _bgmScrollBar.value);
         });
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -269,9 +269,10 @@ public class ScoreMaker : MonoBehaviour
         _lineSpacingSlider.value = 0.5f;
 
         // レベルボタン初期化
+        _currentLevel = firstLevel;
         for (int i = 0; i < _levelButtonList.Count; i++)
         {
-            int level = i;
+            int level = i + 1;
             var button = _levelButtonList[i];
             button.OnWhenClicked.Subscribe(_ =>
             {
@@ -279,7 +280,7 @@ public class ScoreMaker : MonoBehaviour
                 button.OnClick();
                 ChangeLevel(level);
             });
-            if (i == 2)
+            if (level == _currentLevel)
             {
                 DarkeningLevelButton();
                 button.SetLight(true);
@@ -321,7 +322,7 @@ public class ScoreMaker : MonoBehaviour
             Destroy(destroyLine.gameObject);
         }
 
-        var masterList = _currentStageMaster.notes[_currentLevel];
+        var masterList = _currentStageMaster.notes[_currentLevel - 1];
         int lineNumber = (int)(_bpm * (BGMManager.instance.CurrentClipLength / 60f));
         // ライン作成
         for (int i = 0; i < lineNumber; i++)
@@ -450,8 +451,6 @@ public class ScoreMaker : MonoBehaviour
         _currentStageMaster = MasterManager.GetStageMaster(stageId).CreateCopy();
         _bpmInput.text = _bpm.ToString();
         _offsetInput.text = _offset.ToString();
-        // 初期レベルは2
-        _currentLevel = 2;
         CreateLine();
         _isStartMake = true;
         BGMManager.instance.Play();
@@ -467,7 +466,7 @@ public class ScoreMaker : MonoBehaviour
     private void ChangeLevel(int level)
     {
         // 現在のレベルの譜面を保存
-        _currentStageMaster.notes[_currentLevel] = CreateNoteList();
+        _currentStageMaster.notes[_currentLevel - 1] = CreateNoteList();
 
         // レベル更新
         _currentLevel = level;

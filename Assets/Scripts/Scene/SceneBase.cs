@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class SceneBase : MonoBehaviour, IScene
 {
-    protected virtual string _prefabPath => "";
     protected SceneInfoBase _lastSceneInfo;
     protected SceneInfoBase _nextSceneInfo;
 

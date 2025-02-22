@@ -20,6 +20,7 @@ public class SceneInfoBase
 public class BattleSceneInfo : SceneInfoBase
 {
     public SingleStageMaster StageMaster;
+    public bool IsPractice;
     public float TimeRate;
 }
 
@@ -31,4 +32,5 @@ public class TitleSceneInfo : SceneInfoBase
 public class ScoreMakerSceneInfo : SceneInfoBase
 {
     public string StageId;
+    public int FirstLevel;
 }

@@ -67,7 +67,7 @@ public class SingleStageMaster
         BPM = stageMaster.BPM;
         LPB = stageMaster.LPB;
         NoteTimeOffset = stageMaster.NoteTimeOffset;
-        notes = stageMaster.notes[level];
+        notes = stageMaster.notes[level - 1];
     }
     public SingleStageMaster CreateCopy()
     {
@@ -139,7 +139,7 @@ public static class MasterManager
             var stageMaster = GetStageMaster(stage.StageId);
             for (int i = 0; i < stage.notes.Count; i++)
             {
-                SingleStageList.Add(new SingleStageMaster(stageMaster, i));
+                SingleStageList.Add(new SingleStageMaster(stageMaster, i + 1));
             }
         }
         SingleStageList.AddRange(CustomStageList);

@@ -6,7 +6,6 @@ using UnityEngine;
 
 public class BattleScene : SceneBase
 {
-    protected override string _prefabPath => "Prefabs/BattlePanel";
     [SerializeField] private BattlePresenter _battlePresenter;
     private BattleSceneInfo _battleSceneInfo;
 
@@ -14,7 +13,7 @@ public class BattleScene : SceneBase
     {
         await base.InitAsync(lastSceneInfo, nextSceneInfo);
         _battleSceneInfo = _nextSceneInfo as BattleSceneInfo;
-        _battlePresenter.Init(_battleSceneInfo.StageMaster);
+        _battlePresenter.Init(_battleSceneInfo.StageMaster, _battleSceneInfo.IsPractice);
         if (!_battleSceneInfo.IsAdditional)
         {
             // 曲が始まる前にGC.Collect
@@ -25,13 +24,6 @@ public class BattleScene : SceneBase
 
     public override void StartScene()
     {
-        if (_battleSceneInfo.IsAdditional)
-        {
-            _battlePresenter.StartBattleFromScoreMaker(_battleSceneInfo.TimeRate);
-        }
-        else
-        {
-            _battlePresenter.StartBattle();
-        }
+        _battlePresenter.StartBattle(_battleSceneInfo.TimeRate, _battleSceneInfo.IsAdditional);
     }
 }

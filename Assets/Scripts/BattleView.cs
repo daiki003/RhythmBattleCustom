@@ -77,6 +77,7 @@ public class BattleView : MonoBehaviour
     private bool _isPausedBgm;
     private float _startBgmTime;
     private float _lastBeatTime;
+    private bool _isPractice;
     private CancellationTokenSource _cts;
     private SingleStageMaster _stageMaster;
 
@@ -98,10 +99,11 @@ public class BattleView : MonoBehaviour
 
     private const float _beforeReultWaitTime = 1f;
 
-    public void Init(SingleStageMaster singleStageMaster)
+    public void Init(SingleStageMaster singleStageMaster, bool isPractice)
     {
         _cts = new CancellationTokenSource();
         _stageMaster = singleStageMaster;
+        _isPractice = isPractice;
 
         _leftEndPosition = _leftStartTransform.localPosition + _startToTargetVectorLeft * 1.5f;
         _rightEndPosition = _rightStartTransform.localPosition + _startToTargetVectorRight * 1.5f;
@@ -139,44 +141,48 @@ public class BattleView : MonoBehaviour
             OnWhenClickedBack.OnNext(default);
         }).AddTo(this);
 
-        _practiceUi.Init();
-        _practiceUi.OnClickPauseButton.Subscribe(isPause =>
+        _practiceUi.gameObject.SetActive(_isPractice);
+        if (_isPractice)
         {
-            // 曲を再開する場合はボール作り直し
-            if (!isPause)
+            _practiceUi.Init();
+            _practiceUi.OnClickPauseButton.Subscribe(isPause =>
             {
-                RefreshBalls(_leftBallList, isLaunch: true);
-                RefreshBalls(_rightBallList, isLaunch: true);
-            }
-            if (isPause)
+                // 曲を再開する場合はボール作り直し
+                if (!isPause)
+                {
+                    RefreshBalls(_leftBallList, isLaunch: true);
+                    RefreshBalls(_rightBallList, isLaunch: true);
+                }
+                if (isPause)
+                {
+                    BGMManager.instance.Pause();
+                }
+                else
+                {
+                    BGMManager.instance.Play();
+                }
+                _isPausedBgm = isPause;
+                // 曲を止める場合はボールの動きを止める
+                if (isPause)
+                {
+                    StopLaunchedBall(_leftBallList);
+                    StopLaunchedBall(_rightBallList);
+                }
+                // 曲再生中はスライダー非表示
+                _practiceUi.SetSlider(BGMManager.instance.CurrentTimeLate);
+            }).AddTo(this);
+            _practiceUi.OnSliderValueChange.Subscribe(x =>
             {
-                BGMManager.instance.Pause();
-            }
-            else
+                float time = BGMManager.instance.Length * x;
+                BGMManager.instance.SetTime(time);
+                RefreshBalls(_leftBallList, isLaunch: false);
+                RefreshBalls(_rightBallList, isLaunch: false);
+            }).AddTo(this);
+            _practiceUi.OnTimeJump.Subscribe(timeRate =>
             {
-                BGMManager.instance.Play();
-            }
-            _isPausedBgm = isPause;
-            // 曲を止める場合はボールの動きを止める
-            if (isPause)
-            {
-                StopLaunchedBall(_leftBallList);
-                StopLaunchedBall(_rightBallList);
-            }
-            // 曲再生中はスライダー非表示
-            _practiceUi.SetSlider(BGMManager.instance.CurrentTimeLate);
-        }).AddTo(this);
-        _practiceUi.OnSliderValueChange.Subscribe(x =>
-        {
-            float time = BGMManager.instance.Length * x;
-            BGMManager.instance.SetTime(time);
-            RefreshBalls(_leftBallList, isLaunch: false);
-            RefreshBalls(_rightBallList, isLaunch: false);
-        }).AddTo(this);
-        _practiceUi.OnTimeJump.Subscribe(timeRate =>
-        {
-            _practiceUi.SetSlider(timeRate);
-        });
+                _practiceUi.SetSlider(timeRate);
+            }).AddTo(this);
+        }
 
         _resultView.gameObject.SetActive(false);
         _enemyImage.sprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + _stageMaster.StageId);
@@ -397,7 +403,7 @@ public class BattleView : MonoBehaviour
         {
             return;
         }
-        if (BGMManager.instance.IsFinishBgm && !_isFinishBattle)
+        if (BGMManager.instance.IsFinishBgm && !_isFinishBattle && !_isPractice)
         {
             _isFinishBattle = true;
             OnWhenFinishBattle.OnNext(_currentScore);

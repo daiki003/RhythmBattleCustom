@@ -8,54 +8,37 @@ using UnityEngine.UI;
 
 public class StageStrip : MonoBehaviour
 {
+    [SerializeField] private Button _stripButton;
+    [SerializeField] private Image _selectedPanel;
     [SerializeField] private Image _enemyImage;
     [SerializeField] private Text _titleText;
-    [SerializeField] private Button _startButton;
     [SerializeField] private Text _scoreText;
     [SerializeField] private Text _criticalText;
     [SerializeField] private Text _hitText;
     [SerializeField] private Text _missText;
-    [SerializeField] private ButtonWithBacklight _bgmButton;
-    public ButtonWithBacklight BgmButton => _bgmButton;
 
-    private string _stageId;
-    private int _level;
+    public string StageId { get; private set; }
     private bool _isScoreMaker;
-    private bool _isBgmPlaying;
 
-    public Subject<(string stageId, bool isPlay)> OnClickedBgmButton { get; private set; } = new Subject<(string, bool)>();
+    public Subject<Unit> OnClickedStrip { get; private set; } = new();
 
-    public void Init(string stageId, string stageName, int level, bool isScoreMaker = false)
+    public void Init(string stageId, string stageName, bool isScoreMaker = false)
     {
         var enemySprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + stageId);
         _enemyImage.sprite = enemySprite;
         _titleText.text = stageName;
-        _stageId = stageId;
-        _level = level;
+        StageId = stageId;
         _isScoreMaker = isScoreMaker;
-        _startButton.OnClickAsObservable().Subscribe(async x =>
+        _selectedPanel.gameObject.SetActive(false);
+        _stripButton.OnClickAsObservable().Subscribe(_ =>
         {
-            if (_isScoreMaker)
-            {
-                GameManager.instance.StartScoreMaker(_stageId);
-            }
-            else
-            {
-                await GameManager.instance.StartBattle(stageId, level);
-            }
-        }).AddTo(this);
-        _bgmButton.Button.OnClickAsObservable().Subscribe(_ =>
-        {
-            _isBgmPlaying = !_isBgmPlaying; 
-            OnClickedBgmButton.OnNext((_stageId, _isBgmPlaying));
-        }).AddTo(this);
-        _bgmButton.SetBacklight(false);
-        UpdateScore();
+            OnClickedStrip.OnNext(default);
+        });
     }
 
-    public void UpdateScore()
+    public void UpdateScore(int level)
     {
-        var clearState = SaveDataManager.GetClearState(_stageId, _level);
+        var clearState = SaveDataManager.GetClearState(StageId, level);
         if (clearState == null)
         {
             return;
@@ -65,5 +48,10 @@ public class StageStrip : MonoBehaviour
         _criticalText.text = isCleared ? clearState.CriticalNumber.ToString() : "-";
         _hitText.text = isCleared ? clearState.HitNumber.ToString() : "-";
         _missText.text = isCleared ? clearState.MissNumber.ToString() : "-";
+    }
+
+    public void SetSelected(bool isSelected)
+    {
+        _selectedPanel.gameObject.SetActive(isSelected);
     }
 }

@@ -7,10 +7,10 @@ using UnityEngine.UI;
 public class MenuButton : MonoBehaviour
 {
     [SerializeField] private Image _mainImage;
-    [SerializeField] private TitlePanelType _buttonType;
+    [SerializeField] private HomePanelType _buttonType;
     [SerializeField] private Button _button;
 
-    public TitlePanelType ButtonType => _buttonType;
+    public HomePanelType ButtonType => _buttonType;
 
     private Color32 _activeButtonColor = new Color32(255, 255, 255, 255);
     private Color32 _nonActiveButtonColor = new Color32(255, 255, 255, 140);

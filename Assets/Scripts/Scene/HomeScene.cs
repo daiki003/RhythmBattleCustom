@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-public class TitleScene : SceneBase
+public class HomeScene : SceneBase
 {
-    protected override string _prefabPath => "Prefabs/TitlePanel";
-    [SerializeField] private TitleManager _titleManager;
+    [SerializeField] private HomeManager _titleManager;
 
     public override async UniTask InitAsync(SceneInfoBase lastSceneInfo, SceneInfoBase nextSceneInfo)
     {

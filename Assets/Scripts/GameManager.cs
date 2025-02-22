@@ -31,7 +31,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Transform _additionalPanelTransform;
     [SerializeField] private Image _loadPanel;
 
-    private const string _titleScenePath = "TitlePanel";
+    private const string _homeScenePath = "HomePanel";
     private const string _battleScenePath = "BattlePanel";
     private const string _scoreMakerScenePath = "ScoreMaker/ScoreMaker";
 
@@ -138,7 +138,7 @@ public class GameManager : MonoBehaviour
         return sceneType switch
         {
             SceneType.Battle => Instantiate(ResourceManager.LoadPrefab<BattleScene>(_battleScenePath), parent),
-            SceneType.Title => Instantiate(ResourceManager.LoadPrefab<TitleScene>(_titleScenePath), parent),
+            SceneType.Title => Instantiate(ResourceManager.LoadPrefab<HomeScene>(_homeScenePath), parent),
             SceneType.ScoreMaker => Instantiate(ResourceManager.LoadPrefab<ScoreMakerScene>(_scoreMakerScenePath), parent),
             _ => throw new Exception("想定外のsceneTypeです")
         };
@@ -147,25 +147,6 @@ public class GameManager : MonoBehaviour
     public void GoToTitle()
     {
         OpenScene(SceneType.Title, new TitleSceneInfo()).Forget();
-    }
-
-    public void StartScoreMaker(string stageId)
-    {
-        var sceneInfo = new ScoreMakerSceneInfo
-        {
-            StageId = stageId
-        };
-        OpenScene(SceneType.ScoreMaker, sceneInfo).Forget();
-    }
-
-    public async UniTask StartBattle(string stageId, int level)
-    {
-        var sceneInfo = new BattleSceneInfo
-        {
-            StageMaster = MasterManager.GetSingleStageMaster(stageId, level)
-        };
-        SEManager.instance.PlayBattleStartSe();
-        await OpenScene(SceneType.Battle, sceneInfo);
     }
 
     public async UniTask StartBattleFromScoreMaker(SingleStageMaster stageMaster, float timeRate)

@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class ScoreMakerScene : SceneBase
 {
-    protected override string _prefabPath => "Prefabs/ScoreMaker/ScoreMaker";
     [SerializeField] private ScoreMaker _scoreMaker;
     private ScoreMakerSceneInfo _scoreMakerSceneInfo;
     public override async UniTask InitAsync(SceneInfoBase lastSceneInfo, SceneInfoBase nextSceneInfo)
@@ -17,7 +16,7 @@ public class ScoreMakerScene : SceneBase
             return;
         }
         BGMManager.instance.SetClip(_scoreMakerSceneInfo.StageId, immediatePlay: false);
-        _scoreMaker.Init();
+        _scoreMaker.Init(_scoreMakerSceneInfo.FirstLevel);
         await UniTask.CompletedTask;
     }
 

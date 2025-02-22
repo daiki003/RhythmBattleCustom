@@ -11,14 +11,14 @@ public class BattlePresenter : MonoBehaviour
     [SerializeField] private BattleView _battleView;
 
     private SingleStageMaster _currentStageMaster;
-    private bool _isFromScoreMaker;
+    private bool _isAdditionalScene;
 
-    public void Init(SingleStageMaster singleStageMaster)
+    public void Init(SingleStageMaster singleStageMaster, bool isPractice)
     {
         _currentStageMaster = singleStageMaster;
         _battleView.OnWhenClickedBack.Subscribe(_ =>
         {
-            if (_isFromScoreMaker)
+            if (_isAdditionalScene)
             {
                 GameManager.instance.BackToMainScene();
             }
@@ -29,25 +29,26 @@ public class BattlePresenter : MonoBehaviour
         }).AddTo(this);
         _battleView.OnWhenFinishBattle.Subscribe(score =>
         {
-            FinishBattle(score).Forget();
+            FinishBattle(score);
         }).AddTo(this);
-        _battleView.Init(singleStageMaster);
+        _battleView.Init(singleStageMaster, isPractice);
         _battleView.PrepareBattle();
     }
 
-    public void StartBattle()
+    public void StartBattle(float timeRate, bool isAdditional)
     {
-        _battleView.BattleStart().Forget();
+        _isAdditionalScene = isAdditional;
+        if (timeRate > 0)
+        {
+            _battleView.BattleStartFromMiddle(timeRate);
+        }
+        else
+        {
+            _battleView.BattleStart().Forget();
+        }
     }
 
-    // 途中から開始
-    public void StartBattleFromScoreMaker(float timeRate)
-    {
-        _isFromScoreMaker = true;
-        _battleView.BattleStartFromMiddle(timeRate);
-    }
-
-    public async UniTask FinishBattle(Score score)
+    public void FinishBattle(Score score)
     {
         var clearState = new ClearState()
         {
@@ -71,6 +72,6 @@ public class BattlePresenter : MonoBehaviour
         {
             SaveDataManager.UpdateClearState(clearState);
         }
-        await _battleView.StartResultAsync(clearState, SaveDataManager.GetClearState(_currentStageMaster.StageId, _currentStageMaster.LevelId), criticalMultiple, hitMultiple, missMultiple);
+        _battleView.StartResultAsync(clearState, SaveDataManager.GetClearState(_currentStageMaster.StageId, _currentStageMaster.LevelId), criticalMultiple, hitMultiple, missMultiple).Forget();
     }
 }
