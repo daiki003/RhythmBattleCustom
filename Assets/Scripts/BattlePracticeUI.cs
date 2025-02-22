@@ -58,6 +58,11 @@ public class BattlePracticeUI : MonoBehaviour
         _timeUI.SetActive(_isPause);
     }
 
+    public void MoveSlider(float value)
+    {
+        _timeSlider.value += value;
+    }
+
     public void SetSlider(float value)
     {
         _timeSlider.value = value;

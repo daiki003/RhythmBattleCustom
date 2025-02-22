@@ -26,6 +26,8 @@ public class BGMManager : MonoBehaviour
 	public float CurrentClipLength => _currentBgmClip.length;
 	public bool IsPlaying => _bgmSource.isPlaying;
 
+	private const float _maxTimeCofficient = 0.999f;
+
     public static BGMManager instance;
 	public void Awake()
 	{
@@ -127,7 +129,7 @@ public class BGMManager : MonoBehaviour
 
 	public void SetTime(float time)
 	{
-		_bgmSource.time = time;
+		_bgmSource.time = Mathf.Min(time, Length * _maxTimeCofficient);
 	}
 
 	public void SetTimeByRate(float rate, float offset)

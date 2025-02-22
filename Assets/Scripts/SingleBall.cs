@@ -64,6 +64,11 @@ public class SingleBall : MonoBehaviour
     public void SetEnd()
     {
         BallState = BallState.End;
+        if (MoveTween != null)
+        {
+            MoveTween.Kill();
+            MoveTween = null;
+        }
         gameObject.SetActive(false);
         OnWhenEnd.OnNext(this);
     }

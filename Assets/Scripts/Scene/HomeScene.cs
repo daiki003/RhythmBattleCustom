@@ -10,7 +10,7 @@ public class HomeScene : SceneBase
     public override async UniTask InitAsync(SceneInfoBase lastSceneInfo, SceneInfoBase nextSceneInfo)
     {
         await base.InitAsync(lastSceneInfo, nextSceneInfo);
-        int lastBattleLevel = 0;
+        int lastBattleLevel = 1;
         if (_lastSceneInfo is BattleSceneInfo battleSceneInfo)
         {
             lastBattleLevel = battleSceneInfo.StageMaster.LevelId;

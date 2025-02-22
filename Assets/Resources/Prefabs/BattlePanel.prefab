@@ -1980,7 +1980,7 @@ GameObject:
   - component: {fileID: 8945505200201750874}
   m_Layer: 5
   m_Name: BG
-  m_TagString: Untagged
+  m_TagString: BattleBg
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

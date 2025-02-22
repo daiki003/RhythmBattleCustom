@@ -6,6 +6,7 @@ using R3;
 using UnityEngine.EventSystems;
 using System.Linq;
 using UnityEngine.UI;
+using Unity.VisualScripting;
 
 public enum PositionType
 {
@@ -22,6 +23,7 @@ public enum ClickType
     None,
     Click,
     Release,
+    Moved,
 }
 
 public class ClickHandler
@@ -31,8 +33,10 @@ public class ClickHandler
     public Subject<(int number, bool isLeft)> OnClickScoreLinePocket = new Subject<(int number, bool isLeft)>();
     public Subject<int> OnClickScoreLine = new Subject<int>();
     public Subject<int> OnClickScoreLineNumber = new Subject<int>();
+    public Subject<float> OnDragBattleBg = new();
 
     private Vector3 _startClickPosition;
+    private Vector3? _lastPosition;
     private const float _moveDiff = 5f;
 
     public void Update()
@@ -79,8 +83,10 @@ public class ClickHandler
         }
 
         var clickPosition = GetClickPositionType(touch);
+        var position = GetClickPosition(touch);
         if (clickType == ClickType.Click)
         {
+            _startClickPosition = Input.mousePosition;
             switch (clickPosition)
             {
                 // 演奏中左ボタン
@@ -95,13 +101,12 @@ public class ClickHandler
                 case PositionType.LinePocket:
                 case PositionType.Line:
                 case PositionType.LineNumber:
-                    _startClickPosition = Input.mousePosition;
                     break;
             }
         }
         else if (clickType == ClickType.Release)
         {
-            var position = GetClickPosition(touch);
+            _lastPosition = null;
             switch (clickPosition)
             {
                 // 演奏中左ボタン
@@ -134,6 +139,14 @@ public class ClickHandler
                         OnClickScoreLineNumber.OnNext(line.LineNumber);
                     }
                     break;
+            }
+        }
+        else if (clickType == ClickType.Moved)
+        {
+            if (IsOnTargetTag("BattleBg", touch))
+            {
+                OnDragBattleBg.OnNext(MoveVectorY(position));
+                _lastPosition = position;
             }
         }
     }
@@ -177,6 +190,10 @@ public class ClickHandler
         {
             return ClickType.Release;
         }
+        if (Input.GetMouseButton(0))
+        {
+            return ClickType.Moved;
+        }
 #else
         switch (touch.phase)
         {
@@ -186,6 +203,7 @@ public class ClickHandler
                 return ClickType.Release;
             // 以下未使用
             case TouchPhase.Moved:
+                return ClickType.Moved;
             case TouchPhase.Stationary:
                 // 指が画面に触れているが動いてはいない時に行いたい処理をここに書く
             case TouchPhase.Canceled:
@@ -247,6 +265,16 @@ public class ClickHandler
         results = GetRaycastResults(touch.position);
 #endif
         return results.Select(r => r.gameObject.tag).ToList();
+    }
+
+    // Y方向の移動量を方向込みで返す
+    private float MoveVectorY(Vector3 currentPosition)
+    {
+        if (_lastPosition == null)
+        {
+            return 0f;
+        }
+        return currentPosition.y - _lastPosition?.y ?? 0f;
     }
 
     public bool IsMovePosition(Vector3 currentPosition)

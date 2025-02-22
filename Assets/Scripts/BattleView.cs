@@ -127,6 +127,13 @@ public class BattleView : MonoBehaviour
         {
             OnReleaseButton(isLeft);
         }).AddTo(this);
+        GameManager.instance.ClickHandler.OnDragBattleBg.Subscribe(move =>
+        {
+            if(_isPausedBgm)
+            {
+                _practiceUi.MoveSlider(move / -100000f);
+            }
+        }).AddTo(this);
         _resetButton.OnClickAsObservable().Subscribe(_ =>
         {
             PrepareBattle();
@@ -441,6 +448,10 @@ public class BattleView : MonoBehaviour
 
     private void OnClickButton(bool isLeft)
     {
+        if (_isPausedBgm)
+        {
+            return;
+        }
         float time = BGMManager.instance.CurrentTime;
         var firstActiveBall = _ballList.FirstOrDefault(b => b.IsActive && b.IsLeft == isLeft);
         if (firstActiveBall != null)
@@ -455,6 +466,10 @@ public class BattleView : MonoBehaviour
 
     private void OnReleaseButton(bool isLeft)
     {
+        if (_isPausedBgm)
+        {
+            return;
+        }
         float time = BGMManager.instance.CurrentTime;
         var firstBall = _ballList.FirstOrDefault(b => b.IsAlive && b.IsLeft == isLeft);
         // ロングノーツの終端の前で離したらそれを破棄
