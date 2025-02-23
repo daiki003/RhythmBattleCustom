@@ -23,11 +23,36 @@ public class LongBall : MonoBehaviour
     {
         _startBall.Init(noteMaster, criticalTime, BallType.LongStart, ballTimeOffset);
         _endBall.Init(noteMaster.notes[0], endCriticalTime, BallType.LongEnd, ballTimeOffset);
-        _startBall.OnWhenLaunched.Subscribe(_ =>
+        _startBall.OnWhenSetBallState.Subscribe(state =>
         {
-            gameObject.SetActive(true);
-            _endBall.gameObject.SetActive(true);
-        });
+            switch (state)
+            {
+                case BallState.Wait:
+                    gameObject.SetActive(false);
+                    break;
+                case BallState.Launched:
+                    gameObject.SetActive(true);
+                    _endBall.gameObject.SetActive(true);
+                    break;
+                case BallState.End:
+                    _endBall.SetBallState(BallState.End);
+                    gameObject.SetActive(false);
+                    break;
+            }
+        }).AddTo(this);
+        _endBall.OnWhenSetBallState.Subscribe(state =>
+        {
+            switch (state)
+            {
+                case BallState.Launched:
+                    gameObject.SetActive(true);
+                    break;
+                case BallState.End:
+                    _startBall.SetBallState(BallState.End);
+                    gameObject.SetActive(false);
+                    break;
+            }
+        }).AddTo(this);
         _startBall.OnWhenDestroyed.Subscribe(_ =>
         {
             Destroy(gameObject);
@@ -35,22 +60,6 @@ public class LongBall : MonoBehaviour
         _endBall.OnWhenDestroyed.Subscribe(_ =>
         {
             Destroy(gameObject);
-        });
-        _startBall.OnWhenEnd.Subscribe(_ =>
-        {
-            if (_endBall.BallState != BallState.End)
-            {
-                _endBall.SetEnd();
-            }
-            gameObject.SetActive(false);
-        });
-        _endBall.OnWhenEnd.Subscribe(_ =>
-        {
-            if (_startBall.BallState != BallState.End)
-            {
-                _startBall.SetEnd();
-            }
-            gameObject.SetActive(false);
         });
 
         //線の幅を決める

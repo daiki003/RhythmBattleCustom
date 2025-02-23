@@ -350,20 +350,19 @@ public class BattleView : MonoBehaviour
         {
             var startTransform = ball.IsLeft ? _leftStartTransform : _rightStartTransform;
             var startToTargetVector = ball.IsLeft ? _startToTargetVectorLeft : _startToTargetVectorRight;
-            if (ball.CriticalTime < currentTime)
+            var ballState = ball.GetShouldBeState(currentTime);
+            ball.SetBallState(ballState);
+            if (ballState >= BallState.Holded)
             {
-                ball.SetEnd();
+                ball.transform.localPosition = startTransform.localPosition + startToTargetVector;
             }
-            else if (ball.LaunchTime < currentTime)
+            else if (ballState == BallState.Launched)
             {
-                ball.Launch();
                 ball.transform.localPosition = startTransform.localPosition + startToTargetVector * GetPositionRate(ball);
             }
-            else
+            else if (ballState == BallState.Wait)
             {
-                ball.BallState = BallState.Wait;
                 ball.transform.localPosition = startTransform.localPosition;
-                ball.gameObject.SetActive(false);
             }
         }
     }
@@ -375,7 +374,7 @@ public class BattleView : MonoBehaviour
         var launchBallList = _ballList.Where(b => b.BallState == BallState.Wait && _currentTime >= b.LaunchTime);
         foreach (var ball in launchBallList)
         {
-            ball.Launch();
+            ball.SetBallState(BallState.Launched);
             CreateMoveTween(ball);
         }
     }
@@ -475,7 +474,7 @@ public class BattleView : MonoBehaviour
         // ロングノーツの終端の前で離したらそれを破棄
         if (firstBall != null && firstBall.BallType == BallType.LongEnd && firstBall.JudgeBall() == HitType.None)
         {
-            firstBall.SetEnd();
+            firstBall.SetBallState(BallState.End);
             CreateLetter(isLeft, HitType.None);
             _currentScore.CountUp(HitType.None);
             UpdateScoreText(_currentScore);
