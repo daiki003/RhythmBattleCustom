@@ -44,7 +44,6 @@ public class HomeManager : MonoBehaviour
     [SerializeField] private Text _totalScoreText;
     [SerializeField] private StageStrip _stageStripPrefab;
     [SerializeField] private Transform _stripTransform;
-    [SerializeField] private Transform _scoreMakerTransform;
     [SerializeField] private List<MenuButton> _menuButtonList;
     [SerializeField] private GameObject _stageStripPanel;
     [SerializeField] private GameObject _settingPanel;
@@ -55,7 +54,6 @@ public class HomeManager : MonoBehaviour
     [SerializeField] private Button _scoreMakerButton;
 
     private List<StageStrip> _stageStripList = new List<StageStrip>();
-    private List<StageStrip> _scoreMakerStripList = new List<StageStrip>();
 
     private StageStrip _selectedStrip;
     private int _currentLevel;
@@ -112,25 +110,17 @@ public class HomeManager : MonoBehaviour
         DestroyAllStrip();
         for (int i = 0; i < MasterManager.StageMasterList.Count; i++)
         {
-            string stageId = MasterManager.StageMasterList[i].StageId;
-            CreateStageStrip(stageId, stageId, isScoreMaker: false, _stripTransform);
-            CreateStageStrip(stageId, stageId, isScoreMaker: true, _scoreMakerTransform);
+            var stageMaster = MasterManager.StageMasterList[i];
+            CreateStageStrip(stageMaster.StageId, stageMaster.StageName, _stripTransform);
         }
         _totalScoreText.text = SaveDataManager.GetTotalScore().ToString();
     }
 
-    private void CreateStageStrip(string stageId, string stageName, bool isScoreMaker, Transform parent)
+    private void CreateStageStrip(string stageId, string stageName, Transform parent)
     {
         var strip = Instantiate(_stageStripPrefab, parent);
-        if (isScoreMaker)
-        {
-            _scoreMakerStripList.Add(strip);
-        }
-        else
-        {
-            _stageStripList.Add(strip);
-        }
-        strip.Init(stageId, stageName, isScoreMaker);
+        _stageStripList.Add(strip);
+        strip.Init(stageId, stageName);
         strip.OnClickedStrip.Subscribe(stageId =>
         {
             if (_selectedStrip != strip)
@@ -155,12 +145,6 @@ public class HomeManager : MonoBehaviour
         {
             var strip = _stageStripList[0];
             _stageStripList.RemoveAt(0);
-            Destroy(strip.gameObject);
-        }
-        while (_scoreMakerStripList.Count > 0)
-        {
-            var strip = _scoreMakerStripList[0];
-            _scoreMakerStripList.RemoveAt(0);
             Destroy(strip.gameObject);
         }
     }

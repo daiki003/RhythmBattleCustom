@@ -27,6 +27,7 @@ public class NoteMaster
 public class StageMaster
 {
     public string StageId;
+    public string StageName;
     public float BPM;
     public int LPB;
     public float NoteTimeOffset;

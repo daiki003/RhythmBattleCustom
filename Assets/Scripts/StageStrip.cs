@@ -18,17 +18,15 @@ public class StageStrip : MonoBehaviour
     [SerializeField] private Text _missText;
 
     public string StageId { get; private set; }
-    private bool _isScoreMaker;
 
     public Subject<Unit> OnClickedStrip { get; private set; } = new();
 
-    public void Init(string stageId, string stageName, bool isScoreMaker = false)
+    public void Init(string stageId, string stageName)
     {
         var enemySprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + stageId);
         _enemyImage.sprite = enemySprite;
         _titleText.text = stageName;
         StageId = stageId;
-        _isScoreMaker = isScoreMaker;
         _selectedPanel.gameObject.SetActive(false);
         _stripButton.OnClickAsObservable().Subscribe(_ =>
         {
