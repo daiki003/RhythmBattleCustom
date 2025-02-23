@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using System.Linq;
 using UnityEngine.SocialPlatforms.Impl;
 using Unity.VisualScripting;
+using Cysharp.Threading.Tasks;
 
 public class ScoreMaker : MonoBehaviour
 {
@@ -94,7 +95,7 @@ public class ScoreMaker : MonoBehaviour
     private bool _isStartMake;
     private bool _isDuringPractice;
 
-    public void Init(int firstLevel)
+    public void Init(string stageId, int firstLevel)
     {
         GameManager.instance.ClickHandler.OnClickScoreLinePocket.Subscribe(x =>
         {
@@ -195,7 +196,7 @@ public class ScoreMaker : MonoBehaviour
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {
             SEManager.instance.PlayButtonSe();
-            GameManager.instance.GoToTitle();
+            GameManager.instance.OpenScene(SceneType.Title, new TitleSceneInfo()).Forget();
         }).AddTo(this);
         _bpmInput.OnEndEditAsObservable().Subscribe(bpm =>
         {
@@ -296,6 +297,11 @@ public class ScoreMaker : MonoBehaviour
         }
 
         SwitchBallType(isLong: false);
+        _currentStageMaster = MasterManager.GetStageMaster(stageId).CreateCopy();
+        _bpmInput.text = _bpm.ToString();
+        _offsetInput.text = _offset.ToString();
+        CreateLine();
+        _scoreScrollRect.verticalNormalizedPosition = 0;
     }
 
     // Editモードでのライン選択
@@ -453,13 +459,8 @@ public class ScoreMaker : MonoBehaviour
         return null;
     }
 
-    public void StartMake(string stageId)
+    public void StartMake()
     {
-        _scoreScrollRect.verticalNormalizedPosition = 0;
-        _currentStageMaster = MasterManager.GetStageMaster(stageId).CreateCopy();
-        _bpmInput.text = _bpm.ToString();
-        _offsetInput.text = _offset.ToString();
-        CreateLine();
         _isStartMake = true;
         BGMManager.instance.Play();
     }

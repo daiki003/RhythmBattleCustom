@@ -3,17 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BattleScene : SceneBase
 {
     [SerializeField] private BattlePresenter _battlePresenter;
     private BattleSceneInfo _battleSceneInfo;
 
-    public override async UniTask InitAsync(SceneInfoBase lastSceneInfo, SceneInfoBase nextSceneInfo)
+    public override async UniTask InitAsync(SceneInfoBase lastSceneInfo, SceneInfoBase nextSceneInfo, Image fadePanel)
     {
-        await base.InitAsync(lastSceneInfo, nextSceneInfo);
+        await base.InitAsync(lastSceneInfo, nextSceneInfo, fadePanel);
         _battleSceneInfo = _nextSceneInfo as BattleSceneInfo;
-        _battlePresenter.Init(_battleSceneInfo.StageMaster, _battleSceneInfo.IsPractice);
+        _battlePresenter.Init(_battleSceneInfo);
         if (!_battleSceneInfo.IsAdditional)
         {
             // 曲が始まる前にGC.Collect
@@ -22,8 +23,9 @@ public class BattleScene : SceneBase
         }
     }
 
-    public override void StartScene()
+    public override async UniTask StartSceneAsync()
     {
-        _battlePresenter.StartBattle(_battleSceneInfo.TimeRate, _battleSceneInfo.IsAdditional);
+        await base.StartSceneAsync();
+        _battlePresenter.StartBattle();
     }
 }

@@ -10,37 +10,39 @@ public class BattlePresenter : MonoBehaviour
 {
     [SerializeField] private BattleView _battleView;
 
-    private SingleStageMaster _currentStageMaster;
-    private bool _isAdditionalScene;
+    private BattleSceneInfo _battleSceneInfo;
 
-    public void Init(SingleStageMaster singleStageMaster, bool isPractice)
+    public void Init(BattleSceneInfo battleSceneInfo)
     {
-        _currentStageMaster = singleStageMaster;
+        _battleSceneInfo = battleSceneInfo;
         _battleView.OnWhenClickedBack.Subscribe(_ =>
         {
-            if (_isAdditionalScene)
+            if (_battleSceneInfo.IsAdditional)
             {
-                GameManager.instance.BackToMainScene();
+                GameManager.instance.BackToMainScene().Forget();
             }
             else
             {
-                GameManager.instance.GoToTitle();
+                GameManager.instance.OpenScene(SceneType.Title, new TitleSceneInfo()).Forget();
             }
         }).AddTo(this);
         _battleView.OnWhenFinishBattle.Subscribe(score =>
         {
             FinishBattle(score);
         }).AddTo(this);
-        _battleView.Init(singleStageMaster, isPractice);
+        _battleView.Init(_battleSceneInfo.StageMaster, _battleSceneInfo.IsPractice);
         _battleView.PrepareBattle();
+        if (_battleSceneInfo.IsAdditional)
+        {
+            _battleView.SetSliderForAdditional(_battleSceneInfo.TimeRate);
+        }
     }
 
-    public void StartBattle(float timeRate, bool isAdditional)
+    public void StartBattle()
     {
-        _isAdditionalScene = isAdditional;
-        if (timeRate > 0)
+        if (_battleSceneInfo.TimeRate > 0)
         {
-            _battleView.BattleStartFromMiddle(timeRate);
+            _battleView.BattleStartFromMiddle();
         }
         else
         {
@@ -52,8 +54,8 @@ public class BattlePresenter : MonoBehaviour
     {
         var clearState = new ClearState()
         {
-            StageId = _currentStageMaster.StageId,
-            Level = _currentStageMaster.LevelId,
+            StageId = _battleSceneInfo.StageMaster.StageId,
+            Level = _battleSceneInfo.StageMaster.LevelId,
         };
         float totalCount = score.CriticalCount + score.HitCount + score.MissCount;
         float criticalMultiple = 100f / totalCount;
@@ -72,6 +74,6 @@ public class BattlePresenter : MonoBehaviour
         {
             SaveDataManager.UpdateClearState(clearState);
         }
-        _battleView.StartResultAsync(clearState, SaveDataManager.GetClearState(_currentStageMaster.StageId, _currentStageMaster.LevelId), criticalMultiple, hitMultiple, missMultiple).Forget();
+        _battleView.StartResultAsync(clearState, SaveDataManager.GetClearState(_battleSceneInfo.StageMaster.StageId, _battleSceneInfo.StageMaster.LevelId), criticalMultiple, hitMultiple, missMultiple).Forget();
     }
 }

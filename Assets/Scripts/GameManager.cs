@@ -64,32 +64,11 @@ public class GameManager : MonoBehaviour
         _clickHandler.Update();
     }
 
-    public async UniTask FadeLoadPanel(bool isActive, float fadeTime)
-    {
-        if (isActive)
-        {
-            _loadPanel.gameObject.SetActive(true);
-        }
-        await _loadPanel.DOFade(isActive ? 1 : 0, fadeTime).ToUniTask();
-        if (!isActive)
-        {
-            _loadPanel.gameObject.SetActive(false);
-        }
-    }
-
-    public void ResetPanel()
-    {
-        foreach (var panel in _panelTransform)
-        {
-            Destroy(((Transform)panel).gameObject);
-        }
-    }
-
     // ゲームスタート時の処理
 	private async UniTask GameStart()
 	{
         _clickHandler = new ClickHandler();
-        await FadeLoadPanel(true, 0f);
+        await _loadPanel.DOFade(1, 0f);
         await PlayFabController.LoginAsync();
         await MasterManager.GetAllMasterData();
         BGMManager.instance.PreloadBgm();
@@ -100,36 +79,32 @@ public class GameManager : MonoBehaviour
     public async UniTask OpenScene(SceneType sceneType, SceneInfoBase nextSceneInfo)
     {
         BGMManager.instance.Stop();
-        if (!_loadPanel.gameObject.activeSelf)
-        {
-            await FadeLoadPanel(true, 0.5f);
-        }
         // 前シーンを破棄
-        _currentScene?.Dispose();
+        if (_currentScene != null)
+        {
+            await _currentScene.DisposeAsync();
+        }
         // 新しいシーンを作成
         _currentScene = CreateScene(sceneType, isAdditional: false);
-        await _currentScene.InitAsync(_currentSceneInfo, nextSceneInfo);
+        await _currentScene.InitAsync(_currentSceneInfo, nextSceneInfo, _loadPanel);
         _currentSceneInfo = nextSceneInfo;
-        await FadeLoadPanel(false, 0.5f);
-        _currentScene.StartScene();
+        await _currentScene.StartSceneAsync();
     }
 
     // 追加のシーンを開く
     public async UniTask OpenAdditionalScene(SceneType sceneType, SceneInfoBase nextSceneInfo)
     {
-        if (!_loadPanel.gameObject.activeSelf)
-        {
-            await FadeLoadPanel(true, 0.5f);
-        }
         // 現在のシーンはいったん停止
-        _currentScene.Pause();
+        await _currentScene.Pause();
         // 既に追加シーンがあれば破棄
-        _additionalScene?.Dispose();
+        if (_additionalScene != null)
+        {
+            await _additionalScene.DisposeAsync();
+        }
         // 新しいシーンを作成
         _additionalScene = CreateScene(sceneType, isAdditional: true);
-        await _additionalScene.InitAsync(new SceneInfoBase(), nextSceneInfo);
-        await FadeLoadPanel(false, 0.5f);
-        _additionalScene.StartScene();
+        await _additionalScene.InitAsync(new SceneInfoBase(), nextSceneInfo, _loadPanel);
+        await _additionalScene.StartSceneAsync();
     }
 
     private IScene CreateScene(SceneType sceneType, bool isAdditional)
@@ -144,15 +119,10 @@ public class GameManager : MonoBehaviour
         };
     }
 
-    public void GoToTitle()
+    public async UniTask BackToMainScene()
     {
-        OpenScene(SceneType.Title, new TitleSceneInfo()).Forget();
-    }
-
-    public void BackToMainScene()
-    {
-        _additionalScene.Dispose();
+        await _additionalScene.DisposeAsync();
         _additionalScene = null;
-        _currentScene.Restart();
+        await _currentScene.Restart();
     }
 }

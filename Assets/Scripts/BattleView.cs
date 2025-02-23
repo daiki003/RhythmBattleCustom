@@ -194,6 +194,14 @@ public class BattleView : MonoBehaviour
         _enemyImage.sprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + _stageMaster.StageId);
     }
 
+    public void SetSliderForAdditional(float timeRate)
+    {
+        _isStartBgm = true;
+        _practiceUi.Pause(true);
+        _practiceUi.SetSlider(timeRate);
+        _practiceUi.RegisterTime(0);
+    }
+
     public void DestroyAllObjectInList(bool withoutLaunched = false)
     {
         while (_ballList.Count > 0)
@@ -262,17 +270,13 @@ public class BattleView : MonoBehaviour
         _isStartBgm = true;
     }
 
-    public void BattleStartFromMiddle(float timeRate)
+    public void BattleStartFromMiddle()
     {
         _isStartBattle = true;
         _isFinishBattle = false;
-        _isStartBgm = true;
-        _practiceUi.Pause(true);
-        _practiceUi.SetSlider(timeRate);
-        _practiceUi.RegisterTime(0);
     }
 
-    public void CreateBalls(List<NoteMaster> notes, float startTime = 0f)
+    public void CreateBalls(List<NoteMaster> notes)
     {
         // スタッシュしておいたボールをリストに入れる
         foreach (var ball in _launchedBallStashList)
@@ -282,11 +286,6 @@ public class BattleView : MonoBehaviour
         foreach (NoteMaster noteMaster in notes)
         {
             float noteTime = CalcNoteTime(noteMaster);
-            // 途中から曲を始める場合それより前のボールは作らない
-            if (noteTime < startTime)
-            {
-                continue;
-            }
             bool isLeft = noteMaster.block <= 3;
             var startTransform = isLeft ? _leftStartTransform : _rightStartTransform;
             if (noteMaster.type == 1)

@@ -2,14 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
 
 public interface IScene
 {
-    public UniTask InitAsync(SceneInfoBase lastSceneInfo, SceneInfoBase nextSceneInfo);
-    public void StartScene();
-    public void Restart();
-    public void Pause();
-    public void Dispose();
+    public UniTask InitAsync(SceneInfoBase lastSceneInfo, SceneInfoBase nextSceneInfo, Image fadePanel);
+    public UniTask StartSceneAsync();
+    public UniTask Restart();
+    public UniTask Pause();
+    public UniTask DisposeAsync();
 }
 
 public class SceneInfoBase
