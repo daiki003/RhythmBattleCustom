@@ -94,11 +94,17 @@ public class PlayFabController
                 clearStates.Add(clearState);
             }
         }
+        var settingData = new SettingData
+        {
+            BgmVolume = 0.5f,
+            SeVolume = 0.5f,
+        };
         var request = new UpdateUserDataRequest()
         {
             Data = new Dictionary<string, string>
             {
-                { "ClearStates", PlayFabSimpleJson.SerializeObject(clearStates) }
+                { "ClearStates", PlayFabSimpleJson.SerializeObject(clearStates) },
+                { "SettingData", PlayFabSimpleJson.SerializeObject(settingData) }
             },
             Permission = UserDataPermission.Public
         };
@@ -134,9 +140,10 @@ public class PlayFabController
         if (result != null)
         {
             Debug.Log("GetUserData: Success!");
-            if (result.Data.ContainsKey("ClearStates"))
+            if (result.Data.ContainsKey("ClearStates") && result.Data.ContainsKey("SettingData"))
             {
                 var clearStateList = PlayFabSimpleJson.DeserializeObject<List<ClearState>>(result.Data["ClearStates"].Value);
+                var settingData = PlayFabSimpleJson.DeserializeObject<SettingData>(result.Data["SettingData"].Value);
                 var overrideMasterList = new List<StageMaster>();
                 var customStageList = new List<SingleStageMaster>();
                 foreach (var item in result.Data)
@@ -153,6 +160,7 @@ public class PlayFabController
                 return new PlayerDataResult
                 {
                     ClearStateList = clearStateList,
+                    SettingData = settingData,
                     OverrideStageMasterList = overrideMasterList,
                     CustomStageList = customStageList
                 };
@@ -216,6 +224,30 @@ public class PlayFabController
         void OnError(PlayFabError error)
         {
             Debug.Log("UpdateUserData: Fail...");
+            Debug.Log(error.GenerateErrorReport());
+        }
+    }
+
+    public static void UpdateSettingData(SettingData settingData)
+    {
+        var request = new UpdateUserDataRequest()
+        {
+            Data = new Dictionary<string, string>
+            {
+                { "SettingData", PlayFabSimpleJson.SerializeObject(settingData) }
+            }
+        };
+
+        PlayFabClientAPI.UpdateUserData(request, OnSuccess, OnError);
+
+        void OnSuccess(UpdateUserDataResult result)
+        {
+            Debug.Log("UpdateSettingData: Success!");
+        }
+
+        void OnError(PlayFabError error)
+        {
+            Debug.Log("UpdateSettingData: Fail...");
             Debug.Log(error.GenerateErrorReport());
         }
     }

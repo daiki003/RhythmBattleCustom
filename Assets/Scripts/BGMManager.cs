@@ -6,6 +6,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Profiling;
 using DG.Tweening;
+using System.Threading;
 
 public enum BgmName
 {
@@ -18,14 +19,21 @@ public class BGMManager : MonoBehaviour
 	[SerializeField] private AudioSource _bgmSource;
 	private AudioClip _currentBgmClip;
 	private Dictionary<string, AudioClip> _chachClipDict = new();
+	private float _startTime;
+	private float _endTime;
+	private bool _isDuringLoopFade;
 
 	public bool IsFinishBgm => _currentBgmClip != null && _currentBgmClip.length <= _bgmSource.time;
 	public float CurrentTime => _bgmSource.time;
 	public float Length => _currentBgmClip.length;
 	public float CurrentTimeLate => CurrentTime / Length;
 	public float CurrentClipLength => _currentBgmClip.length;
+	public float Volume => _bgmSource.volume;
 	public bool IsPlaying => _bgmSource.isPlaying;
 
+	private CancellationTokenSource _fadeCts;
+
+	private const float _fadeDuration = 1f;
 	private const float _maxTimeCofficient = 0.999f;
 
     public static BGMManager instance;
@@ -35,6 +43,21 @@ public class BGMManager : MonoBehaviour
 		{
 			instance = this;
 		}
+	}
+
+	async void Update()
+    {
+        if (_endTime.IsBetween(0, _bgmSource.time) && !_isDuringLoopFade)
+		{
+			_isDuringLoopFade = true;
+			await FadeLoopAsync();
+			_isDuringLoopFade = false;
+		}
+    }
+
+	public void AdjustVolume(float volume)
+	{
+		_bgmSource.volume = volume;
 	}
 
 	public void PreloadBgm()
@@ -71,10 +94,12 @@ public class BGMManager : MonoBehaviour
 		SetClip(bgmName.ToString(), isLoop, immediatePlay, isFade);
 	}
 
-	public void SetClip(string clipName, bool isLoop = false, bool immediatePlay = true, bool isFade = false)
+	public void SetClip(string clipName, bool isLoop = false, bool immediatePlay = true, bool isFade = false, float startTime = 0f, float endTime = 0f)
 	{
 		_currentBgmClip = GetClip(clipName);
 		_bgmSource.loop = isLoop;
+		_startTime = startTime;
+		_endTime = endTime;
 		if (immediatePlay)
 		{
 			Play(isFade);
@@ -84,20 +109,32 @@ public class BGMManager : MonoBehaviour
 	public void Play(bool isFade = false)
 	{
 		_bgmSource.clip = _currentBgmClip;
+		_bgmSource.time = _startTime;
 		_bgmSource.Play();
 		if (isFade)
 		{
+			CancelFade();
 			_bgmSource.volume = 0f;
-			DOTween.To(() => _bgmSource.volume, (value) => _bgmSource.volume = value, 1f, 1f);
+			DOTween.To(() => _bgmSource.volume, (value) => _bgmSource.volume = value, SaveDataManager.SettingData.BgmVolume, _fadeDuration).ToUniTask(cancellationToken: _fadeCts.Token);
 		}
 	}
 
-	public void PlayFadeInAsync()
+	private async UniTask FadeLoopAsync()
 	{
-		_bgmSource.clip = _currentBgmClip;
-		_bgmSource.volume = 0f;
-		_bgmSource.Play();
-		DOTween.To(() => _bgmSource.volume, (value) => _bgmSource.volume = value, 1f, 1f);
+		CancelFade();
+		await DOTween.To(() => _bgmSource.volume, (value) => _bgmSource.volume = value, 0f, _fadeDuration).ToUniTask(cancellationToken: _fadeCts.Token);
+		_bgmSource.time = _startTime;
+		await DOTween.To(() => _bgmSource.volume, (value) => _bgmSource.volume = value, SaveDataManager.SettingData.BgmVolume, _fadeDuration).ToUniTask(cancellationToken: _fadeCts.Token);
+	}
+
+	private void CancelFade()
+	{
+		if (_fadeCts != null)
+		{
+			_fadeCts.Cancel();
+			_fadeCts.Dispose();
+		}
+		_fadeCts = new CancellationTokenSource();
 	}
 
 	public void Stop()

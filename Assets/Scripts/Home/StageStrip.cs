@@ -18,15 +18,19 @@ public class StageStrip : MonoBehaviour
     [SerializeField] private Text _missText;
 
     public string StageId { get; private set; }
+    public float StartTime { get; private set; }
+    public float EndTime { get; private set; }
 
     public Subject<Unit> OnClickedStrip { get; private set; } = new();
 
-    public void Init(string stageId, string stageName)
+    public void Init(StageMaster stageMaster)
     {
-        var enemySprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + stageId);
+        var enemySprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + stageMaster.StageId);
         _enemyImage.sprite = enemySprite;
-        _titleText.text = stageName;
-        StageId = stageId;
+        _titleText.text = stageMaster.StageName;
+        StartTime = stageMaster.StripStartTime;
+        EndTime = stageMaster.StripEndTime;
+        StageId = stageMaster.StageId;
         _selectedPanel.gameObject.SetActive(false);
         _stripButton.OnClickAsObservable().Subscribe(_ =>
         {

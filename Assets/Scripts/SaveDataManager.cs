@@ -13,9 +13,16 @@ public class ClearState
     public int Combo;
 }
 
+public class SettingData
+{
+    public float BgmVolume;
+    public float SeVolume;
+}
+
 public static class SaveDataManager
 {
-    public static List<ClearState> ClearStateList = new List<ClearState>();
+    public static List<ClearState> ClearStateList = new();
+    public static SettingData SettingData = new();
 
     public static ClearState GetClearState(string stageId, int level)
     {
@@ -61,5 +68,12 @@ public static class SaveDataManager
             }
         }
         PlayFabController.UpdateClearState(ClearStateList);
+    }
+
+    public static void UpdateSettingData(float bgmVolume, float seVolume)
+    {
+        SettingData.BgmVolume = bgmVolume;
+        SettingData.SeVolume = seVolume;
+        PlayFabController.UpdateSettingData(SettingData);
     }
 }

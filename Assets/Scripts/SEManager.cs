@@ -9,6 +9,8 @@ public class SEManager : MonoBehaviour
     [SerializeField] private AudioClip _buttonSe;
     [SerializeField] private AudioClip _battleStartSe;
 
+    public float Volume => _seSource.volume;
+
     public static SEManager instance;
 	public void Awake()
 	{
@@ -16,6 +18,11 @@ public class SEManager : MonoBehaviour
 		{
 			instance = this;
 		}
+	}
+
+    public void AdjustVolume(float volume)
+	{
+		_seSource.volume = volume;
 	}
 
     public void PlayBeatSe()

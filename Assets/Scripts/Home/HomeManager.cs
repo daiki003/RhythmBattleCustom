@@ -46,12 +46,12 @@ public class HomeManager : MonoBehaviour
     [SerializeField] private Transform _stripTransform;
     [SerializeField] private List<MenuButton> _menuButtonList;
     [SerializeField] private GameObject _stageStripPanel;
-    [SerializeField] private GameObject _settingPanel;
     [SerializeField] private InputField _offsetSetting;
-    [SerializeField] private Button _deleteDataButton;
     [SerializeField] private Button _playStageButton;
     [SerializeField] private Button _practiceStageButton;
     [SerializeField] private Button _scoreMakerButton;
+    [SerializeField] private Button _settingButton;
+    [SerializeField] private SettingPanel _settingPanel;
 
     private List<StageStrip> _stageStripList = new List<StageStrip>();
 
@@ -95,6 +95,13 @@ public class HomeManager : MonoBehaviour
         {
             StartScoreMaker();
         });
+
+        _settingPanel.Init();
+        _settingPanel.gameObject.SetActive(false);
+        _settingButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            _settingPanel.gameObject.SetActive(true);
+        });
     }
 
     public void UpdateStrip()
@@ -111,16 +118,16 @@ public class HomeManager : MonoBehaviour
         for (int i = 0; i < MasterManager.StageMasterList.Count; i++)
         {
             var stageMaster = MasterManager.StageMasterList[i];
-            CreateStageStrip(stageMaster.StageId, stageMaster.StageName, _stripTransform);
+            CreateStageStrip(stageMaster, _stripTransform);
         }
         _totalScoreText.text = SaveDataManager.GetTotalScore().ToString();
     }
 
-    private void CreateStageStrip(string stageId, string stageName, Transform parent)
+    private void CreateStageStrip(StageMaster stageMaster, Transform parent)
     {
         var strip = Instantiate(_stageStripPrefab, parent);
         _stageStripList.Add(strip);
-        strip.Init(stageId, stageName);
+        strip.Init(stageMaster);
         strip.OnClickedStrip.Subscribe(stageId =>
         {
             if (_selectedStrip != strip)
@@ -128,7 +135,7 @@ public class HomeManager : MonoBehaviour
                 _selectedStrip?.SetSelected(false);
                 _selectedStrip = strip;
                 strip.SetSelected(true);
-                BGMManager.instance.SetClip(strip.StageId);
+                BGMManager.instance.SetClip(strip.StageId, isFade: true, startTime: strip.StartTime, endTime: strip.EndTime);
             }
             else
             {
@@ -162,7 +169,6 @@ public class HomeManager : MonoBehaviour
         _currentLevel = titlePanelType.GetLevel();
         _stageStripPanel.SetActive(titlePanelType.IsStage());
         UpdateStrip();
-        _settingPanel.SetActive(titlePanelType == HomePanelType.Setting);
     }
 
     private void StartBattle(bool isPractice)

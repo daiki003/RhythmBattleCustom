@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class SettingMaster
@@ -28,6 +29,8 @@ public class StageMaster
 {
     public string StageId;
     public string StageName;
+    public float StripStartTime;
+    public float StripEndTime;
     public float BPM;
     public int LPB;
     public float NoteTimeOffset;
@@ -42,6 +45,9 @@ public class StageMaster
         return new StageMaster()
         {
             StageId = StageId,
+            StageName = StageName,
+            StripStartTime = StripStartTime,
+            StripEndTime = StripEndTime,
             BPM = BPM,
             LPB = LPB,
             NoteTimeOffset = NoteTimeOffset,
@@ -93,6 +99,7 @@ public class TitleDataResult
 public class PlayerDataResult
 {
     public List<ClearState> ClearStateList = new();
+    public SettingData SettingData = new();
     public List<StageMaster> OverrideStageMasterList = new();
     public List<SingleStageMaster> CustomStageList= new();
 }
@@ -117,7 +124,7 @@ public static class MasterManager
         }
         if (playerDataResult != null)
         {
-            SetPlayerData(playerDataResult.ClearStateList, playerDataResult.OverrideStageMasterList, playerDataResult.CustomStageList);
+            SetPlayerData(playerDataResult.ClearStateList, playerDataResult.SettingData, playerDataResult.OverrideStageMasterList, playerDataResult.CustomStageList);
         }
         CreateSingleStageList();
 	}
@@ -126,9 +133,12 @@ public static class MasterManager
 		SettingMaster = settingMaster;
         StageMasterList.AddRange(stageMasterList);
 	}
-    public static void SetPlayerData(List<ClearState> clearStateList, List<StageMaster> overrideMasterList, List<SingleStageMaster> customStageList)
+    public static void SetPlayerData(List<ClearState> clearStateList, SettingData settingData, List<StageMaster> overrideMasterList, List<SingleStageMaster> customStageList)
     {
         SaveDataManager.ClearStateList = clearStateList;
+        SaveDataManager.SettingData = settingData;
+        BGMManager.instance.AdjustVolume(settingData.BgmVolume);
+        SEManager.instance.AdjustVolume(settingData.SeVolume);
         OverrideMasterList.AddRange(overrideMasterList);
         CustomStageList = customStageList;
     }
