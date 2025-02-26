@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using R3;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -60,7 +62,7 @@ public class BattlePracticeUI : MonoBehaviour
 
     public void MoveSlider(float value)
     {
-        _timeSlider.value += value;
+        SetSlider(Math.Max(0, _timeSlider.value + value));
     }
 
     public void SetSlider(float value)

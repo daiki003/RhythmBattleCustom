@@ -78,6 +78,7 @@ public class BattleView : MonoBehaviour
     private float _lastBeatTime;
     private bool _isPractice;
     private CancellationTokenSource _cts;
+    private CancellationTokenSource _bgmStartCts;
     private SingleStageMaster _stageMaster;
 
     private Vector3 _startToTargetVectorLeft => _leftTargetPoint.localPosition - _leftStartTransform.localPosition;
@@ -86,7 +87,7 @@ public class BattleView : MonoBehaviour
     private Vector3 _rightEndPosition;
     private float _targetDistance;
     private float _surplusDistance;
-    private float _ballSpeed => _stageMaster?.BPM * MasterManager.SettingMaster.BallSpeedCoefficient ?? 1000f;
+    private float _ballSpeed => _stageMaster?.StageHeader.BPM * MasterManager.SettingMaster.BallSpeedCoefficient ?? 1000f;
     private float _ballTimeOffset => _targetDistance / _ballSpeed;
     private float _currentTime
     {
@@ -163,6 +164,13 @@ public class BattleView : MonoBehaviour
             _practiceUi.Init();
             _practiceUi.OnClickPauseButton.Subscribe(isPause =>
             {
+                if (_bgmStartCts != null)
+                {
+                    _bgmStartCts.Cancel();
+                    _bgmStartCts.Dispose();
+                    _bgmStartCts = null;
+                    _isStartBgm = true;
+                }
                 _isPausedBgm = isPause;
                 if (isPause)
                 {
@@ -247,8 +255,8 @@ public class BattleView : MonoBehaviour
 
     private float CalcNoteTime(NoteMaster noteMaster)
     {
-        int noteNumber = noteMaster.num * (_stageMaster.LPB / noteMaster.lpb);
-        return noteNumber * (60f / _stageMaster.BPM) + _stageMaster.NoteTimeOffset + GameManager.instance.SettingOffset;
+        int noteNumber = noteMaster.num * (_stageMaster.StageHeader.LPB / noteMaster.lpb);
+        return noteNumber * (60f / _stageMaster.StageHeader.BPM) + _stageMaster.StageHeader.NoteTimeOffset + SaveDataManager.SettingData.Offset;
     }
 
     public void PrepareBattle()
@@ -265,9 +273,12 @@ public class BattleView : MonoBehaviour
         _isStartBgm = false;
         // BallTimeOffset分遅れてBGMスタート
         _startBgmTime = Time.time + MasterManager.SettingMaster.BallTimeOffset;
-        await UniTask.WaitUntil(() => Time.time >= _startBgmTime);
+        _bgmStartCts = new CancellationTokenSource();
+        await UniTask.WaitUntil(() => Time.time >= _startBgmTime, cancellationToken: _bgmStartCts.Token);
         BGMManager.instance.Play();
         _isStartBgm = true;
+        _bgmStartCts.Dispose();
+        _bgmStartCts = null;
     }
 
     public void BattleStartFromMiddle()
@@ -397,23 +408,27 @@ public class BattleView : MonoBehaviour
 
     void Update()
     {
-        if (!_isStartBattle)
+        if (!_isStartBattle || _isPausedBgm)
         {
             return;
         }
-        if (BGMManager.instance.IsFinishBgm && !_isFinishBattle && !_isPractice)
+        if (BGMManager.instance.IsFinishBgm && !_isFinishBattle)
         {
-            _isFinishBattle = true;
-            OnWhenFinishBattle.OnNext(_currentScore);
+            if (_isPractice)
+            {
+                _practiceUi.Pause(true);
+                _practiceUi.SetSlider(1f);
+            }
+            else
+            {
+                _isFinishBattle = true;
+                OnWhenFinishBattle.OnNext(_currentScore);
+            }
             return;
         }
         foreach (var ball in _ballList)
         {
             ball.ViewUpdate(BGMManager.instance.CurrentTime, _isPausedBgm);
-        }
-        if (_isPausedBgm)
-        {
-            return;
         }
         if (_ballList.Count > 0)
         {
@@ -520,6 +535,13 @@ public class BattleView : MonoBehaviour
     void OnDestroy()
     {
         _cts.Cancel();
+        _cts.Dispose();
         _cts = null;
+        if (_bgmStartCts != null)
+        {
+            _bgmStartCts.Cancel();
+            _bgmStartCts.Dispose();
+            _bgmStartCts = null;
+        }
     }
 }

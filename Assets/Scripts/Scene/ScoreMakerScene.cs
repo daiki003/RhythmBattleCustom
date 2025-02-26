@@ -17,7 +17,7 @@ public class ScoreMakerScene : SceneBase
             return;
         }
         BGMManager.instance.SetClip(_scoreMakerSceneInfo.StageId, immediatePlay: false);
-        _scoreMaker.Init(_scoreMakerSceneInfo.StageId, _scoreMakerSceneInfo.FirstLevel);
+        _scoreMaker.Init(_scoreMakerSceneInfo.StageId, _scoreMakerSceneInfo.FirstLevel, _scoreMakerSceneInfo.IsNewCreate);
         await UniTask.CompletedTask;
     }
 

@@ -10,7 +10,7 @@ public enum HomePanelType
     Level1,
     Level2,
     Level3,
-    Setting,
+    Custom,
 }
 
 public static class HomePanelTypeExtension
@@ -22,7 +22,7 @@ public static class HomePanelTypeExtension
             HomePanelType.Level1 => 1,
             HomePanelType.Level2 => 2,
             HomePanelType.Level3 => 3,
-            _ => 1
+            _ => MasterManager.MinCustomLevelId
         };
     }
 
@@ -33,7 +33,7 @@ public static class HomePanelTypeExtension
             HomePanelType.Level1 or
             HomePanelType.Level2 or
             HomePanelType.Level3 => true,
-            HomePanelType.Setting => false,
+            HomePanelType.Custom => false,
             _ => false
         };
     }
@@ -44,14 +44,18 @@ public class HomeManager : MonoBehaviour
     [SerializeField] private Text _totalScoreText;
     [SerializeField] private StageStrip _stageStripPrefab;
     [SerializeField] private Transform _stripTransform;
+    [SerializeField] private Transform _customStripTransform;
     [SerializeField] private List<MenuButton> _menuButtonList;
     [SerializeField] private GameObject _stageStripPanel;
-    [SerializeField] private InputField _offsetSetting;
-    [SerializeField] private Button _playStageButton;
-    [SerializeField] private Button _practiceStageButton;
-    [SerializeField] private Button _scoreMakerButton;
+    [SerializeField] private GameObject _customStripPanel;
     [SerializeField] private Button _settingButton;
     [SerializeField] private SettingPanel _settingPanel;
+
+    [SerializeField] private Button _playStageButton;
+    [SerializeField] private Button _practiceStageButton;
+    [SerializeField] private Button _editStageButton;
+    [SerializeField] private Button _deleteStageButton;
+    [SerializeField] private Button _newCreateButton;
 
     private List<StageStrip> _stageStripList = new List<StageStrip>();
 
@@ -77,31 +81,58 @@ public class HomeManager : MonoBehaviour
                 SetLevelPanel(menuButton.ButtonType);
             }
         }
-        BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true, isFade: true);
-        _offsetSetting.text = GameManager.instance.SettingOffset.ToString();
-        _offsetSetting.onValueChanged.AddListener(x =>
+        if (lastLevel >= MasterManager.MinCustomLevelId)
         {
-            GameManager.instance.SettingOffset = float.Parse(x);
-        });
+            SetLevelPanel(HomePanelType.Custom);
+        }
+        BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true, isFade: true);
         _playStageButton.OnClickAsObservable().Subscribe(_ =>
         {
             StartBattle(isPractice: false);
-        });
+        }).AddTo(this);
         _practiceStageButton.OnClickAsObservable().Subscribe(_ =>
         {
             StartBattle(isPractice: true);
-        });
-        _scoreMakerButton.OnClickAsObservable().Subscribe(_ =>
+        }).AddTo(this);
+        _editStageButton.OnClickAsObservable().Subscribe(_ =>
         {
-            StartScoreMaker();
-        });
+            StartScoreMaker(_selectedStrip.StageId, isNewCreate: false);
+        }).AddTo(this);
+        _deleteStageButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            // ステージ削除
+        }).AddTo(this);
+        _newCreateButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            var option = new DialogOptionBase
+            {
+                TitleText = "ステージ選択",
+                OkButtonText = "作成",
+                CancelButtonText = "キャンセル"
+            };
+            var dialog = DialogManager.instance.CreateDialog<NewCreateListDialog>("NewCreateListDialog", option);
+            dialog.OnCloseDialog.Subscribe(result =>
+            {
+                if (result is NewCreateDialogResult dialogResult)
+                {
+                    if (dialogResult.ResultType == DialogResultType.Ok)
+                    {
+                        StartScoreMaker(dialogResult.SelectedStageId, isNewCreate: true);
+                    }
+                    else
+                    {
+                        CancelSelectStrip();
+                    }
+                }
+            });
+        }).AddTo(this);
 
         _settingPanel.Init();
         _settingPanel.gameObject.SetActive(false);
         _settingButton.OnClickAsObservable().Subscribe(_ =>
         {
             _settingPanel.gameObject.SetActive(true);
-        });
+        }).AddTo(this);
     }
 
     public void UpdateStrip()
@@ -118,17 +149,24 @@ public class HomeManager : MonoBehaviour
         for (int i = 0; i < MasterManager.StageMasterList.Count; i++)
         {
             var stageMaster = MasterManager.StageMasterList[i];
-            CreateStageStrip(stageMaster, _stripTransform);
+            var strip = CreateStageStrip(stageMaster.StageHeader, _stripTransform);
+            strip.SetLevelAndId(stageMaster.StageId, levelId: 0);
+        }
+        for (int i = 0; i < MasterManager.CustomStageList.Count; i++)
+        {
+            var stageMaster = MasterManager.CustomStageList[i];
+            var strip = CreateStageStrip(stageMaster.StageHeader, _customStripTransform);
+            strip.SetLevelAndId(stageMaster.StageId, stageMaster.LevelId);
         }
         _totalScoreText.text = SaveDataManager.GetTotalScore().ToString();
     }
 
-    private void CreateStageStrip(StageMaster stageMaster, Transform parent)
+    private StageStrip CreateStageStrip(StageHeader stageHeader, Transform parent)
     {
         var strip = Instantiate(_stageStripPrefab, parent);
         _stageStripList.Add(strip);
-        strip.Init(stageMaster);
-        strip.OnClickedStrip.Subscribe(stageId =>
+        strip.Init(stageHeader);
+        strip.OnClickedStrip.Subscribe(_ =>
         {
             if (_selectedStrip != strip)
             {
@@ -137,13 +175,20 @@ public class HomeManager : MonoBehaviour
                 strip.SetSelected(true);
                 BGMManager.instance.SetClip(strip.StageId, isFade: true, startTime: strip.StartTime, endTime: strip.EndTime);
             }
-            else
-            {
-                _selectedStrip.SetSelected(false);
-                _selectedStrip = null;
-                BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true, isFade: true);
-            }
-        });
+            SetButtonInteractable(_selectedStrip != null);
+        }).AddTo(strip);
+        SetButtonInteractable(false);
+        return strip;
+    }
+
+    private void CancelSelectStrip()
+    {
+        if (_selectedStrip != null)
+        {
+            _selectedStrip.SetSelected(false);
+            _selectedStrip = null;
+            BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true, isFade: true);
+        }
     }
 
     public void DestroyAllStrip()
@@ -154,6 +199,14 @@ public class HomeManager : MonoBehaviour
             _stageStripList.RemoveAt(0);
             Destroy(strip.gameObject);
         }
+    }
+
+    private void SetButtonInteractable(bool isActive)
+    {
+        _playStageButton.interactable = isActive;
+        _practiceStageButton.interactable = isActive;
+        _editStageButton.interactable = isActive;
+        _deleteStageButton.interactable = isActive;
     }
 
     private void DarkeningMenuButton()
@@ -167,27 +220,39 @@ public class HomeManager : MonoBehaviour
     private void SetLevelPanel(HomePanelType titlePanelType)
     {
         _currentLevel = titlePanelType.GetLevel();
+        bool isStage = titlePanelType.IsStage();
+        _practiceStageButton.gameObject.SetActive(isStage);
+        // _editStageButton.gameObject.SetActive(!isStage);
+        _deleteStageButton.gameObject.SetActive(!isStage);
+        _newCreateButton.gameObject.SetActive(!isStage);
         _stageStripPanel.SetActive(titlePanelType.IsStage());
+        _customStripPanel.SetActive(!titlePanelType.IsStage());
         UpdateStrip();
+        if (!titlePanelType.IsStage())
+        {
+            CancelSelectStrip();
+        }
     }
 
     private void StartBattle(bool isPractice)
     {
+        int level = _currentLevel < MasterManager.MinCustomLevelId ? _currentLevel : _selectedStrip.LevelId;
         var sceneInfo = new BattleSceneInfo
         {
-            StageMaster = MasterManager.GetSingleStageMaster(_selectedStrip.StageId, _currentLevel),
+            StageMaster = MasterManager.GetSingleStageMaster(_selectedStrip.StageId, level),
             IsPractice = isPractice
         };
         SEManager.instance.PlayBattleStartSe();
         GameManager.instance.OpenScene(SceneType.Battle, sceneInfo).Forget();
     }
 
-    private void StartScoreMaker()
+    private void StartScoreMaker(string stageId, bool isNewCreate)
     {
         var sceneInfo = new ScoreMakerSceneInfo
         {
-            StageId = _selectedStrip.StageId,
-            FirstLevel = _currentLevel
+            StageId = stageId,
+            FirstLevel = isNewCreate ? 1 : _currentLevel,
+            IsNewCreate = isNewCreate
         };
         SEManager.instance.PlayButtonSe();
         GameManager.instance.OpenScene(SceneType.ScoreMaker, sceneInfo).Forget();

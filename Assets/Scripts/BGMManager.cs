@@ -109,7 +109,10 @@ public class BGMManager : MonoBehaviour
 	public void Play(bool isFade = false)
 	{
 		_bgmSource.clip = _currentBgmClip;
-		_bgmSource.time = _startTime;
+		if (_startTime > 0)
+		{
+			_bgmSource.time = _startTime;
+		}
 		_bgmSource.Play();
 		if (isFade)
 		{

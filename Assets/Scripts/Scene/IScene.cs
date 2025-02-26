@@ -34,4 +34,5 @@ public class ScoreMakerSceneInfo : SceneInfoBase
 {
     public string StageId;
     public int FirstLevel;
+    public bool IsNewCreate;
 }

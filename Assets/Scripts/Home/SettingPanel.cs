@@ -9,10 +9,14 @@ public class SettingPanel : MonoBehaviour
     [SerializeField] private Slider _bgmSlider;
     [SerializeField] private Slider _seSlider;
     [SerializeField] private Button _seTestButton;
-    [SerializeField] private InputField _offsetSetting;
-    [SerializeField] private Button _deleteDataButton;
+    [SerializeField] private Text _offsetText;
+    [SerializeField] private Button _minusOffsetButton;
+    [SerializeField] private Button _plusOffsetButton;
     [SerializeField] private Button _closeButton;
     [SerializeField] private Button _bgButton;
+
+    private float _currentOffset;
+    private const float _changeOffsetUnit = 0.01f;
 
     public void Init()
     {
@@ -21,6 +25,7 @@ public class SettingPanel : MonoBehaviour
         {
             BGMManager.instance.AdjustVolume(x);
         });
+
         _seSlider.value = SaveDataManager.SettingData.SeVolume;
         _seSlider.OnValueChangedAsObservable().Subscribe(x =>
         {
@@ -30,15 +35,18 @@ public class SettingPanel : MonoBehaviour
         {
             SEManager.instance.PlayButtonSe();
         });
-        _offsetSetting.text = GameManager.instance.SettingOffset.ToString();
-        _offsetSetting.OnValueChangedAsObservable().Subscribe(x =>
+
+        _currentOffset = SaveDataManager.SettingData.Offset;
+        _offsetText.text = _currentOffset.ToString();
+        _minusOffsetButton.OnClickAsObservable().Subscribe(_ =>
         {
-            GameManager.instance.SettingOffset = float.Parse(x);
+            ChangeOffset(-1 * _changeOffsetUnit);
         });
-        _deleteDataButton.OnClickAsObservable().Subscribe(_ =>
+        _plusOffsetButton.OnClickAsObservable().Subscribe(_ =>
         {
-            // データ削除
+            ChangeOffset(_changeOffsetUnit);
         });
+
         _closeButton.OnClickAsObservable().Subscribe(_ =>
         {
             ClosePanel();
@@ -49,9 +57,15 @@ public class SettingPanel : MonoBehaviour
         });
     }
 
+    private void ChangeOffset(float diff)
+    {
+        _currentOffset += diff;
+        _offsetText.text = string.Format("{0:F2}", _currentOffset);
+    }
+
     public void ClosePanel()
     {
         gameObject.SetActive(false);
-        SaveDataManager.UpdateSettingData(_bgmSlider.value, _seSlider.value);
+        SaveDataManager.UpdateSettingData(_bgmSlider.value, _seSlider.value, _currentOffset);
     }
 }

@@ -5,30 +5,42 @@ using R3;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class InputDialog : MonoBehaviour
+public class InputDialogOption : DialogOptionBase
+{
+    public string MessageText;
+    public string PlaceHolderText;
+    public string InitialInputText;
+}
+
+public class InputDialogResult : DialogResultBase
+{
+    public string StageName;
+}
+
+public class InputDialog : DialogBase
 {
     [SerializeField] private Text _messageText;
     [SerializeField] private InputField _inputField;
     [SerializeField] private Text _placeHolderText;
-    [SerializeField] private Button _submitButton;
-    [SerializeField] private Button _cancelButton;
 
-    private Subject<string> _onSubmit = new();
-    public Observable<string> OnSubmit => _onSubmit;
-
-    public void Init(string messageText, string placeHolderText, string initText = "")
+    public override void Init(DialogOptionBase dialogOption)
     {
-        _messageText.text = messageText;
-        _placeHolderText.text = placeHolderText;
-        _inputField.text = initText;
-        _submitButton.OnClickAsObservable().Subscribe(_ =>
+        base.Init(dialogOption);
+        if (dialogOption is InputDialogOption inputDialogOption)
         {
-            _onSubmit.OnNext(_inputField.text);
-            Destroy(gameObject);
-        });
-        _cancelButton.OnClickAsObservable().Subscribe(_ =>
+            _messageText.text = inputDialogOption.MessageText;
+            _placeHolderText.text = inputDialogOption.PlaceHolderText;
+            _inputField.text = inputDialogOption.InitialInputText;
+        }
+    }
+
+    public override void ClosePanel(DialogResultType resultType)
+    {
+        _onCloseDialog.OnNext(new InputDialogResult
         {
-            Destroy(gameObject);
+            ResultType = resultType,
+            StageName = _inputField.text
         });
+        Destroy(gameObject);
     }
 }

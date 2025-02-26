@@ -17,6 +17,7 @@ public class SettingData
 {
     public float BgmVolume;
     public float SeVolume;
+    public float Offset;
 }
 
 public static class SaveDataManager
@@ -70,10 +71,11 @@ public static class SaveDataManager
         PlayFabController.UpdateClearState(ClearStateList);
     }
 
-    public static void UpdateSettingData(float bgmVolume, float seVolume)
+    public static void UpdateSettingData(float bgmVolume, float seVolume, float offset)
     {
         SettingData.BgmVolume = bgmVolume;
         SettingData.SeVolume = seVolume;
+        SettingData.Offset = offset;
         PlayFabController.UpdateSettingData(SettingData);
     }
 }

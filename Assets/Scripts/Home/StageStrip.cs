@@ -20,22 +20,28 @@ public class StageStrip : MonoBehaviour
     public string StageId { get; private set; }
     public float StartTime { get; private set; }
     public float EndTime { get; private set; }
+    public int LevelId { get; private set; }
 
     public Subject<Unit> OnClickedStrip { get; private set; } = new();
 
-    public void Init(StageMaster stageMaster)
+    public void Init(StageHeader stageHeader)
     {
-        var enemySprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + stageMaster.StageId);
-        _enemyImage.sprite = enemySprite;
-        _titleText.text = stageMaster.StageName;
-        StartTime = stageMaster.StripStartTime;
-        EndTime = stageMaster.StripEndTime;
-        StageId = stageMaster.StageId;
+        _titleText.text = stageHeader.StageName;
+        StartTime = stageHeader.StripStartTime;
+        EndTime = stageHeader.StripEndTime;
         _selectedPanel.gameObject.SetActive(false);
         _stripButton.OnClickAsObservable().Subscribe(_ =>
         {
             OnClickedStrip.OnNext(default);
         });
+    }
+
+    public void SetLevelAndId(string stageId, int levelId)
+    {
+        StageId = stageId;
+        var enemySprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + StageId);
+        _enemyImage.sprite = enemySprite;
+        LevelId = levelId;
     }
 
     public void UpdateScore(int level)

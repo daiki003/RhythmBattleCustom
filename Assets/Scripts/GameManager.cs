@@ -37,7 +37,6 @@ public class GameManager : MonoBehaviour
 
     private ClickHandler _clickHandler;
     public ClickHandler ClickHandler => _clickHandler;
-    public float SettingOffset;
 
     private IScene _currentScene;
     private IScene _additionalScene;

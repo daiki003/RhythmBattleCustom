@@ -10,14 +10,12 @@ using Cysharp.Threading.Tasks;
 
 public class ScoreMaker : MonoBehaviour
 {
-    [SerializeField] private Transform _dialogTransform;
     [SerializeField] private Transform _scoreLineTransform;
     [SerializeField] private GameObject _singleBallSelectedPanel;
     [SerializeField] private GameObject _longBallSelectedPanel;
     [SerializeField] private ScoreLine _scoreLinePrefab; 
     [SerializeField] private ScrollRect _scoreScrollRect;
     [SerializeField] private Button _saveButton;
-    [SerializeField] private Button _addStageButton;
     [SerializeField] private Button _practiceButton;
     [SerializeField] private Button _backButton;
     [SerializeField] private List<MenuButton> _levelButtonList = new();
@@ -88,14 +86,47 @@ public class ScoreMaker : MonoBehaviour
         Long
     }
     private ScoreMakerBallType _currentSelectBallType;
-    private float _bpm => _currentStageMaster?.BPM ?? 520f;
-    private float _offset => _currentStageMaster?.NoteTimeOffset + GameManager.instance.SettingOffset ?? GameManager.instance.SettingOffset;
+    private float _bpm => _currentStageMaster?.StageHeader.BPM ?? 520f;
+    private float _offset => _currentStageMaster?.StageHeader.NoteTimeOffset + SaveDataManager.SettingData.Offset ?? SaveDataManager.SettingData.Offset;
     private float _singleBeatTime => 60f / _bpm;
     private int _currentLevel;
     private bool _isStartMake;
     private bool _isDuringPractice;
 
-    public void Init(string stageId, int firstLevel)
+    public void Init(string stageId, int firstLevel, bool isNewCreate)
+    {
+        StartSubscribeMain(isNewCreate);
+        StartSubscribeControllPanel();
+
+        // レベルボタン初期化
+        _currentLevel = firstLevel;
+        for (int i = 0; i < _levelButtonList.Count; i++)
+        {
+            int level = i + 1;
+            var button = _levelButtonList[i];
+            button.OnWhenClicked.Subscribe(_ =>
+            {
+                DarkeningLevelButton();
+                button.OnClick();
+                ChangeLevel(level);
+            });
+            if (level == _currentLevel)
+            {
+                DarkeningLevelButton();
+                button.SetLight(true);
+            }
+        }
+
+        SwitchBallType(isLong: false);
+        var stageMaster = MasterManager.GetStageMaster(stageId);
+        _currentStageMaster = isNewCreate ? stageMaster.CreateEmpty() : stageMaster.CreateCopy();
+        _bpmInput.text = _bpm.ToString();
+        _offsetInput.text = _offset.ToString();
+        CreateLine();
+        _scoreScrollRect.verticalNormalizedPosition = 0;
+    }
+
+    private void StartSubscribeMain(bool isNewCreate)
     {
         GameManager.instance.ClickHandler.OnClickScoreLinePocket.Subscribe(x =>
         {
@@ -144,40 +175,52 @@ public class ScoreMaker : MonoBehaviour
         }).AddTo(this);
         _saveButton.OnClickAsObservable().Subscribe(async _ =>
         {
-            SEManager.instance.PlayButtonSe();
-            // 現在のレベルの譜面を保存
-            _currentStageMaster.notes[_currentLevel - 1] = CreateNoteList();
-            await PlayFabController.UpdateOverrideScore(_currentStageMaster);
-            MasterManager.SetOverrideMaster(_currentStageMaster);
-            // ダイアログを出す
-            var dialog = Instantiate(ResourceManager.LoadPrefab<Dialog>("Dialog"), _dialogTransform);
-            dialog.Init("保存しました", "閉じる");
-        });
-        _addStageButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            SEManager.instance.PlayButtonSe();
-            // ステージ名入力ダイアログを出す
-            var inputDialog = Instantiate(ResourceManager.LoadPrefab<InputDialog>("InputDialog"), _dialogTransform);
-            inputDialog.Init("ステージ名を入力してください", _currentStageMaster.StageId, _currentStageMaster.StageId);
-            inputDialog.OnSubmit.Subscribe(async stageName =>
+            if (isNewCreate)
             {
-                // SingleStageMasterを作成
-                var stageMaster = new SingleStageMaster()
+                SEManager.instance.PlayButtonSe();
+                // ステージ名入力ダイアログを出す
+                var option = new InputDialogOption
                 {
-                    StageId = _currentStageMaster.StageId,
-                    StageName = stageName,
-                    LevelId = MasterManager.GetNextCustumStageLevel(_currentStageMaster.StageId),
-                    BPM = _currentStageMaster.BPM,
-                    LPB = _currentStageMaster.LPB,
-                    NoteTimeOffset = _currentStageMaster.NoteTimeOffset,
-                    notes = CreateNoteList()
+                    TitleText = "新規保存",
+                    OkButtonText = "決定",
+                    MessageText = "ステージ名を入力してください",
+                    PlaceHolderText = _currentStageMaster.StageHeader.StageName,
+                    InitialInputText = _currentStageMaster.StageHeader.StageName,
                 };
-                MasterManager.AddCustomStageList(stageMaster);
-                await PlayFabController.UpdateCustomStageList();
+                var inputDialog = DialogManager.instance.CreateDialog<InputDialog>("UI/InputDialog", option);
+                inputDialog.OnCloseDialog.Subscribe(async result  =>
+                {
+                    if (result is not InputDialogResult inputResult) return;
+
+                    if (inputResult.ResultType == DialogResultType.Ok)
+                    {
+                        // SingleStageMasterを作成
+                        var stageHeader = _currentStageMaster.StageHeader;
+                        stageHeader.StageName = inputResult.StageName;
+                        var stageMaster = new SingleStageMaster()
+                        {
+                            StageId = _currentStageMaster.StageId,
+                            StageHeader = stageHeader,
+                            LevelId = MasterManager.GetNextCustumStageLevel(_currentStageMaster.StageId),
+                            notes = CreateNoteList()
+                        };
+                        MasterManager.AddCustomStageList(stageMaster);
+                        await PlayFabController.UpdateCustomStageList();
+                        // ダイアログを出す
+                        DisplaySaveFinishDialog();
+                    }
+                });
+            }
+            else
+            {
+                SEManager.instance.PlayButtonSe();
+                // 現在のレベルの譜面を保存
+                _currentStageMaster.notes[_currentLevel - 1] = CreateNoteList();
+                await PlayFabController.UpdateOverrideScore(_currentStageMaster);
+                MasterManager.SetOverrideMaster(_currentStageMaster);
                 // ダイアログを出す
-                var dialog = Instantiate(ResourceManager.LoadPrefab<Dialog>("Dialog"), _dialogTransform);
-                dialog.Init("保存しました", "閉じる");
-            });
+                DisplaySaveFinishDialog();
+            }
         });
         _practiceButton.OnClickAsObservable().Subscribe(async _ =>
         {
@@ -200,13 +243,28 @@ public class ScoreMaker : MonoBehaviour
         }).AddTo(this);
         _bpmInput.OnEndEditAsObservable().Subscribe(bpm =>
         {
-            _currentStageMaster.BPM = float.Parse(bpm);
+            _currentStageMaster.StageHeader.BPM = float.Parse(bpm);
         }).AddTo(this);
         _offsetInput.OnEndEditAsObservable().Subscribe(offset =>
         {
-            _currentStageMaster.NoteTimeOffset = float.Parse(offset);
+            _currentStageMaster.StageHeader.NoteTimeOffset = float.Parse(offset);
         }).AddTo(this);
+    }
 
+    private void DisplaySaveFinishDialog()
+    {
+        var option = new MessageDialogOption
+        {
+            TitleText = "保存完了",
+            OkButtonText = "OK",
+            HideCancelButton = true,
+            MessageText = "保存しました"
+        };
+        DialogManager.instance.CreateDialog<MessageDialog>("UI/MessageDialog", option);
+    }
+
+    private void StartSubscribeControllPanel()
+    {
         // コントロールパネル内のページ送りボタン
         OnClickControllPanelPageButton(page: 1);
         for (int i = 0; i < _nextPageButtonList.Count; i++)
@@ -276,32 +334,6 @@ public class ScoreMaker : MonoBehaviour
         }).AddTo(this);
         // 初期値は中間にしておく
         _lineSpacingSlider.value = 0.5f;
-
-        // レベルボタン初期化
-        _currentLevel = firstLevel;
-        for (int i = 0; i < _levelButtonList.Count; i++)
-        {
-            int level = i + 1;
-            var button = _levelButtonList[i];
-            button.OnWhenClicked.Subscribe(_ =>
-            {
-                DarkeningLevelButton();
-                button.OnClick();
-                ChangeLevel(level);
-            });
-            if (level == _currentLevel)
-            {
-                DarkeningLevelButton();
-                button.SetLight(true);
-            }
-        }
-
-        SwitchBallType(isLong: false);
-        _currentStageMaster = MasterManager.GetStageMaster(stageId).CreateCopy();
-        _bpmInput.text = _bpm.ToString();
-        _offsetInput.text = _offset.ToString();
-        CreateLine();
-        _scoreScrollRect.verticalNormalizedPosition = 0;
     }
 
     // Editモードでのライン選択

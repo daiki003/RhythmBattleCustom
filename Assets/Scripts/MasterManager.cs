@@ -25,7 +25,7 @@ public class NoteMaster
     public int noteNumber => num * (4 / lpb);
 }
 
-public class StageMaster
+public class StageHeader
 {
     public string StageId;
     public string StageName;
@@ -34,6 +34,12 @@ public class StageMaster
     public float BPM;
     public int LPB;
     public float NoteTimeOffset;
+}
+
+public class StageMaster
+{
+    public string StageId;
+    public StageHeader StageHeader;
     public List<List<NoteMaster>> notes = new List<List<NoteMaster>>();
     public StageMaster CreateCopy()
     {
@@ -45,13 +51,17 @@ public class StageMaster
         return new StageMaster()
         {
             StageId = StageId,
-            StageName = StageName,
-            StripStartTime = StripStartTime,
-            StripEndTime = StripEndTime,
-            BPM = BPM,
-            LPB = LPB,
-            NoteTimeOffset = NoteTimeOffset,
+            StageHeader = StageHeader,
             notes = noteList
+        };
+    }
+    public StageMaster CreateEmpty()
+    {
+        return new StageMaster()
+        {
+            StageId = StageId,
+            StageHeader = StageHeader,
+            notes = new List<List<NoteMaster>>() { new() }
         };
     }
 }
@@ -59,21 +69,16 @@ public class StageMaster
 public class SingleStageMaster
 {
     public string StageId;
-    public string StageName;
+    public StageHeader StageHeader;
     public int LevelId;
-    public float BPM;
-    public int LPB;
-    public float NoteTimeOffset;
     public List<NoteMaster> notes = new List<NoteMaster>();
     // StageMasterからSingleStageMasterを作成する
     public SingleStageMaster() { }
     public SingleStageMaster(StageMaster stageMaster, int level)
     {
         StageId = stageMaster.StageId;
+        StageHeader = stageMaster.StageHeader;
         LevelId = level;
-        BPM = stageMaster.BPM;
-        LPB = stageMaster.LPB;
-        NoteTimeOffset = stageMaster.NoteTimeOffset;
         notes = stageMaster.notes[level - 1];
     }
     public SingleStageMaster CreateCopy()
@@ -81,10 +86,7 @@ public class SingleStageMaster
         return new SingleStageMaster()
         {
             StageId = StageId,
-            StageName = StageName,
-            BPM = BPM,
-            LPB = LPB,
-            NoteTimeOffset = NoteTimeOffset,
+            StageHeader = StageHeader,
             notes = notes
         };
     }
@@ -109,10 +111,10 @@ public static class MasterManager
     public static SettingMaster SettingMaster;
     public static List<StageMaster> StageMasterList = new List<StageMaster>();
     public static List<StageMaster> OverrideMasterList = new List<StageMaster>();
-    public static List<SingleStageMaster> SingleStageList = new List<SingleStageMaster>(); // 全てのステージを入れておくリスト
+    public static List<SingleStageMaster> SingleStageList = new List<SingleStageMaster>(); // 通常のステージを入れておくリスト
     public static List<SingleStageMaster> CustomStageList = new List<SingleStageMaster>(); // カスタムステージを入れておくリスト
     // カスタムステージの最小レベルID
-    private static int _minCustomLevelId = 100;
+    public const int MinCustomLevelId = 100;
 
     public static async UniTask GetAllMasterData()
 	{
@@ -189,7 +191,7 @@ public static class MasterManager
         var customStageList = CustomStageList.Where(s => s.StageId == stageId).ToList();
         if (customStageList.Count == 0)
         {
-            return _minCustomLevelId;
+            return MinCustomLevelId;
         }
         return customStageList.Max(s => s.LevelId) + 1;
     }
