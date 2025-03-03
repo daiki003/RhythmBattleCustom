@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,9 +21,11 @@ public class SceneInfoBase
 
 public class BattleSceneInfo : SceneInfoBase
 {
-    public SingleStageMaster StageMaster;
+    public StageInfo StageInfo;
+    public int Level;
     public bool IsPractice;
     public float TimeRate;
+    public LevelInfo LevelInfo => StageInfo.LevelList.FirstOrDefault(l => l.Level == Level);
 }
 
 public class TitleSceneInfo : SceneInfoBase
@@ -32,7 +35,8 @@ public class TitleSceneInfo : SceneInfoBase
 
 public class ScoreMakerSceneInfo : SceneInfoBase
 {
-    public string StageId;
+    public StageInfo StageInfo;
     public int FirstLevel;
     public bool IsNewCreate;
+    public List<int> LevelList = new();
 }

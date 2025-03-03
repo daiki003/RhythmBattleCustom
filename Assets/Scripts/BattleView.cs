@@ -79,7 +79,8 @@ public class BattleView : MonoBehaviour
     private bool _isPractice;
     private CancellationTokenSource _cts;
     private CancellationTokenSource _bgmStartCts;
-    private SingleStageMaster _stageMaster;
+    private StageHeader _stageHeader;
+    private LevelInfo _levelInfo;
 
     private Vector3 _startToTargetVectorLeft => _leftTargetPoint.localPosition - _leftStartTransform.localPosition;
     private Vector3 _startToTargetVectorRight => _rightTargetPoint.localPosition - _rightStartTransform.localPosition;
@@ -87,7 +88,7 @@ public class BattleView : MonoBehaviour
     private Vector3 _rightEndPosition;
     private float _targetDistance;
     private float _surplusDistance;
-    private float _ballSpeed => _stageMaster?.StageHeader.BPM * MasterManager.SettingMaster.BallSpeedCoefficient ?? 1000f;
+    private float _ballSpeed => _stageHeader?.BPM * MasterManager.SettingMaster.BallSpeedCoefficient ?? 1000f;
     private float _ballTimeOffset => _targetDistance / _ballSpeed;
     private float _currentTime
     {
@@ -109,10 +110,11 @@ public class BattleView : MonoBehaviour
 
     private const float _beforeReultWaitTime = 1f;
 
-    public void Init(SingleStageMaster singleStageMaster, bool isPractice)
+    public void Init(StageHeader stageHeader, LevelInfo levelInfo, bool isPractice)
     {
         _cts = new CancellationTokenSource();
-        _stageMaster = singleStageMaster;
+        _stageHeader = stageHeader;
+        _levelInfo = levelInfo;
         _isPractice = isPractice;
 
         _leftEndPosition = _leftStartTransform.localPosition + _startToTargetVectorLeft * 1.5f;
@@ -199,7 +201,7 @@ public class BattleView : MonoBehaviour
         }
 
         _resultView.gameObject.SetActive(false);
-        _enemyImage.sprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + _stageMaster.StageId);
+        _enemyImage.sprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + _stageHeader.StageId);
     }
 
     public void SetSliderForAdditional(float timeRate)
@@ -255,15 +257,15 @@ public class BattleView : MonoBehaviour
 
     private float CalcNoteTime(NoteMaster noteMaster)
     {
-        int noteNumber = noteMaster.num * (_stageMaster.StageHeader.LPB / noteMaster.lpb);
-        return noteNumber * (60f / _stageMaster.StageHeader.BPM) + _stageMaster.StageHeader.NoteTimeOffset + SaveDataManager.SettingData.Offset;
+        int noteNumber = noteMaster.num * (_stageHeader.LPB / noteMaster.lpb);
+        return noteNumber * (60f / _stageHeader.BPM) + _stageHeader.NoteTimeOffset + SaveDataManager.SettingData.Offset;
     }
 
     public void PrepareBattle()
     {
         Reset();
-        BGMManager.instance.SetClip(_stageMaster.StageId, immediatePlay: false);
-        CreateBalls(_stageMaster.notes);
+        BGMManager.instance.SetClip(_stageHeader.StageId, immediatePlay: false);
+        CreateBalls(_levelInfo.Notes);
     }
 
     public async UniTask BattleStart()

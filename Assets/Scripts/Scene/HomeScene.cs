@@ -14,7 +14,7 @@ public class HomeScene : SceneBase
         int lastBattleLevel = 1;
         if (_lastSceneInfo is BattleSceneInfo battleSceneInfo)
         {
-            lastBattleLevel = battleSceneInfo.StageMaster.LevelId;
+            lastBattleLevel = battleSceneInfo.Level;
         }
         _titleManager.Init(lastBattleLevel);
     }

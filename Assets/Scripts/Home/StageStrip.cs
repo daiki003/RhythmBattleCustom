@@ -17,31 +17,26 @@ public class StageStrip : MonoBehaviour
     [SerializeField] private Text _hitText;
     [SerializeField] private Text _missText;
 
-    public string StageId { get; private set; }
-    public float StartTime { get; private set; }
-    public float EndTime { get; private set; }
+    private StageHeader _stageHeader;
+    public string StageId => _stageHeader.StageId;
+    public float StartTime => _stageHeader.StripStartTime;
+    public float EndTime => _stageHeader.StripEndTime;
     public int LevelId { get; private set; }
 
     public Subject<Unit> OnClickedStrip { get; private set; } = new();
 
-    public void Init(StageHeader stageHeader)
+    public void Init(StageHeader stageHeader, int level, string overrideName = "")
     {
-        _titleText.text = stageHeader.StageName;
-        StartTime = stageHeader.StripStartTime;
-        EndTime = stageHeader.StripEndTime;
+        _stageHeader = stageHeader;
+        LevelId = level;
+        _titleText.text = string.IsNullOrEmpty(overrideName) ? _stageHeader.StageName : overrideName;
+        var enemySprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + StageId);
+        _enemyImage.sprite = enemySprite;
         _selectedPanel.gameObject.SetActive(false);
         _stripButton.OnClickAsObservable().Subscribe(_ =>
         {
             OnClickedStrip.OnNext(default);
         });
-    }
-
-    public void SetLevelAndId(string stageId, int levelId)
-    {
-        StageId = stageId;
-        var enemySprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + StageId);
-        _enemyImage.sprite = enemySprite;
-        LevelId = levelId;
     }
 
     public void UpdateScore(int level)

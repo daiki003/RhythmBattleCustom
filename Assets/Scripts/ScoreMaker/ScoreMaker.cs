@@ -66,7 +66,12 @@ public class ScoreMaker : MonoBehaviour
     }
     private List<LineState> _copiedLineState = new();
 
+    private List<LevelInfo> _levelInfoList = new();
+    private LevelInfo _currentLevelInfo => _levelInfoList?.FirstOrDefault(l => l.Level == _currentLevel);
+
+    private StageInfo _currentStageInfo;
     private StageMaster _currentStageMaster;
+
     private List<ScoreLine> _scoreLineList = new();
     private List<List<LineState>> _pastScoreLineList = new(); // 過去のスコアラインの状態を保持したのリスト（Undo用）
     private List<ScoreMakerBallLine> _longBallLineList = new(); // 作ったロングボール間の線のリスト
@@ -79,6 +84,8 @@ public class ScoreMaker : MonoBehaviour
     private const float _selectMaskFirstHeight = 100f;
     private const float _maxLineSpacing = 300f; // ライン間隔最大値
 
+    private int _lineNumber => (int)(_bpm * (BGMManager.instance.CurrentClipLength / 60f));
+
     public enum ScoreMakerBallType
     {
         None,
@@ -86,18 +93,15 @@ public class ScoreMaker : MonoBehaviour
         Long
     }
     private ScoreMakerBallType _currentSelectBallType;
-    private float _bpm => _currentStageMaster?.StageHeader.BPM ?? 520f;
-    private float _offset => _currentStageMaster?.StageHeader.NoteTimeOffset + SaveDataManager.SettingData.Offset ?? SaveDataManager.SettingData.Offset;
+    private float _bpm => _currentStageInfo?.StageHeader.BPM ?? 520f;
+    private float _offset => _currentStageInfo?.StageHeader.NoteTimeOffset + SaveDataManager.SettingData.Offset ?? SaveDataManager.SettingData.Offset;
     private float _singleBeatTime => 60f / _bpm;
     private int _currentLevel;
     private bool _isStartMake;
     private bool _isDuringPractice;
 
-    public void Init(string stageId, int firstLevel, bool isNewCreate)
+    public void Init(StageInfo stageInfo, int firstLevel, bool isNewCreate, List<int> levelList)
     {
-        StartSubscribeMain(isNewCreate);
-        StartSubscribeControllPanel();
-
         // レベルボタン初期化
         _currentLevel = firstLevel;
         for (int i = 0; i < _levelButtonList.Count; i++)
@@ -118,8 +122,17 @@ public class ScoreMaker : MonoBehaviour
         }
 
         SwitchBallType(isLong: false);
-        var stageMaster = MasterManager.GetStageMaster(stageId);
-        _currentStageMaster = isNewCreate ? stageMaster.CreateEmpty() : stageMaster.CreateCopy();
+        _currentStageInfo = stageInfo;
+        foreach (var level in levelList)
+        {
+            _levelInfoList.Add(new LevelInfo
+            {
+                Level = level,
+                Notes = stageInfo.LevelList.FirstOrDefault(l => l.Level == level)?.Notes
+            });
+        }
+        StartSubscribeMain(isNewCreate);
+        StartSubscribeControllPanel();
         _bpmInput.text = _bpm.ToString();
         _offsetInput.text = _offset.ToString();
         CreateLine();
@@ -184,8 +197,8 @@ public class ScoreMaker : MonoBehaviour
                     TitleText = "新規保存",
                     OkButtonText = "決定",
                     MessageText = "ステージ名を入力してください",
-                    PlaceHolderText = _currentStageMaster.StageHeader.StageName,
-                    InitialInputText = _currentStageMaster.StageHeader.StageName,
+                    PlaceHolderText = _currentStageInfo.StageHeader.StageName,
+                    InitialInputText = _currentStageInfo.StageHeader.StageName,
                 };
                 var inputDialog = DialogManager.instance.CreateDialog<InputDialog>("UI/InputDialog", option);
                 inputDialog.OnCloseDialog.Subscribe(async result  =>
@@ -194,42 +207,24 @@ public class ScoreMaker : MonoBehaviour
 
                     if (inputResult.ResultType == DialogResultType.Ok)
                     {
-                        // SingleStageMasterを作成
-                        var stageHeader = _currentStageMaster.StageHeader;
-                        stageHeader.StageName = inputResult.StageName;
-                        var stageMaster = new SingleStageMaster()
-                        {
-                            StageId = _currentStageMaster.StageId,
-                            StageHeader = stageHeader,
-                            LevelId = MasterManager.GetNextCustumStageLevel(_currentStageMaster.StageId),
-                            notes = CreateNoteList()
-                        };
-                        MasterManager.AddCustomStageList(stageMaster);
-                        await PlayFabController.UpdateCustomStageList();
-                        // ダイアログを出す
-                        DisplaySaveFinishDialog();
+                        await SaveCurrentStage(inputResult.StageName);
                     }
                 });
             }
             else
             {
                 SEManager.instance.PlayButtonSe();
-                // 現在のレベルの譜面を保存
-                _currentStageMaster.notes[_currentLevel - 1] = CreateNoteList();
-                await PlayFabController.UpdateOverrideScore(_currentStageMaster);
-                MasterManager.SetOverrideMaster(_currentStageMaster);
-                // ダイアログを出す
-                DisplaySaveFinishDialog();
+                await SaveCurrentStage();
             }
         });
         _practiceButton.OnClickAsObservable().Subscribe(async _ =>
         {
             _isDuringPractice = true;
             _currentStageMaster.notes[_currentLevel - 1] = CreateNoteList();
-            var singleMaster = new SingleStageMaster(_currentStageMaster, _currentLevel);
             var sceneInfo = new BattleSceneInfo
             {
-                StageMaster = singleMaster,
+                StageInfo = _currentStageInfo,
+                Level = _currentLevel,
                 TimeRate = _bgmScrollBar.value,
                 IsPractice = true,
                 IsAdditional = true
@@ -249,6 +244,15 @@ public class ScoreMaker : MonoBehaviour
         {
             _currentStageMaster.StageHeader.NoteTimeOffset = float.Parse(offset);
         }).AddTo(this);
+    }
+
+    private async UniTask SaveCurrentStage(string overrideName = "")
+    {
+        // 現在のレベルの譜面を保存
+        UpdateCurrentLevelNotes(overrideName);
+        await MasterManager.UpdateOverrideMaster(_currentStageInfo.StageHeader.StageId, _levelInfoList);
+        // ダイアログを出す
+        DisplaySaveFinishDialog();
     }
 
     private void DisplaySaveFinishDialog()
@@ -368,15 +372,18 @@ public class ScoreMaker : MonoBehaviour
             Destroy(destroyLine.gameObject);
         }
 
-        var masterList = _currentStageMaster.notes[_currentLevel - 1];
-        int lineNumber = (int)(_bpm * (BGMManager.instance.CurrentClipLength / 60f));
         // ライン作成
-        for (int i = 0; i < lineNumber; i++)
+        for (int i = 0; i < _lineNumber; i++)
         {
             var scoreLine = Instantiate(_scoreLinePrefab, _scoreLineTransform);
             scoreLine.transform.SetSiblingIndex(0);
             scoreLine.Init(i);
             _scoreLineList.Add(scoreLine);
+        }
+        var masterList = _levelInfoList.FirstOrDefault(l => l.Level == _currentLevel)?.Notes;
+        if (masterList == null)
+        {
+            return;
         }
         // ボール作成
         for (int i = 0; i < masterList.Count; i++)
@@ -507,12 +514,48 @@ public class ScoreMaker : MonoBehaviour
     private void ChangeLevel(int level)
     {
         // 現在のレベルの譜面を保存
-        _currentStageMaster.notes[_currentLevel - 1] = CreateNoteList();
+        UpdateCurrentLevelNotes();
 
         // レベル更新
         _currentLevel = level;
         BGMManager.instance.Pause();
         CreateLine();
+    }
+
+    // 現在のレベルの譜面状況を更新
+    private void UpdateCurrentLevelNotes(string overrideName = "")
+    {
+        if (_currentLevelInfo != null)
+        {
+            _currentLevelInfo.StageNameOverride = overrideName;
+            _currentLevelInfo.Notes = CreateNoteList();
+        }
+        else
+        {
+            _levelInfoList.Add(new LevelInfo
+            {
+                Level = _currentLevel,
+                StageNameOverride = overrideName,
+                Notes = CreateNoteList()
+            });
+        }
+    }
+
+    private List<LineState> CreateCurrentLineState()
+    {
+        var lineStateList = new List<LineState>();
+        foreach (var line in _selectedLineList)
+        {
+            var leftBall = line.GetBall(isLeft: true);
+            var rightBall = line.GetBall(isLeft: false);
+            var state = new LineState()
+            {
+                LeftBallType = leftBall?.BallType ?? ScoreMakerBallType.None,
+                RightBallType = rightBall?.BallType ?? ScoreMakerBallType.None,
+            };
+            lineStateList.Add(state);
+        }
+        return lineStateList;
     }
 
     private float GetCurrentLineNumber()
@@ -647,17 +690,7 @@ public class ScoreMaker : MonoBehaviour
     private void CopyLine()
     {
         _copiedLineState.Clear();
-        foreach (var line in _selectedLineList)
-        {
-            var leftBall = line.GetBall(isLeft: true);
-            var rightBall = line.GetBall(isLeft: false);
-            var state = new LineState()
-            {
-                LeftBallType = leftBall?.BallType ?? ScoreMakerBallType.None,
-                RightBallType = rightBall?.BallType ?? ScoreMakerBallType.None,
-            };
-            _copiedLineState.Add(state);
-        }
+        _copiedLineState = CreateCurrentLineState();
     }
 
     // コピーされた列情報を指定位置に貼り付ける

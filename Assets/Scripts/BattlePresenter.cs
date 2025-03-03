@@ -5,6 +5,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using R3;
 using System;
+using System.Linq;
 
 public class BattlePresenter : MonoBehaviour
 {
@@ -30,7 +31,7 @@ public class BattlePresenter : MonoBehaviour
         {
             FinishBattle(score);
         }).AddTo(this);
-        _battleView.Init(_battleSceneInfo.StageMaster, _battleSceneInfo.IsPractice);
+        _battleView.Init(_battleSceneInfo.StageInfo.StageHeader, _battleSceneInfo.LevelInfo, _battleSceneInfo.IsPractice);
         _battleView.PrepareBattle();
         if (_battleSceneInfo.IsAdditional)
         {
@@ -54,8 +55,8 @@ public class BattlePresenter : MonoBehaviour
     {
         var clearState = new ClearState()
         {
-            StageId = _battleSceneInfo.StageMaster.StageId,
-            Level = _battleSceneInfo.StageMaster.LevelId,
+            StageId = _battleSceneInfo.StageInfo.StageHeader.StageId,
+            Level = _battleSceneInfo.Level,
         };
         float totalCount = score.CriticalCount + score.HitCount + score.MissCount;
         float criticalMultiple = 100f / totalCount;
@@ -74,6 +75,6 @@ public class BattlePresenter : MonoBehaviour
         {
             SaveDataManager.UpdateClearState(clearState);
         }
-        _battleView.StartResultAsync(clearState, SaveDataManager.GetClearState(_battleSceneInfo.StageMaster.StageId, _battleSceneInfo.StageMaster.LevelId), criticalMultiple, hitMultiple, missMultiple).Forget();
+        _battleView.StartResultAsync(clearState, SaveDataManager.GetClearState(_battleSceneInfo.StageInfo.StageHeader.StageId, _battleSceneInfo.Level), criticalMultiple, hitMultiple, missMultiple).Forget();
     }
 }

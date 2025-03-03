@@ -4,6 +4,7 @@ using UnityEngine;
 using R3;
 using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
+using System.Linq;
 
 public enum HomePanelType
 {
@@ -57,6 +58,8 @@ public class HomeManager : MonoBehaviour
     [SerializeField] private Button _deleteStageButton;
     [SerializeField] private Button _newCreateButton;
 
+    private HomeModel _model;
+
     private List<StageStrip> _stageStripList = new List<StageStrip>();
 
     private StageStrip _selectedStrip;
@@ -64,7 +67,11 @@ public class HomeManager : MonoBehaviour
 
     public void Init(int lastLevel)
     {
+        _model = new HomeModel();
+        _model.Init();
+
         CreateStripList();
+        SetButtonInteractable(false);
         DarkeningMenuButton();
         for (int i = 0; i < _menuButtonList.Count; i++)
         {
@@ -146,26 +153,23 @@ public class HomeManager : MonoBehaviour
     public void CreateStripList()
     {
         DestroyAllStrip();
-        for (int i = 0; i < MasterManager.StageMasterList.Count; i++)
+        foreach (var stageInfo in _model.StageList)
         {
-            var stageMaster = MasterManager.StageMasterList[i];
-            var strip = CreateStageStrip(stageMaster.StageHeader, _stripTransform);
-            strip.SetLevelAndId(stageMaster.StageId, levelId: 0);
-        }
-        for (int i = 0; i < MasterManager.CustomStageList.Count; i++)
-        {
-            var stageMaster = MasterManager.CustomStageList[i];
-            var strip = CreateStageStrip(stageMaster.StageHeader, _customStripTransform);
-            strip.SetLevelAndId(stageMaster.StageId, stageMaster.LevelId);
+            CreateStageStrip(stageInfo.StageHeader, level: 0, _stripTransform);
+            var customStageList = stageInfo.LevelList.Where(l => l.Level >= MasterManager.MinCustomLevelId);
+            foreach (var customLevel in customStageList)
+            {
+                CreateStageStrip(stageInfo.StageHeader, level: customLevel.Level, _customStripTransform, customLevel.StageNameOverride);
+            }
         }
         _totalScoreText.text = SaveDataManager.GetTotalScore().ToString();
     }
 
-    private StageStrip CreateStageStrip(StageHeader stageHeader, Transform parent)
+    private StageStrip CreateStageStrip(StageHeader stageHeader, int level, Transform transform, string overrideName = "")
     {
-        var strip = Instantiate(_stageStripPrefab, parent);
+        var strip = Instantiate(_stageStripPrefab, transform);
         _stageStripList.Add(strip);
-        strip.Init(stageHeader);
+        strip.Init(stageHeader, level, overrideName);
         strip.OnClickedStrip.Subscribe(_ =>
         {
             if (_selectedStrip != strip)
@@ -177,7 +181,6 @@ public class HomeManager : MonoBehaviour
             }
             SetButtonInteractable(_selectedStrip != null);
         }).AddTo(strip);
-        SetButtonInteractable(false);
         return strip;
     }
 
@@ -239,7 +242,8 @@ public class HomeManager : MonoBehaviour
         int level = _currentLevel < MasterManager.MinCustomLevelId ? _currentLevel : _selectedStrip.LevelId;
         var sceneInfo = new BattleSceneInfo
         {
-            StageMaster = MasterManager.GetSingleStageMaster(_selectedStrip.StageId, level),
+            StageInfo = _model.GetStageInfo(_selectedStrip.StageId),
+            Level = level,
             IsPractice = isPractice
         };
         SEManager.instance.PlayBattleStartSe();
@@ -248,13 +252,24 @@ public class HomeManager : MonoBehaviour
 
     private void StartScoreMaker(string stageId, bool isNewCreate)
     {
+        int level = GetScoreMakerLevel(stageId, isNewCreate);
         var sceneInfo = new ScoreMakerSceneInfo
         {
-            StageId = stageId,
-            FirstLevel = isNewCreate ? 1 : _currentLevel,
-            IsNewCreate = isNewCreate
+            StageInfo = _model.GetStageInfo(stageId),
+            FirstLevel = level,
+            IsNewCreate = isNewCreate,
+            LevelList = level >= MasterManager.MinCustomLevelId ? new List<int>(){ level } : new List<int>(){ 1, 2, 3 }
         };
         SEManager.instance.PlayButtonSe();
         GameManager.instance.OpenScene(SceneType.ScoreMaker, sceneInfo).Forget();
+    }
+
+    private int GetScoreMakerLevel(string stageId, bool isNewCreate)
+    {
+        if (isNewCreate)
+        {
+            return MasterManager.GetNextCustumStageLevel(stageId);
+        }
+        return _currentLevel < MasterManager.MinCustomLevelId ? _currentLevel : _selectedStrip.LevelId;
     }
 }

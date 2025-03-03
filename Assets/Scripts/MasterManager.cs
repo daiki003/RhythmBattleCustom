@@ -2,8 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
-using Unity.VisualScripting;
-using UnityEngine;
 
 public class SettingMaster
 {
@@ -34,62 +32,35 @@ public class StageHeader
     public float BPM;
     public int LPB;
     public float NoteTimeOffset;
+
+    public StageHeader CreateCopy()
+    {
+        return new StageHeader
+        {
+            StageId = StageId,
+            StageName = StageName,
+            StripStartTime = StripStartTime,
+            StripEndTime = StripEndTime,
+            BPM = BPM,
+            LPB = LPB,
+            NoteTimeOffset = NoteTimeOffset
+        };
+    }
 }
 
 public class StageMaster
 {
-    public string StageId;
+    public string StageId => StageHeader.StageId;
     public StageHeader StageHeader;
     public List<List<NoteMaster>> notes = new List<List<NoteMaster>>();
-    public StageMaster CreateCopy()
-    {
-        var noteList = new List<List<NoteMaster>>();
-        foreach (var note in notes)
-        {
-            noteList.Add(new List<NoteMaster>(note));
-        }
-        return new StageMaster()
-        {
-            StageId = StageId,
-            StageHeader = StageHeader,
-            notes = noteList
-        };
-    }
-    public StageMaster CreateEmpty()
-    {
-        return new StageMaster()
-        {
-            StageId = StageId,
-            StageHeader = StageHeader,
-            notes = new List<List<NoteMaster>>() { new() }
-        };
-    }
 }
 
 public class SingleStageMaster
 {
     public string StageId;
-    public StageHeader StageHeader;
     public int LevelId;
+    public string StageNameOverride;
     public List<NoteMaster> notes = new List<NoteMaster>();
-    // StageMasterからSingleStageMasterを作成する
-    public SingleStageMaster() { }
-    public SingleStageMaster(StageMaster stageMaster, int level)
-    {
-        StageId = stageMaster.StageId;
-        StageHeader = stageMaster.StageHeader;
-        LevelId = level;
-        notes = stageMaster.notes[level - 1];
-    }
-    public SingleStageMaster CreateCopy()
-    {
-        return new SingleStageMaster()
-        {
-            StageId = StageId,
-            StageHeader = StageHeader,
-            notes = notes
-        };
-    }
 }
 
 public class TitleDataResult
@@ -111,7 +82,6 @@ public static class MasterManager
     public static SettingMaster SettingMaster;
     public static List<StageMaster> StageMasterList = new List<StageMaster>();
     public static List<StageMaster> OverrideMasterList = new List<StageMaster>();
-    public static List<SingleStageMaster> SingleStageList = new List<SingleStageMaster>(); // 通常のステージを入れておくリスト
     public static List<SingleStageMaster> CustomStageList = new List<SingleStageMaster>(); // カスタムステージを入れておくリスト
     // カスタムステージの最小レベルID
     public const int MinCustomLevelId = 100;
@@ -128,7 +98,6 @@ public static class MasterManager
         {
             SetPlayerData(playerDataResult.ClearStateList, playerDataResult.SettingData, playerDataResult.OverrideStageMasterList, playerDataResult.CustomStageList);
         }
-        CreateSingleStageList();
 	}
     public static void SetMasterData(SettingMaster settingMaster, List<StageMaster> stageMasterList)
 	{
@@ -144,47 +113,61 @@ public static class MasterManager
         OverrideMasterList.AddRange(overrideMasterList);
         CustomStageList = customStageList;
     }
-    public static void CreateSingleStageList()
+    public static async UniTask UpdateOverrideMaster(string stageId, List<LevelInfo> levelInfoList)
     {
-        SingleStageList = new List<SingleStageMaster>();
-        foreach (var stage in StageMasterList)
+        var targetMaster = StageMasterList.FirstOrDefault(s => s.StageId == stageId);
+        foreach (var levelInfo in levelInfoList)
         {
-            var stageMaster = GetStageMaster(stage.StageId);
-            for (int i = 0; i < stage.notes.Count; i++)
+            var level = levelInfo.Level;
+            var notes = levelInfo.Notes.Select(n => new NoteMaster
             {
-                SingleStageList.Add(new SingleStageMaster(stageMaster, i + 1));
+                lpb = n.lpb,
+                num = n.num,
+                block = n.block,
+                type = n.type,
+                notes = n.notes.Select(nn => new NoteMaster
+                {
+                    lpb = nn.lpb,
+                    num = nn.num,
+                    block = nn.block,
+                    type = nn.type,
+                }).ToList()
+            }).ToList();
+            if (levelInfo.Level < 3)
+            {
+                targetMaster.notes[level - 1] = notes;
+            }
+            else
+            {
+                var targetCustomStage = CustomStageList.FirstOrDefault(s => s.StageId == stageId && s.LevelId == level);
+                if (targetCustomStage != null)
+                {
+                    targetCustomStage.notes = notes;
+                }
+                else
+                {
+                    CustomStageList.Add(new SingleStageMaster
+                    {
+                        StageId = targetMaster.StageHeader.StageId,
+                        LevelId = level,
+                        StageNameOverride = levelInfo.StageNameOverride,
+                        notes = notes
+                    });
+                }
             }
         }
-        SingleStageList.AddRange(CustomStageList);
+        await PlayFabController.UpdateOverrideScore(targetMaster);
+        await PlayFabController.UpdateCustomStageList(CustomStageList);
+        SetOverrideMaster(targetMaster);
     }
     public static void SetOverrideMaster(StageMaster master)
     {
         OverrideMasterList.RemoveAll(s => s.StageId == master.StageId);
         OverrideMasterList.Add(master);
-        CreateSingleStageList();
     }
-    public static void AddCustomStageList(SingleStageMaster master)
-    {
-        CustomStageList.Add(master);
-        SingleStageList.Add(master);
-    }
-    public static StageMaster GetStageMaster(string stageId)
-    {
-        var overrideMaster = GetOverrideStageMaster(stageId);
-        return overrideMaster ?? StageMasterList.FirstOrDefault(s => s.StageId == stageId);
-    }
-    public static StageMaster GetOverrideStageMaster(string stageId)
+    public static StageMaster GetOverrideMaster(string stageId)
     {
         return OverrideMasterList.FirstOrDefault(s => s.StageId == stageId);
-    }
-    // stageIdとlevelIdからSingleStageMasterを取得する
-    public static SingleStageMaster GetSingleStageMaster(string stageId, int levelId)
-    {
-        return SingleStageList.FirstOrDefault(s => s.StageId == stageId && s.LevelId == levelId);
-    }
-    public static SingleStageMaster GetCustomStageMaster(string stageId, int levelId)
-    {
-        return CustomStageList.FirstOrDefault(s => s.StageId == stageId && s.LevelId == levelId);
     }
     public static int GetNextCustumStageLevel(string stageId)
     {

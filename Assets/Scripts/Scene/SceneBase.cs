@@ -22,9 +22,7 @@ public class SceneBase : MonoBehaviour, IScene
     }
     public virtual async UniTask StartSceneAsync()
     {
-        Debug.Log("デバッグ：FadeStart");
         await _fadePanel.DOFade(0, _panelFadeTime).SetEase(Ease.InQuad).ToUniTask();
-        Debug.Log("デバッグ：FadeEnd");
     }
     public virtual async UniTask Restart()
     {

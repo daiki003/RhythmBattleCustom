@@ -280,14 +280,14 @@ public class PlayFabController
         }
     }
 
-    public static async UniTask UpdateCustomStageList()
+    public static async UniTask UpdateCustomStageList(List<SingleStageMaster> customStageList)
     {
         var request = new UpdateUserDataRequest()
         {
             Data = new Dictionary<string, string>
             {
                 // 現在のCustomStageListの状態をサーバーに保存
-                { "CustomStageList", PlayFabSimpleJson.SerializeObject(MasterManager.CustomStageList) }
+                { "CustomStageList", PlayFabSimpleJson.SerializeObject(customStageList) }
             }
         };
 
