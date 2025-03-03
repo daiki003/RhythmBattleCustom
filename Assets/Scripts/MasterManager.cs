@@ -83,6 +83,8 @@ public static class MasterManager
     public static List<StageMaster> StageMasterList = new List<StageMaster>();
     public static List<StageMaster> OverrideMasterList = new List<StageMaster>();
     public static List<SingleStageMaster> CustomStageList = new List<SingleStageMaster>(); // カスタムステージを入れておくリスト
+    // デフォルトステージの最大レベル
+    public const int MaxDefaultLevelId = 3;
     // カスタムステージの最小レベルID
     public const int MinCustomLevelId = 100;
 
@@ -133,7 +135,7 @@ public static class MasterManager
                     type = nn.type,
                 }).ToList()
             }).ToList();
-            if (levelInfo.Level < 3)
+            if (levelInfo.Level <= MaxDefaultLevelId)
             {
                 targetMaster.notes[level - 1] = notes;
             }
