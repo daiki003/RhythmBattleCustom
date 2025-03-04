@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class ScoreMakerScene : SceneBase
 {
-    [SerializeField] private ScoreMaker _scoreMaker;
+    [SerializeField] private ScoreMakerPresenter _scoreMaker;
     private ScoreMakerSceneInfo _scoreMakerSceneInfo;
     public override async UniTask InitAsync(SceneInfoBase lastSceneInfo, SceneInfoBase nextSceneInfo, Image fadePanel)
     {
@@ -24,12 +24,12 @@ public class ScoreMakerScene : SceneBase
     public override async UniTask StartSceneAsync()
     {
         await base.StartSceneAsync();
-        _scoreMaker.StartMake();
+        _scoreMaker.StartMake(isRestart: false);
     }
 
     public override async UniTask Restart()
     {
         await base.Restart();
-        _scoreMaker.RestartMake();
+        _scoreMaker.StartMake(isRestart: true);
     }
 }

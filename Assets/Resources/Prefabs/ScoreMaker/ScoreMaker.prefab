@@ -5016,6 +5016,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7176861963782572272}
   - component: {fileID: 143373462184435211}
+  - component: {fileID: 3167795164479824790}
   - component: {fileID: 7887568566270315666}
   m_Layer: 5
   m_Name: ScoreMaker
@@ -5067,7 +5068,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1d857ecc7b560b542a74759dd3faea1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _scoreMaker: {fileID: 7887568566270315666}
+  _scoreMaker: {fileID: 3167795164479824790}
+--- !u!114 &3167795164479824790
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6996500074475068979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6dc0e71a4da6bd64b9e23a8d3631f096, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _view: {fileID: 7887568566270315666}
 --- !u!114 &7887568566270315666
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5080,14 +5094,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5bb64d1c37b7594280298aa505d3bb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _dialogTransform: {fileID: 7176861963782572272}
   _scoreLineTransform: {fileID: 6297255391723724505}
   _singleBallSelectedPanel: {fileID: 1400571119965487648}
   _longBallSelectedPanel: {fileID: 5537775602917418797}
   _scoreLinePrefab: {fileID: 4636879400074722824, guid: 11cdd376a8917f349a4dae1265c30be0, type: 3}
   _scoreScrollRect: {fileID: 2159548816387551384}
   _saveButton: {fileID: 7403251948616735270}
-  _addStageButton: {fileID: 0}
   _practiceButton: {fileID: 3752157898958211106}
   _backButton: {fileID: 3767491778431691156}
   _levelButtonList:

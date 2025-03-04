@@ -42,7 +42,7 @@ public class ScoreLine : MonoBehaviour
         }
     }
 
-    public ScoreMakerBall CreateBall(ScoreMaker.ScoreMakerBallType ballType, bool isLeft)
+    public ScoreMakerBall CreateBall(ScoreMakerView.ScoreMakerBallType ballType, bool isLeft)
     {
         var targetPocket = isLeft ? _leftPocket : _rightPocket;
         return targetPocket.Clicked(ballType);
@@ -50,8 +50,8 @@ public class ScoreLine : MonoBehaviour
 
     public void ClearLine()
     {
-        _leftPocket.Clicked(ScoreMaker.ScoreMakerBallType.None);
-        _rightPocket.Clicked(ScoreMaker.ScoreMakerBallType.None);
+        _leftPocket.Clicked(ScoreMakerView.ScoreMakerBallType.None);
+        _rightPocket.Clicked(ScoreMakerView.ScoreMakerBallType.None);
     }
 
     public ScoreMakerBall GetBall(bool isLeft)

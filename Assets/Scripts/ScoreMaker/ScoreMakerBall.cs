@@ -7,7 +7,7 @@ using UnityEngine;
 public class ScoreMakerBall : MonoBehaviour
 {
     [SerializeField] private Image _ballImage;
-    public ScoreMaker.ScoreMakerBallType BallType;
+    public ScoreMakerView.ScoreMakerBallType BallType;
     public int LineNumber;
     public bool IsLeft;
 
@@ -16,12 +16,12 @@ public class ScoreMakerBall : MonoBehaviour
     public ScoreMakerBall PairBall;
     public bool IsLongLast;
 
-    public void Init(ScoreMaker.ScoreMakerBallType ballType, int lineNumber, bool isLeft)
+    public void Init(ScoreMakerView.ScoreMakerBallType ballType, int lineNumber, bool isLeft)
     {
         BallType = ballType;
         LineNumber = lineNumber;
         IsLeft = isLeft;
-        bool isSingle = ballType == ScoreMaker.ScoreMakerBallType.Single;
+        bool isSingle = ballType == ScoreMakerView.ScoreMakerBallType.Single;
         string ballSpritePath = isSingle ? "Ball/Single" : "Ball/Long";
         _ballImage.sprite = Resources.Load<Sprite>(ballSpritePath);
         _ballImage.color = isSingle ? Color.red : Color.blue;
@@ -46,7 +46,7 @@ public class ScoreMakerBall : MonoBehaviour
         // 通常ロング終端のボールはスキップするが、ロングのペアとしては作る
         if (!IsLongLast || isCreatePair)
         {
-            bool isLong = BallType ==  ScoreMaker.ScoreMakerBallType.Long;
+            bool isLong = BallType ==  ScoreMakerView.ScoreMakerBallType.Long;
             var pairNotes = new List<NoteMaster>();
             if (isLong && !IsLongLast)
             {

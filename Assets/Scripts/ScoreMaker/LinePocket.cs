@@ -20,7 +20,7 @@ public class LinePocket : MonoBehaviour
         IsLeft = isLeft;
     }
 
-    public void CreateBall(ScoreMaker.ScoreMakerBallType ballType)
+    public void CreateBall(ScoreMakerView.ScoreMakerBallType ballType)
     {
         var ballPrefab = ResourceManager.LoadPrefab<ScoreMakerBall>("ScoreMaker/ScoreMakerBall");
         var ball = Instantiate(ballPrefab, _ballTransform);
@@ -33,7 +33,7 @@ public class LinePocket : MonoBehaviour
         ball.transform.localPosition = Vector3.zero;
     }
 
-    public ScoreMakerBall Clicked(ScoreMaker.ScoreMakerBallType ballType)
+    public ScoreMakerBall Clicked(ScoreMakerView.ScoreMakerBallType ballType)
     {
         // ボールがあるところならタイプにかかわらず消す
         if (InstalledBall != null)
@@ -41,7 +41,7 @@ public class LinePocket : MonoBehaviour
             Destroy(InstalledBall.gameObject);
             InstalledBall = null;
         }
-        else if (ballType != ScoreMaker.ScoreMakerBallType.None)
+        else if (ballType != ScoreMakerView.ScoreMakerBallType.None)
         {
             CreateBall(ballType);
         }
