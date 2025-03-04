@@ -3027,6 +3027,7 @@ GameObject:
   - component: {fileID: 5273440571930744825}
   - component: {fileID: 4657224352805474114}
   - component: {fileID: 8785056325607559292}
+  - component: {fileID: 3335315119568196633}
   m_Layer: 5
   m_Name: HomePanel
   m_TagString: Untagged
@@ -3081,6 +3082,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3130d8c9c31e7204c862ff68533b431a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _view: {fileID: 3335315119568196633}
+--- !u!114 &3335315119568196633
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5449919038175440585}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 418240a196909b34aa8620275abf4d73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _totalScoreText: {fileID: 1188712552233753801}

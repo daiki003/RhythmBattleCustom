@@ -1,10 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using R3;
-using UnityEngine.UI;
-using Cysharp.Threading.Tasks;
 using System.Linq;
+using Cysharp.Threading.Tasks;
+using R3;
+using UnityEngine;
+using UnityEngine.UI;
 
 public enum HomePanelType
 {
@@ -40,7 +41,18 @@ public static class HomePanelTypeExtension
     }
 }
 
-public class HomeManager : MonoBehaviour
+public class GetStageKey
+{
+    public string StageId;
+    public int Level;
+    public GetStageKey(string stageId, int level)
+    {
+        StageId = stageId;
+        Level = level;
+    }
+}
+
+public class HomeView : MonoBehaviour
 {
     [SerializeField] private Text _totalScoreText;
     [SerializeField] private StageStrip _stageStripPrefab;
@@ -58,19 +70,24 @@ public class HomeManager : MonoBehaviour
     [SerializeField] private Button _deleteStageButton;
     [SerializeField] private Button _newCreateButton;
 
-    private HomeModel _model;
-
     private List<StageStrip> _stageStripList = new List<StageStrip>();
 
+    private Subject<GetStageKey> _clickPlayStageButton = new();
+    public Observable<GetStageKey> ClickPlayStageButton => _clickPlayStageButton;
+    private Subject<GetStageKey> _clickPracticeStageButton = new();
+    public Observable<GetStageKey> ClickPracticeStageButton => _clickPracticeStageButton;
+    private Subject<GetStageKey> _clickEditStageButton = new();
+    public Observable<GetStageKey> ClickEditStageButton => _clickEditStageButton;
+    private Subject<string> _clickNewCreateStageButton = new();
+    public Observable<string> ClickNewCreateStageButton => _clickNewCreateStageButton;
+
     private StageStrip _selectedStrip;
-    private int _currentLevel;
+    private HomePanelType _currentPanelType;
+    private int _currentLevel => _currentPanelType.GetLevel() < MasterManager.MinCustomLevelId ? _currentPanelType.GetLevel() : _selectedStrip.LevelId;
 
-    public void Init(int lastLevel)
+    public void Init(List<StageInfo> stageList, int lastLevel)
     {
-        _model = new HomeModel();
-        _model.Init();
-
-        CreateStripList();
+        CreateStripList(stageList);
         SetButtonInteractable(false);
         DarkeningMenuButton();
         for (int i = 0; i < _menuButtonList.Count; i++)
@@ -95,15 +112,15 @@ public class HomeManager : MonoBehaviour
         BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true, isFade: true);
         _playStageButton.OnClickAsObservable().Subscribe(_ =>
         {
-            StartBattle(isPractice: false);
+            _clickPlayStageButton.OnNext(new GetStageKey(_selectedStrip.StageId, _currentLevel));
         }).AddTo(this);
         _practiceStageButton.OnClickAsObservable().Subscribe(_ =>
         {
-            StartBattle(isPractice: true);
+            _clickPracticeStageButton.OnNext(new GetStageKey(_selectedStrip.StageId, _currentLevel));
         }).AddTo(this);
         _editStageButton.OnClickAsObservable().Subscribe(_ =>
         {
-            StartScoreMaker(_selectedStrip.StageId, isNewCreate: false);
+            _clickEditStageButton.OnNext(new GetStageKey(_selectedStrip.StageId, _currentLevel));
         }).AddTo(this);
         _deleteStageButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -124,7 +141,7 @@ public class HomeManager : MonoBehaviour
                 {
                     if (dialogResult.ResultType == DialogResultType.Ok)
                     {
-                        StartScoreMaker(dialogResult.SelectedStageId, isNewCreate: true);
+                        _clickNewCreateStageButton.OnNext(dialogResult.SelectedStageId);
                     }
                     else
                     {
@@ -146,14 +163,14 @@ public class HomeManager : MonoBehaviour
     {
         foreach (var strip in _stageStripList)
         {
-            strip.UpdateScore(_currentLevel);
+            strip.UpdateScore(_currentPanelType.GetLevel());
         }
     }
 
-    public void CreateStripList()
+    public void CreateStripList(List<StageInfo> stageList)
     {
         DestroyAllStrip();
-        foreach (var stageInfo in _model.StageList)
+        foreach (var stageInfo in stageList)
         {
             CreateStageStrip(stageInfo.StageHeader, level: 0, _stripTransform);
             var customStageList = stageInfo.LevelList.Where(l => l.Level >= MasterManager.MinCustomLevelId);
@@ -222,7 +239,7 @@ public class HomeManager : MonoBehaviour
 
     private void SetLevelPanel(HomePanelType titlePanelType)
     {
-        _currentLevel = titlePanelType.GetLevel();
+        _currentPanelType = titlePanelType;
         bool isStage = titlePanelType.IsStage();
         _practiceStageButton.gameObject.SetActive(isStage);
         // _editStageButton.gameObject.SetActive(!isStage);
@@ -235,41 +252,5 @@ public class HomeManager : MonoBehaviour
         {
             CancelSelectStrip();
         }
-    }
-
-    private void StartBattle(bool isPractice)
-    {
-        int level = _currentLevel < MasterManager.MinCustomLevelId ? _currentLevel : _selectedStrip.LevelId;
-        var sceneInfo = new BattleSceneInfo
-        {
-            StageInfo = _model.GetStageInfo(_selectedStrip.StageId),
-            Level = level,
-            IsPractice = isPractice
-        };
-        SEManager.instance.PlayBattleStartSe();
-        GameManager.instance.OpenScene(SceneType.Battle, sceneInfo).Forget();
-    }
-
-    private void StartScoreMaker(string stageId, bool isNewCreate)
-    {
-        int level = GetScoreMakerLevel(stageId, isNewCreate);
-        var sceneInfo = new ScoreMakerSceneInfo
-        {
-            StageInfo = _model.GetStageInfo(stageId),
-            FirstLevel = level,
-            IsNewCreate = isNewCreate,
-            LevelList = level >= MasterManager.MinCustomLevelId ? new List<int>(){ level } : new List<int>(){ 1, 2, 3 }
-        };
-        SEManager.instance.PlayButtonSe();
-        GameManager.instance.OpenScene(SceneType.ScoreMaker, sceneInfo).Forget();
-    }
-
-    private int GetScoreMakerLevel(string stageId, bool isNewCreate)
-    {
-        if (isNewCreate)
-        {
-            return MasterManager.GetNextCustumStageLevel(stageId);
-        }
-        return _currentLevel < MasterManager.MinCustomLevelId ? _currentLevel : _selectedStrip.LevelId;
     }
 }

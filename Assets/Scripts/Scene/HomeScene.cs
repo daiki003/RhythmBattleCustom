@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class HomeScene : SceneBase
 {
-    [SerializeField] private HomeManager _titleManager;
+    [SerializeField] private HomePresenter _titleManager;
 
     public override async UniTask InitAsync(SceneInfoBase lastSceneInfo, SceneInfoBase nextSceneInfo, Image fadePanel)
     {
