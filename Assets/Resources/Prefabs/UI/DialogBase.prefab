@@ -190,7 +190,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9cb3587a90e0937488427fe91a1669aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _closeButton: {fileID: 6868071123658243460}
+  _closeButton: {fileID: 7590440949139599994}
   _titleText: {fileID: 5881595408698412502}
   _okButton: {fileID: 1970443132818272677}
   _cancelButton: {fileID: 2131387867981576631}
@@ -357,7 +357,7 @@ GameObject:
   - component: {fileID: 7418834583056122342}
   - component: {fileID: 2816666252759393995}
   - component: {fileID: 1383378890558427059}
-  - component: {fileID: 6868071123658243460}
+  - component: {fileID: 7590440949139599994}
   m_Layer: 5
   m_Name: Close
   m_TagString: Untagged
@@ -422,7 +422,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &6868071123658243460
+--- !u!114 &7590440949139599994
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -431,7 +431,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 9212313377054487260}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 522fd52bc49874047ae4a803e8e25175, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
@@ -466,6 +466,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+  _text: {fileID: 0}
+  _seType: 5
 --- !u!1001 &3604007144243095011
 PrefabInstance:
   m_ObjectHideFlags: 0

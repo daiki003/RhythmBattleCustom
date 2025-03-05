@@ -128,6 +128,7 @@ public class HomeView : MonoBehaviour
         }).AddTo(this);
         _newCreateButton.OnClickAsObservable().Subscribe(_ =>
         {
+            CancelSelectStrip();
             var option = new DialogOptionBase
             {
                 TitleText = "ステージ選択",
@@ -239,6 +240,10 @@ public class HomeView : MonoBehaviour
 
     private void SetLevelPanel(HomePanelType titlePanelType)
     {
+        if (_currentPanelType.IsStage() != titlePanelType.IsStage())
+        {
+            CancelSelectStrip();
+        }
         _currentPanelType = titlePanelType;
         bool isStage = titlePanelType.IsStage();
         _practiceStageButton.gameObject.SetActive(isStage);
@@ -248,9 +253,5 @@ public class HomeView : MonoBehaviour
         _stageStripPanel.SetActive(titlePanelType.IsStage());
         _customStripPanel.SetActive(!titlePanelType.IsStage());
         UpdateStrip();
-        if (!titlePanelType.IsStage())
-        {
-            CancelSelectStrip();
-        }
     }
 }

@@ -541,7 +541,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   _text: {fileID: 0}
-  _seType: 2
+  _seType: 1
 --- !u!114 &8999182298404794949
 MonoBehaviour:
   m_ObjectHideFlags: 0
