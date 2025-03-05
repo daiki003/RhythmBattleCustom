@@ -96,10 +96,15 @@ public class BGMManager : MonoBehaviour
 
 	public void SetClip(string clipName, bool isLoop = false, bool immediatePlay = true, bool isFade = false, float startTime = 0f, float endTime = 0f)
 	{
-		_currentBgmClip = GetClip(clipName);
 		_bgmSource.loop = isLoop;
 		_startTime = startTime;
 		_endTime = endTime;
+		var newClip = GetClip(clipName);
+		if (_currentBgmClip == newClip)
+		{
+			return;
+		}
+		_currentBgmClip = newClip;
 		if (immediatePlay)
 		{
 			Play(isFade);
@@ -109,10 +114,7 @@ public class BGMManager : MonoBehaviour
 	public void Play(bool isFade = false)
 	{
 		_bgmSource.clip = _currentBgmClip;
-		if (_startTime > 0)
-		{
-			_bgmSource.time = _startTime;
-		}
+		_bgmSource.time = _startTime;
 		_bgmSource.Play();
 		if (isFade)
 		{

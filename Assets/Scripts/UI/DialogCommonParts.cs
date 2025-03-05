@@ -7,11 +7,11 @@ public class DialogCommonParts : MonoBehaviour
 {
     [SerializeField] private Button _closeButton;
     [SerializeField] private Text _titleText;
-    [SerializeField] private ButtonBase _okButton;
-    [SerializeField] private ButtonBase _cancelButton;
+    [SerializeField] private CustomButton _okButton;
+    [SerializeField] private CustomButton _cancelButton;
     public Button CloseButton => _closeButton;
-    public Button OkButton => _okButton.Button;
-    public Button CancelButton => _cancelButton.Button;
+    public Button OkButton => _okButton;
+    public Button CancelButton => _cancelButton;
 
     public virtual void Init(DialogOptionBase dialogOption)
     {

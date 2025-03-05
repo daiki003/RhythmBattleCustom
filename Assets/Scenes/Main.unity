@@ -942,6 +942,7 @@ MonoBehaviour:
   _seSource: {fileID: 2008326553}
   _beatSe: {fileID: 8300000, guid: 63aa56cd853f84a428dfa377bc197de5, type: 3}
   _buttonSe: {fileID: 8300000, guid: b21ddf74e24cb9d4080b46cfa3d6b307, type: 3}
+  _cancelSe: {fileID: 8300000, guid: 3bab47b067f2a8345972a6f7c79bb5f6, type: 3}
   _battleStartSe: {fileID: 8300000, guid: cd99d7f1ae0b1654587c2d16298dbb68, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

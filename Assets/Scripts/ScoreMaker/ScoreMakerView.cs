@@ -159,12 +159,10 @@ public class ScoreMakerView : MonoBehaviour
         }).AddTo(this);
         _selectSingleBallButton.OnClickAsObservable().Subscribe(ball =>
         {
-            SEManager.instance.PlayButtonSe();
             SwitchBallType(isLong: false);
         }).AddTo(this);
         _selectLongBallButton.OnClickAsObservable().Subscribe(ball =>
         {
-            SEManager.instance.PlayButtonSe();
             SwitchBallType(isLong: true);
         }).AddTo(this);
         _playBgmButton.OnClickAsObservable().Subscribe(_ =>
@@ -182,7 +180,6 @@ public class ScoreMakerView : MonoBehaviour
         }).AddTo(this);
         _saveButton.OnClickAsObservable().Subscribe(_ =>
         {
-            SEManager.instance.PlayButtonSe();
             _clickSaveButton.OnNext(default);
         });
         _practiceButton.OnClickAsObservable().Subscribe(_ =>
@@ -192,7 +189,6 @@ public class ScoreMakerView : MonoBehaviour
         });
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {
-            SEManager.instance.PlayButtonSe();
             GameManager.instance.OpenScene(SceneType.Title, new TitleSceneInfo()).Forget();
         }).AddTo(this);
         _bpmInput.OnEndEditAsObservable().Subscribe(bpm =>
@@ -249,7 +245,6 @@ public class ScoreMakerView : MonoBehaviour
             int index = i;
             _nextPageButtonList[i].OnClickAsObservable().Subscribe(_ =>
             {
-                SEManager.instance.PlayButtonSe();
                 OnClickControllPanelPageButton(page: index + 2);
             }).AddTo(this);
         }
@@ -258,7 +253,6 @@ public class ScoreMakerView : MonoBehaviour
             int index = i;
             _backPageButtonList[i].OnClickAsObservable().Subscribe(_ =>
             {
-                SEManager.instance.PlayButtonSe();
                 OnClickControllPanelPageButton(page: index + 1);
             }).AddTo(this);
         }
@@ -268,30 +262,25 @@ public class ScoreMakerView : MonoBehaviour
         _selectMask.SetActive(false);
         _copyButton.OnClickAsObservable().Subscribe(_ =>
         {
-            SEManager.instance.PlayButtonSe();
             CopyLine();
         }).AddTo(this);
         _pasteButton.OnClickAsObservable().Subscribe(_ =>
         {
-            SEManager.instance.PlayButtonSe();
             _messageText.text = "貼り付け先の最初の列を選択してください";
             _messageMask.gameObject.SetActive(true);
             _isSelectingPaste = true;
         }).AddTo(this);
         _selectCancelButton.OnClickAsObservable().Subscribe(_ =>
         {
-            SEManager.instance.PlayButtonSe();
             _selectedLineList.Clear();
             _selectMask.SetActive(false);
         }).AddTo(this);
         _inversionButton.OnClickAsObservable().Subscribe(_ =>
         {
-            SEManager.instance.PlayButtonSe();
             InversionLine();
         }).AddTo(this);
         _undoButton.OnClickAsObservable().Subscribe(_ =>
         {
-            SEManager.instance.PlayButtonSe();
             Undo();
         }).AddTo(this);
         _pasteCancelButton.OnClickAsObservable().Subscribe(_ =>

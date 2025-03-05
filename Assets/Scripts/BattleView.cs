@@ -185,7 +185,7 @@ public class BattleView : MonoBehaviour
                 {
                     // 始める場合は動きを再開
                     AttachMoveTween();
-                    BGMManager.instance.Play();
+                    BGMManager.instance.Restart();
                 }
             }).AddTo(this);
             _practiceUi.OnSliderValueChange.Subscribe(x =>
@@ -511,7 +511,7 @@ public class BattleView : MonoBehaviour
     {
         if (_lastBeatTime != ball.CriticalTime)
         {
-            SEManager.instance.PlayBeatSe();
+            SEManager.instance.PlaySe(SeName.Beat);
         }
         _lastBeatTime = ball.CriticalTime;
         CreateLetter(ball.IsLeft, ball.JudgeBall());

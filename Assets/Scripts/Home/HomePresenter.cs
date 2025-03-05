@@ -44,7 +44,6 @@ public class HomePresenter : MonoBehaviour
             Level = level,
             IsPractice = isPractice
         };
-        SEManager.instance.PlayBattleStartSe();
         GameManager.instance.OpenScene(SceneType.Battle, sceneInfo).Forget();
     }
 
@@ -57,7 +56,6 @@ public class HomePresenter : MonoBehaviour
             IsNewCreate = isNewCreate,
             LevelList = level >= MasterManager.MinCustomLevelId ? new List<int>(){ level } : new List<int>(){ 1, 2, 3 }
         };
-        SEManager.instance.PlayButtonSe();
         GameManager.instance.OpenScene(SceneType.ScoreMaker, sceneInfo).Forget();
     }
 }

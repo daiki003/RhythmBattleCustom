@@ -30,7 +30,6 @@ public class MenuButton : MonoBehaviour
 
     public void OnClick()
     {
-        SEManager.instance.PlayButtonSe();
         SetLight(true);
     }
 

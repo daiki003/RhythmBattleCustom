@@ -31,10 +31,6 @@ public class SettingPanel : MonoBehaviour
         {
             SEManager.instance.AdjustVolume(x);
         });
-        _seTestButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            SEManager.instance.PlayButtonSe();
-        });
 
         _currentOffset = SaveDataManager.SettingData.Offset;
         _offsetText.text = _currentOffset.ToString();

@@ -16,12 +16,10 @@ public class TimeJumpButton : MonoBehaviour
     {
         _mainButton.OnClickAsObservable().Subscribe(_ =>
         {
-            SEManager.instance.PlayButtonSe();
             OnClickMainButton.OnNext(_targetTimeRate);
         });
         _registerButton.OnClickAsObservable().Subscribe(_ =>
         {
-            SEManager.instance.PlayButtonSe();
             OnClickRegisterButton.OnNext(default);
         });
     }

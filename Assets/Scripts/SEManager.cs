@@ -1,13 +1,27 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+
+public enum SeName
+{
+    BattleStart,
+    Beat,
+    Button1,
+    Button2,
+    Button3,
+    Button4,
+    Cancel,
+    ChangePage,
+    ChangeScene,
+}
 
 public class SEManager : MonoBehaviour
 {
     [SerializeField] private AudioSource _seSource;
-    [SerializeField] private AudioClip _beatSe;
-    [SerializeField] private AudioClip _buttonSe;
-    [SerializeField] private AudioClip _battleStartSe;
+
+    private Dictionary<string, AudioClip> _chachClipDict = new();
 
     public float Volume => _seSource.volume;
 
@@ -20,23 +34,39 @@ public class SEManager : MonoBehaviour
 		}
 	}
 
+    public void PreloadSe()
+	{
+		foreach (string name in Enum.GetNames(typeof(SeName)))
+		{
+			LoadClip(name);
+		}
+	}
+
+	private AudioClip GetClip(string clipName)
+	{
+		if (_chachClipDict.TryGetValue(clipName, out var clip))
+		{
+			return clip;
+		}
+		// キャッシュになければロード
+		return LoadClip(clipName);
+	}
+
+	private AudioClip LoadClip(string clipName)
+	{
+		var newClip = Resources.Load<AudioClip>(string.Format("SE/{0}", clipName));
+		_chachClipDict.Add(clipName, newClip);
+		return newClip;
+	}
+
     public void AdjustVolume(float volume)
 	{
 		_seSource.volume = volume;
 	}
 
-    public void PlayBeatSe()
+    public void PlaySe(SeName seName)
     {
-        _seSource.PlayOneShot(_beatSe);
-    }
-
-    public void PlayButtonSe()
-    {
-        _seSource.PlayOneShot(_buttonSe);
-    }
-
-    public void PlayBattleStartSe()
-    {
-        _seSource.PlayOneShot(_battleStartSe);
+        var clip = GetClip(seName.ToString());
+        _seSource.PlayOneShot(clip);
     }
 }

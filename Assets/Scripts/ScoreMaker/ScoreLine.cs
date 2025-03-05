@@ -38,7 +38,7 @@ public class ScoreLine : MonoBehaviour
     {
         if (_leftPocket.InstalledBall != null || _rightPocket.InstalledBall != null)
         {
-            SEManager.instance.PlayBeatSe();
+            SEManager.instance.PlaySe(SeName.Beat);
         }
     }
 

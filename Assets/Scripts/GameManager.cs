@@ -71,13 +71,18 @@ public class GameManager : MonoBehaviour
         await PlayFabController.LoginAsync();
         await MasterManager.GetAllMasterData();
         BGMManager.instance.PreloadBgm();
-        await OpenScene(SceneType.Title, new TitleSceneInfo());
+        SEManager.instance.PreloadSe();
+        await OpenScene(SceneType.Title, new TitleSceneInfo(), isPlaySe: false);
 	}
 
     // 次のシーンを開く
-    public async UniTask OpenScene(SceneType sceneType, SceneInfoBase nextSceneInfo)
+    public async UniTask OpenScene(SceneType sceneType, SceneInfoBase nextSceneInfo, bool isPlaySe = true)
     {
         BGMManager.instance.Stop();
+        if (isPlaySe)
+        {
+            SEManager.instance.PlaySe(sceneType == SceneType.Battle ? SeName.BattleStart : SeName.ChangeScene);
+        }
         // 前シーンを破棄
         if (_currentScene != null)
         {
@@ -93,6 +98,7 @@ public class GameManager : MonoBehaviour
     // 追加のシーンを開く
     public async UniTask OpenAdditionalScene(SceneType sceneType, SceneInfoBase nextSceneInfo)
     {
+        SEManager.instance.PlaySe(SeName.ChangeScene);
         // 現在のシーンはいったん停止
         await _currentScene.Pause();
         // 既に追加シーンがあれば破棄
@@ -120,6 +126,7 @@ public class GameManager : MonoBehaviour
 
     public async UniTask BackToMainScene()
     {
+        SEManager.instance.PlaySe(SeName.ChangeScene);
         await _additionalScene.DisposeAsync();
         _additionalScene = null;
         await _currentScene.Restart();
