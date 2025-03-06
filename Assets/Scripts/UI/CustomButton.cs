@@ -22,6 +22,7 @@ public enum ButtonSeType
 public class CustomButton : Button
 {
     [SerializeField] public Text _text;
+    [SerializeField] public GameObject _highLight;
     [SerializeField] public ButtonSeType _seType;
 
     protected override void Awake()
@@ -56,6 +57,11 @@ public class CustomButton : Button
     {
         _text.text = text;
     }
+
+    public void SetHighLight(bool isActive)
+    {
+        _highLight.SetActive(isActive);
+    }
 }
 
 #if UNITY_EDITOR
@@ -69,6 +75,7 @@ public class CustomButtonEditor : UnityEditor.UI.ButtonEditor
         var component = (CustomButton) target;
 
         PropertyField(nameof(component._text), "Text");
+        PropertyField(nameof(component._highLight), "HighLight");
         PropertyField(nameof(component._seType), "SeType");
 
         serializedObject.ApplyModifiedProperties();

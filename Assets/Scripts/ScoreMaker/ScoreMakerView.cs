@@ -29,33 +29,11 @@ public class ScoreMakerView : MonoBehaviour
     [SerializeField] private Transform _moveButtonArea;
     [SerializeField] private Button _playBgmButton; // BGM再生ボタン
 
-    // コントロールパネル関連
-    [SerializeField] private GameObject _controllPanelPage1;
-    [SerializeField] private GameObject _controllPanelPage2;
-    [SerializeField] private GameObject _controllPanelPage3;
-    // 1ページ目
-    [SerializeField] private Button _selectSingleBallButton; // シングルボール選択ボタン
-    [SerializeField] private Button _selectLongBallButton; // ロングボール選択ボタン
-    // 2ページ目
-    [SerializeField] private Button _copyButton; // コピーボタン
-    [SerializeField] private Button _pasteButton; // ペーストボタン
-    [SerializeField] private Button _selectCancelButton; // 選択解除ボタン
-    [SerializeField] private Button _inversionButton; // 左右反転ボタン
-    [SerializeField] private Button _undoButton; // 一手戻すボタン
-    // 3ページ目
-    [SerializeField] private Slider _lineSpacingSlider; // ライン間隔調整スライダー
-    [SerializeField] private Slider _ballSizeSlider; // ボールサイズ調整スライダー
-    // 全体
-    [SerializeField] private List<Button> _nextPageButtonList; // 次ページボタン
-    [SerializeField] private List<Button> _backPageButtonList; // 前ページボタン
-    [SerializeField] private GameObject _messageMask;
-    [SerializeField] private Text _messageText;
-    [SerializeField] private Button _pasteCancelButton; // ペーストキャンセルボタン
+    // コントロールパネル
+    [SerializeField] private ScoreMakerControlPanel _controlPanel;
 
     // コピペ関連
     [SerializeField] private GameObject _selectMask;
-    private bool _isEditMode;
-    private bool _isSelectingPaste;
     private List<ScoreLine> _selectedLineList = new();
     public class LineState
     {
@@ -84,8 +62,7 @@ public class ScoreMakerView : MonoBehaviour
 
     private const float _scoreAreaBottom = -1500f;
     private const float _scoreLineHeight = 15f;
-    private const float _selectMaskWidth = 630f;
-    private const float _selectMaskFirstHeight = 100f;
+    private const float _selectMaskOffset = 50f;
     private const float _maxLineSpacing = 300f; // ライン間隔最大値
 
     private int _lineNumber => (int)(_currentBpm * (BGMManager.instance.CurrentClipLength / 60f));
@@ -124,7 +101,7 @@ public class ScoreMakerView : MonoBehaviour
             }
         }
 
-        SwitchBallType(isLong: false);
+        _currentSelectBallType = ScoreMakerBallType.Single;
         StartSubscribeMain();
         StartSubscribeControllPanel();
         _bpmInput.text = _currentBpm.ToString();
@@ -137,33 +114,31 @@ public class ScoreMakerView : MonoBehaviour
     {
         GameManager.instance.ClickHandler.OnClickScoreLinePocket.Subscribe(x =>
         {
-            if (_isEditMode)
+            if (_controlPanel.IsEditMode)
             {
                 OnClickScoreLine(x.number);
             }
             else
             {
+                SEManager.instance.PlaySe(SeName.Button2);
                 CreateBall(x.number, x.isLeft, _currentSelectBallType);
             }
         }).AddTo(this);
         GameManager.instance.ClickHandler.OnClickScoreLine.Subscribe(number =>
         {
-            if (_isEditMode)
+            if (_controlPanel.IsEditMode)
             {
                 OnClickScoreLine(number);
             }
         }).AddTo(this);
         GameManager.instance.ClickHandler.OnClickScoreLineNumber.Subscribe(number =>
         {
+            SEManager.instance.PlaySe(SeName.Button4);
             CreateMoveButton(number);
         }).AddTo(this);
-        _selectSingleBallButton.OnClickAsObservable().Subscribe(ball =>
+        _controlPanel.OnSelectBall.Subscribe(ballType =>
         {
-            SwitchBallType(isLong: false);
-        }).AddTo(this);
-        _selectLongBallButton.OnClickAsObservable().Subscribe(ball =>
-        {
-            SwitchBallType(isLong: true);
+            _currentSelectBallType = ballType;
         }).AddTo(this);
         _playBgmButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -238,58 +213,26 @@ public class ScoreMakerView : MonoBehaviour
 
     private void StartSubscribeControllPanel()
     {
-        // コントロールパネル内のページ送りボタン
-        OnClickControllPanelPageButton(page: 1);
-        for (int i = 0; i < _nextPageButtonList.Count; i++)
-        {
-            int index = i;
-            _nextPageButtonList[i].OnClickAsObservable().Subscribe(_ =>
-            {
-                OnClickControllPanelPageButton(page: index + 2);
-            }).AddTo(this);
-        }
-        for (int i = 0; i < _backPageButtonList.Count; i++)
-        {
-            int index = i;
-            _backPageButtonList[i].OnClickAsObservable().Subscribe(_ =>
-            {
-                OnClickControllPanelPageButton(page: index + 1);
-            }).AddTo(this);
-        }
-
         // コピー、ペーストボタン
-        _messageMask.gameObject.SetActive(false);
         _selectMask.SetActive(false);
-        _copyButton.OnClickAsObservable().Subscribe(_ =>
+        _controlPanel.OnCopy.Subscribe(_ =>
         {
             CopyLine();
         }).AddTo(this);
-        _pasteButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            _messageText.text = "貼り付け先の最初の列を選択してください";
-            _messageMask.gameObject.SetActive(true);
-            _isSelectingPaste = true;
-        }).AddTo(this);
-        _selectCancelButton.OnClickAsObservable().Subscribe(_ =>
+        _controlPanel.OnSelectCancel.Subscribe(_ =>
         {
             _selectedLineList.Clear();
             _selectMask.SetActive(false);
         }).AddTo(this);
-        _inversionButton.OnClickAsObservable().Subscribe(_ =>
+        _controlPanel.OnInversion.Subscribe(_ =>
         {
             InversionLine();
         }).AddTo(this);
-        _undoButton.OnClickAsObservable().Subscribe(_ =>
+        _controlPanel.OnUndo.Subscribe(_ =>
         {
             Undo();
         }).AddTo(this);
-        _pasteCancelButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            _messageMask.gameObject.SetActive(false);
-            _isSelectingPaste = false;
-        }).AddTo(this);
-
-        _lineSpacingSlider.OnValueChangedAsObservable().Subscribe(value =>
+        _controlPanel.OnChangeLineSpacing.Subscribe(value =>
         {
             float spacing = value * _maxLineSpacing;
             _scoreAreaLayoutGroup.spacing = spacing;
@@ -298,14 +241,15 @@ public class ScoreMakerView : MonoBehaviour
                 line.UpdateLineSpacing(spacing);
             }
         }).AddTo(this);
-        // 初期値は中間にしておく
-        _lineSpacingSlider.value = 0.5f;
+
+        _controlPanel.Init();
     }
 
     // Editモードでのライン選択
     private void OnClickScoreLine(int number)
     {
-        if (_isSelectingPaste)
+        SEManager.instance.PlaySe(SeName.Button2);
+        if (_controlPanel.IsWaitingPaste)
         {
             PasteLine(number);
         }
@@ -313,15 +257,6 @@ public class ScoreMakerView : MonoBehaviour
         {
             SelectLine(number);
         }
-    }
-
-    private void OnClickControllPanelPageButton(int page)
-    {
-        _controllPanelPage1.SetActive(page == 1);
-        _controllPanelPage2.SetActive(page == 2);
-        _controllPanelPage3.SetActive(page == 3);
-        // 2ページ目がEditモード
-        _isEditMode = page == 2;
     }
 
     public void CreateLine(List<NoteMaster> notes)
@@ -342,6 +277,7 @@ public class ScoreMakerView : MonoBehaviour
             scoreLine.Init(i);
             _scoreLineList.Add(scoreLine);
         }
+        _selectMask.transform.SetAsLastSibling();
         if (notes == null)
         {
             return;
@@ -501,13 +437,6 @@ public class ScoreMakerView : MonoBehaviour
         return (BGMManager.instance.CurrentTime - _currentOffset) / _singleBeatTime;
     }
 
-    private void SwitchBallType(bool isLong)
-    {
-        _currentSelectBallType = isLong ? ScoreMakerBallType.Long : ScoreMakerBallType.Single;
-        _singleBallSelectedPanel.SetActive(!isLong);
-        _longBallSelectedPanel.SetActive(isLong);
-    }
-
     public List<NoteMaster> CreateNoteList()
     {
         var noteList = new List<NoteMaster>();
@@ -541,7 +470,6 @@ public class ScoreMakerView : MonoBehaviour
         if (_selectedLineList.Count == 0)
         {
             _selectedLineList.Add(line);
-            MaskSingleLine(line);
         }
         else
         {
@@ -566,18 +494,6 @@ public class ScoreMakerView : MonoBehaviour
             else
             {
                 var oppositLine = GetOppositeLine(line);
-                int distance = Mathf.Max(1, Mathf.Abs(oppositLine.LineNumber - line.LineNumber));
-                bool isSelectOverLine = oppositLine.LineNumber < line.LineNumber;
-                float height = _selectMaskFirstHeight + distance * (_scoreAreaLayoutGroup.spacing + _scoreLineHeight);
-                var rectTransform = _selectMask.GetComponent<RectTransform>();
-                // マスクの高さを合わせる
-                rectTransform.sizeDelta = new Vector2(_selectMaskWidth, height);
-                // pivot変更
-                int pivotY = isSelectOverLine ? 0 : 1;
-                rectTransform.pivot = new Vector2(rectTransform.pivot.x, pivotY);
-                // 少しはみ出させる
-                int heightDirection = isSelectOverLine ? -1 : 1;
-                _selectMask.transform.localPosition = new Vector2(0, heightDirection * _selectMaskFirstHeight / 2);
 
                 // 選択した行を全て選択リストに追加
                 _selectedLineList.Clear();
@@ -589,6 +505,7 @@ public class ScoreMakerView : MonoBehaviour
                 }
             }
         }
+        SetSelectMask();
     }
 
     private ScoreLine GetOppositeLine(ScoreLine line)
@@ -604,15 +521,19 @@ public class ScoreMakerView : MonoBehaviour
         return null;
     }
 
-    // 1行だけマスクする
-    private void MaskSingleLine(ScoreLine line)
+    private void SetSelectMask()
     {
+        if (_selectedLineList.Count == 0)
+        {
+            _selectMask.SetActive(false);
+            return;
+        }
         _selectMask.SetActive(true);
-        _selectMask.transform.SetParent(line.transform);
-        _selectMask.transform.localPosition = Vector3.zero;
-        var rectTransform = _selectMask.GetComponent<RectTransform>();
-        rectTransform.sizeDelta = new Vector2(_selectMaskWidth, _selectMaskFirstHeight);
-        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        var firstLineNumber = _selectedLineList.Min(l => l.LineNumber);
+        var lastLineNumber = _selectedLineList.Max(l => l.LineNumber);
+        float lineSpace = _scoreAreaLayoutGroup.spacing + _scoreLineHeight;
+        _selectMask.transform.SetOffsetMinY(_scoreAreaLayoutGroup.padding.bottom - _selectMaskOffset + lineSpace * firstLineNumber);
+        _selectMask.transform.SetOffsetMaxY(_scoreAreaLayoutGroup.padding.top - _selectMaskOffset + lineSpace * (_scoreLineList.Count - lastLineNumber - 1));
     }
 
     private void RemoveUntilSingleLine(bool isLastRemove)
@@ -621,7 +542,7 @@ public class ScoreMakerView : MonoBehaviour
         {
             _selectedLineList.RemoveAt(isLastRemove ? _selectedLineList.Count - 1 : 0);
         }
-        MaskSingleLine(_selectedLineList[0]);
+        SetSelectMask();
     }
 
     // 選択中の列をコピーする
@@ -637,6 +558,7 @@ public class ScoreMakerView : MonoBehaviour
         // ペースト前に状態を保存しておく
         UpdatePastScoreLineList();
         CreateBallFromLineState(_copiedLineState, startLineNumber);
+        _controlPanel.FinishPaste();
     }
 
     private void UpdatePastScoreLineList()
@@ -714,30 +636,10 @@ public class ScoreMakerView : MonoBehaviour
             }
         }
 
-        if (!_isEditMode)
-        {
-            _messageMask.gameObject.SetActive(false);
-            return;
-        }
-
         // EditモードのUI制御
         bool isSelectedLine = _selectedLineList.Count > 0;
         bool isCopiedLine = _copiedLineState.Count > 0;
         bool isExsistPastLine = _pastScoreLineList.Count > 0;
-        _copyButton.interactable = isSelectedLine;
-        _inversionButton.interactable = isSelectedLine;
-        _selectCancelButton.interactable = isSelectedLine;
-        _pasteButton.interactable = isCopiedLine;
-        _undoButton.interactable = isExsistPastLine;
-        // 全てのボタンが押せないならメッセージを表示
-        if (!isSelectedLine && !isCopiedLine && !isExsistPastLine)
-        {
-            _messageText.text = "対象の線を選んでください";
-            _messageMask.gameObject.SetActive(true);
-        }
-        else if (!_isSelectingPaste)
-        {
-            _messageMask.gameObject.SetActive(false);
-        }
+        _controlPanel.SetButtonState(isSelectedLine, isCopiedLine, isExsistPastLine);
     }
 }
