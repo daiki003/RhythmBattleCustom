@@ -5,7 +5,6 @@ using R3;
 using UnityEngine.UI;
 using System.Linq;
 using Cysharp.Threading.Tasks;
-using UnityEditor.VersionControl;
 
 public class ScoreMakerView : MonoBehaviour
 {
