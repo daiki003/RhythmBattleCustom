@@ -143,7 +143,6 @@ public class PlayFabController
             if (result.Data.ContainsKey("ClearStates") && result.Data.ContainsKey("SettingData"))
             {
                 var clearStateList = PlayFabSimpleJson.DeserializeObject<List<ClearState>>(result.Data["ClearStates"].Value);
-                var settingData = PlayFabSimpleJson.DeserializeObject<SettingData>(result.Data["SettingData"].Value);
                 var overrideMasterList = new List<StageMaster>();
                 var customStageList = new List<SingleStageMaster>();
                 foreach (var item in result.Data)
@@ -160,7 +159,6 @@ public class PlayFabController
                 return new PlayerDataResult
                 {
                     ClearStateList = clearStateList,
-                    SettingData = settingData,
                     OverrideStageMasterList = overrideMasterList,
                     CustomStageList = customStageList
                 };
@@ -204,7 +202,7 @@ public class PlayFabController
 #endregion
 
 #region プレイヤーデータ操作
-    public static void UpdateClearState(List<ClearState> clearStates)
+    public static async UniTask UpdateClearState(List<ClearState> clearStates)
     {
         var request = new UpdateUserDataRequest()
         {
@@ -214,40 +212,19 @@ public class PlayFabController
             }
         };
 
+        bool isSuccess = false;
         PlayFabClientAPI.UpdateUserData(request, OnSuccess, OnError);
+        await UniTask.WaitUntil(() => isSuccess);
 
         void OnSuccess(UpdateUserDataResult result)
         {
+            isSuccess = true;
             Debug.Log("UpdateUserData: Success!");
         }
 
         void OnError(PlayFabError error)
         {
             Debug.Log("UpdateUserData: Fail...");
-            Debug.Log(error.GenerateErrorReport());
-        }
-    }
-
-    public static void UpdateSettingData(SettingData settingData)
-    {
-        var request = new UpdateUserDataRequest()
-        {
-            Data = new Dictionary<string, string>
-            {
-                { "SettingData", PlayFabSimpleJson.SerializeObject(settingData) }
-            }
-        };
-
-        PlayFabClientAPI.UpdateUserData(request, OnSuccess, OnError);
-
-        void OnSuccess(UpdateUserDataResult result)
-        {
-            Debug.Log("UpdateSettingData: Success!");
-        }
-
-        void OnError(PlayFabError error)
-        {
-            Debug.Log("UpdateSettingData: Fail...");
             Debug.Log(error.GenerateErrorReport());
         }
     }

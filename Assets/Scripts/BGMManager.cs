@@ -10,6 +10,7 @@ using System.Threading;
 
 public enum BgmName
 {
+	Title,
 	WanderersCity,
 	Result
 }
@@ -22,6 +23,7 @@ public class BGMManager : MonoBehaviour
 	private float _startTime;
 	private float _endTime;
 	private bool _isDuringLoopFade;
+	private float _homeBgmTime;
 
 	public bool IsFinishBgm => _currentBgmClip != null && _currentBgmClip.length <= _bgmSource.time;
 	public float CurrentTime => _bgmSource.time;
@@ -35,6 +37,7 @@ public class BGMManager : MonoBehaviour
 
 	private const float _fadeDuration = 1f;
 	private const float _maxTimeCofficient = 0.999f;
+	private string _homeBgmName => BgmName.WanderersCity.ToString();
 
     public static BGMManager instance;
 	public void Awake()
@@ -104,7 +107,9 @@ public class BGMManager : MonoBehaviour
 		{
 			return;
 		}
+		SaveHomeBgmTime();
 		_currentBgmClip = newClip;
+		SetHomeBgmTime();
 		if (immediatePlay)
 		{
 			Play(isFade);
@@ -172,6 +177,29 @@ public class BGMManager : MonoBehaviour
 	public void SetTime(float time)
 	{
 		_bgmSource.time = Mathf.Min(time, Length * _maxTimeCofficient);
+	}
+
+	// ホームのBgmから変えるとき、再生時間を保存しておく
+	private void SaveHomeBgmTime()
+	{
+		if (_currentBgmClip != null && _currentBgmClip.name == _homeBgmName)
+		{
+			_homeBgmTime = _bgmSource.time;
+		}
+	}
+
+	// ホームのBgmに変えるとき、保存した再生時間に戻す
+	private void SetHomeBgmTime()
+	{
+		if (_currentBgmClip != null && _currentBgmClip.name == _homeBgmName)
+		{
+			_startTime = _homeBgmTime;
+		}
+	}
+
+	public void ResetHomeBgmTime()
+	{
+		_homeBgmTime = 0f;
 	}
 
 	public void SetTimeByRate(float rate, float offset)

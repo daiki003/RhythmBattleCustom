@@ -58,9 +58,8 @@ public class BattleView : MonoBehaviour
     [SerializeField] private Text _missCountText;
     [SerializeField] private Text _comboText;
     [SerializeField] private Button _resetButton;
-    [SerializeField] private Button _testButton;
+    [SerializeField] private CustomButton _testButton;
     [SerializeField] private Button _backButton;
-    [SerializeField] private Image _testButtonImage;
 
     [SerializeField] private BattlePracticeUI _practiceUi;
     [SerializeField] private ResultView _resultView;
@@ -74,7 +73,8 @@ public class BattleView : MonoBehaviour
     private bool _isFinishBattle;
     private bool _isStartBgm;
     private bool _isPausedBgm;
-    private float _startBgmTime;
+    private float _startBgmTime; // Bgm開始予定時間
+    private float _startPauseTime; // ポーズを開始した時間
     private float _lastBeatTime;
     private bool _isPractice;
     private CancellationTokenSource _cts;
@@ -88,7 +88,8 @@ public class BattleView : MonoBehaviour
     private Vector3 _rightEndPosition;
     private float _targetDistance;
     private float _surplusDistance;
-    private float _ballSpeed => _stageHeader?.BPM * MasterManager.SettingMaster.BallSpeedCoefficient ?? 1000f;
+    private float _ballSpeed => _stageHeader?.BPM * (MasterManager.SettingMaster.BallSpeedCoefficient + SaveDataManager.SettingData.BallSpeed) ?? 1000f;
+    // ボールが出現してからターゲットに到達するまでの時間
     private float _ballTimeOffset => _targetDistance / _ballSpeed;
     private float _currentTime
     {
@@ -137,19 +138,45 @@ public class BattleView : MonoBehaviour
                 _practiceUi.MoveSlider(move / -100000f);
             }
         }).AddTo(this);
+        // やり直しボタン
         _resetButton.OnClickAsObservable().Subscribe(_ =>
         {
-            PrepareBattle();
-            BattleStart().Forget();
+            // 確認ダイアログ
+            var option = new MessageDialogOption
+            {
+                TitleText = "やり直す",
+                MessageText = "始めからやり直しますか？",
+                OkButtonText = "やり直す",
+            };
+            DisplayDialog(option, () =>
+            {
+                Pause(false);
+                PrepareBattle();
+                BattleStart().Forget();
+            });
         }).AddTo(this);
+        // オートプレイボタン
         _testButton.OnClickAsObservable().Subscribe(_ =>
         {
             ChangeTest();
         }).AddTo(this);
+        // 戻るボタン
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {
-            OnWhenClickedBack.OnNext(default);
+            // 確認ダイアログ
+            var option = new MessageDialogOption
+            {
+                TitleText = "ホームに戻る",
+                MessageText = "ホームに戻りますか？",
+                OkButtonText = "戻る",
+            };
+            DisplayDialog(option, () =>
+            {
+                OnWhenClickedBack.OnNext(default);
+            });
         }).AddTo(this);
+
+        // リザルトパネルのボタン
         _resultView.OnWhenPushRestart.Subscribe(_ =>
         {
             PrepareBattle();
@@ -173,20 +200,7 @@ public class BattleView : MonoBehaviour
                     _bgmStartCts = null;
                     _isStartBgm = true;
                 }
-                _isPausedBgm = isPause;
-                if (isPause)
-                {
-                    BGMManager.instance.Pause();
-                    // 曲を止める場合はボールの動きを止める
-                    StopLaunchedBall();
-                    _practiceUi.SetSlider(BGMManager.instance.CurrentTimeLate);
-                }
-                else
-                {
-                    // 始める場合は動きを再開
-                    AttachMoveTween();
-                    BGMManager.instance.Restart();
-                }
+                Pause(isPause);
             }).AddTo(this);
             _practiceUi.OnSliderValueChange.Subscribe(x =>
             {
@@ -202,6 +216,53 @@ public class BattleView : MonoBehaviour
 
         _resultView.gameObject.SetActive(false);
         _enemyImage.sprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + _stageHeader.StageId);
+    }
+
+    private void DisplayDialog(MessageDialogOption option, Action okAction)
+    {
+        Pause(isPause: true);
+        var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabPath, option);
+        dialog.OnCloseDialog.Subscribe(result =>
+        {
+            if (result.ResultType == DialogResultType.Ok)
+            {
+                okAction();
+            }
+            else
+            {
+                Pause(isPause: false);
+            }
+        });
+    }
+
+    private void Pause(bool isPause)
+    {
+        if (_isPausedBgm == isPause) return;
+
+        if (isPause)
+        {
+            _isPausedBgm = true;
+            _startPauseTime = Time.time;
+            BGMManager.instance.Pause();
+            // 曲を止める場合はボールの動きを止める
+            StopLaunchedBall();
+            _practiceUi.SetSlider(BGMManager.instance.CurrentTimeLate);
+        }
+        else
+        {
+            if (!_isStartBgm)
+            {
+                // ポーズしてた時間分曲開始時間を遅らせる
+                _startBgmTime += Time.time - _startPauseTime;
+            }
+            else
+            {
+                BGMManager.instance.Restart();
+            }
+            // 始める場合は動きを再開
+            AttachMoveTween();
+            _isPausedBgm = false;
+        }
     }
 
     public void SetSliderForAdditional(float timeRate)
@@ -252,7 +313,7 @@ public class BattleView : MonoBehaviour
     public void ChangeTest()
     {
         _isTest = !_isTest;
-        _testButtonImage.color = _isTest ? Color.black : Color.white;
+        _testButton.SetHighLight(_isTest);
     }
 
     private float CalcNoteTime(NoteMaster noteMaster)
@@ -274,9 +335,9 @@ public class BattleView : MonoBehaviour
         _isFinishBattle = false;
         _isStartBgm = false;
         // BallTimeOffset分遅れてBGMスタート
-        _startBgmTime = Time.time + MasterManager.SettingMaster.BallTimeOffset;
+        _startBgmTime = Time.time + _ballTimeOffset;
         _bgmStartCts = new CancellationTokenSource();
-        await UniTask.WaitUntil(() => Time.time >= _startBgmTime, cancellationToken: _bgmStartCts.Token);
+        await UniTask.WaitUntil(() => !_isPausedBgm && Time.time >= _startBgmTime, cancellationToken: _bgmStartCts.Token);
         BGMManager.instance.Play();
         _isStartBgm = true;
         _bgmStartCts.Dispose();
@@ -383,7 +444,7 @@ public class BattleView : MonoBehaviour
 
     private void LaunchBall()
     {
-        var launchBallList = _ballList.Where(b => b.BallState == BallState.Wait && _currentTime >= b.LaunchTime);
+        var launchBallList = _ballList.Where(b => b.BallState == BallState.Wait && _currentTime.IsBetween(b.LaunchTime, b.CriticalTime + MasterManager.SettingMaster.HitTimeBuffer, isIncludeBound: true));
         foreach (var ball in launchBallList)
         {
             ball.SetBallState(BallState.Launched);
@@ -403,7 +464,7 @@ public class BattleView : MonoBehaviour
 
     private float GetPositionRate(SingleBall ball)
     {
-        return (_currentTime - ball.LaunchTime) / _ballTimeOffset;;
+        return (_currentTime - ball.LaunchTime) / _ballTimeOffset;
     }
 
 #endregion
@@ -430,7 +491,7 @@ public class BattleView : MonoBehaviour
         }
         foreach (var ball in _ballList)
         {
-            ball.ViewUpdate(BGMManager.instance.CurrentTime, _isPausedBgm);
+            ball.ViewUpdate(_currentTime, _isPausedBgm);
         }
         if (_ballList.Count > 0)
         {

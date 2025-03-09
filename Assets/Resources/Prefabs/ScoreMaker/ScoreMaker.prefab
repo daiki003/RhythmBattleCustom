@@ -1512,8 +1512,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6612942442363402562}
-  - component: {fileID: 3767491778431691156}
   - component: {fileID: 5706579636834501116}
+  - component: {fileID: 3136897229330101275}
   - component: {fileID: 1570615413620708801}
   m_Layer: 5
   m_Name: BackButton
@@ -1541,7 +1541,15 @@ RectTransform:
   m_AnchoredPosition: {x: 120, y: -230}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &3767491778431691156
+--- !u!222 &5706579636834501116
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2556739280163164635}
+  m_CullTransparentMesh: 1
+--- !u!114 &3136897229330101275
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1550,7 +1558,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2556739280163164635}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Script: {fileID: 11500000, guid: 522fd52bc49874047ae4a803e8e25175, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Navigation:
@@ -1585,14 +1593,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!222 &5706579636834501116
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2556739280163164635}
-  m_CullTransparentMesh: 1
+  _text: {fileID: 0}
+  _highLight: {fileID: 0}
+  _seType: 1
 --- !u!114 &1570615413620708801
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4932,7 +4935,7 @@ MonoBehaviour:
   _scoreScrollRect: {fileID: 2159548816387551384}
   _saveButton: {fileID: 8329866030361944524}
   _practiceButton: {fileID: 3752157898958211106}
-  _backButton: {fileID: 3767491778431691156}
+  _backButton: {fileID: 3136897229330101275}
   _levelButtonList:
   - {fileID: 6052452680709143455}
   - {fileID: 3619053318291328583}

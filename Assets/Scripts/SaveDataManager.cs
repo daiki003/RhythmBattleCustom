@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class ClearState
@@ -18,12 +19,18 @@ public class SettingData
     public float BgmVolume;
     public float SeVolume;
     public float Offset;
+    public float BallSpeed;
 }
 
 public static class SaveDataManager
 {
     public static List<ClearState> ClearStateList = new();
     public static SettingData SettingData = new();
+
+    private const string _bgmVolumeKey = "BgmVolume";
+    private const string _seVolumeKey = "SeVolume";
+    private const string _offsetKey = "Offset";
+    private const string _ballSpeedKey = "BallSpeed";
 
     public static ClearState GetClearState(string stageId, int level)
     {
@@ -68,14 +75,39 @@ public static class SaveDataManager
                 targetState.Combo = clearState.Combo;
             }
         }
-        PlayFabController.UpdateClearState(ClearStateList);
+        PlayFabController.UpdateClearState(ClearStateList).Forget();
     }
 
-    public static void UpdateSettingData(float bgmVolume, float seVolume, float offset)
+    public static void DeleteClearState(string stageId, List<int> levelList)
+    {
+        ClearStateList.RemoveAll(c => c.StageId == stageId && levelList.Contains(c.Level));
+        PlayFabController.UpdateClearState(ClearStateList).Forget();
+    }
+
+    public static void CreateSettingData()
+    {
+        SettingData = new SettingData()
+        {
+            BgmVolume = PlayerPrefs.GetFloat(_bgmVolumeKey),
+            SeVolume = PlayerPrefs.GetFloat(_seVolumeKey),
+            Offset = PlayerPrefs.GetFloat(_offsetKey),
+            BallSpeed = PlayerPrefs.GetFloat(_ballSpeedKey)
+        };
+        BGMManager.instance.AdjustVolume(SettingData.BgmVolume);
+        SEManager.instance.AdjustVolume(SettingData.SeVolume);
+    }
+
+    public static void UpdateSettingData(float bgmVolume, float seVolume, float offset, float ballSpeed)
     {
         SettingData.BgmVolume = bgmVolume;
         SettingData.SeVolume = seVolume;
         SettingData.Offset = offset;
-        PlayFabController.UpdateSettingData(SettingData);
+        SettingData.BallSpeed = ballSpeed;
+
+        // タイトルで使うのでPlayerPrefsに保存
+        PlayerPrefs.SetFloat(_bgmVolumeKey, bgmVolume);
+        PlayerPrefs.SetFloat(_seVolumeKey, seVolume);
+        PlayerPrefs.SetFloat(_offsetKey, offset);
+        PlayerPrefs.SetFloat(_ballSpeedKey, ballSpeed);
     }
 }

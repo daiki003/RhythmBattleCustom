@@ -31,6 +31,7 @@ public class LongBall : MonoBehaviour
                     gameObject.SetActive(false);
                     break;
                 case BallState.Launched:
+                    SetLinePosition();
                     gameObject.SetActive(true);
                     _endBall.gameObject.SetActive(true);
                     break;
@@ -74,9 +75,14 @@ public class LongBall : MonoBehaviour
     {
         if (StartBall != null && EndBall != null)
         {
-            _lineRenderer.SetPosition(0, StartBall.transform.position);
-            _lineRenderer.SetPosition(1, EndBall.transform.position);
+            SetLinePosition();
         }
+    }
+
+    private void SetLinePosition()
+    {
+        _lineRenderer.SetPosition(0, StartBall.transform.position);
+        _lineRenderer.SetPosition(1, EndBall.transform.position);
     }
 
     void OnDestroy()

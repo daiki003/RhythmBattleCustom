@@ -20,8 +20,9 @@ public enum HitType
 public enum SceneType
 {
     None,
-    Battle,
     Title,
+    Battle,
+    Home,
     ScoreMaker
 }
 
@@ -31,6 +32,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Transform _additionalPanelTransform;
     [SerializeField] private Image _loadPanel;
 
+    private const string _titleScenePath = "TitlePanel";
     private const string _homeScenePath = "HomePanel";
     private const string _battleScenePath = "BattlePanel";
     private const string _scoreMakerScenePath = "ScoreMaker/ScoreMaker";
@@ -41,6 +43,8 @@ public class GameManager : MonoBehaviour
     private IScene _currentScene;
     private IScene _additionalScene;
     private SceneInfoBase _currentSceneInfo;
+
+    private UniTaskCompletionSource _loadPlayfabTask = new();
 
     public static GameManager instance;
 	public void Awake()
@@ -60,24 +64,32 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        _clickHandler.Update();
+        _clickHandler?.Update();
     }
 
     // ゲームスタート時の処理
 	private async UniTask GameStart()
 	{
-        _clickHandler = new ClickHandler();
-        await _loadPanel.DOFade(1, 0f);
-        await PlayFabController.LoginAsync();
-        await MasterManager.GetAllMasterData();
+        SaveDataManager.CreateSettingData();
         BGMManager.instance.PreloadBgm();
         SEManager.instance.PreloadSe();
+        _clickHandler = new ClickHandler();
+        await _loadPanel.DOFade(1, 0f);
         await OpenScene(SceneType.Title, new TitleSceneInfo(), isPlaySe: false);
+        LoadFromPlayfab().Forget();
 	}
+
+    private async UniTask LoadFromPlayfab()
+    {
+        await PlayFabController.LoginAsync();
+        await MasterManager.GetAllMasterData();
+        _loadPlayfabTask.TrySetResult();
+    }
 
     // 次のシーンを開く
     public async UniTask OpenScene(SceneType sceneType, SceneInfoBase nextSceneInfo, bool isPlaySe = true)
     {
+        BGMManager.instance.ResetHomeBgmTime();
         BGMManager.instance.Stop();
         if (isPlaySe)
         {
@@ -87,6 +99,11 @@ public class GameManager : MonoBehaviour
         if (_currentScene != null)
         {
             await _currentScene.DisposeAsync();
+        }
+        // タイトル以外への遷移の場合、ロードが終わるまで待つ
+        if (sceneType != SceneType.Title && _loadPlayfabTask != null)
+        {
+            await _loadPlayfabTask.Task;
         }
         // 新しいシーンを作成
         _currentScene = CreateScene(sceneType, isAdditional: false);
@@ -117,8 +134,9 @@ public class GameManager : MonoBehaviour
         var parent = isAdditional ? _additionalPanelTransform : _panelTransform;
         return sceneType switch
         {
+            SceneType.Title => Instantiate(ResourceManager.LoadPrefab<TitleScene>(_titleScenePath), parent),
             SceneType.Battle => Instantiate(ResourceManager.LoadPrefab<BattleScene>(_battleScenePath), parent),
-            SceneType.Title => Instantiate(ResourceManager.LoadPrefab<HomeScene>(_homeScenePath), parent),
+            SceneType.Home => Instantiate(ResourceManager.LoadPrefab<HomeScene>(_homeScenePath), parent),
             SceneType.ScoreMaker => Instantiate(ResourceManager.LoadPrefab<ScoreMakerScene>(_scoreMakerScenePath), parent),
             _ => throw new Exception("想定外のsceneTypeです")
         };

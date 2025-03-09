@@ -4,13 +4,13 @@ using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class HomeScene : SceneBase
+public class TitleScene : SceneBase
 {
-    [SerializeField] private HomePresenter _titleManager;
+    [SerializeField] private TitlePresenter _titlePresenter;
 
     public override async UniTask InitAsync(SceneInfoBase lastSceneInfo, SceneInfoBase nextSceneInfo, Image fadePanel)
     {
         await base.InitAsync(lastSceneInfo, nextSceneInfo, fadePanel);
-        _titleManager.Init(_lastSceneInfo.GetLastLevel());
+        _titlePresenter.Init();
     }
 }

@@ -9,7 +9,10 @@ public class DialogOptionBase
     public string TitleText;
     public string OkButtonText = "OK";
     public string CancelButtonText = "キャンセル";
+    public ButtonSeType OkButtonSeType = ButtonSeType.Button1;
+    public ButtonSeType CancelButtonSeType = ButtonSeType.None;
     public bool HideCancelButton;
+    public bool HideOkButton;
 }
 
 public class DialogResultBase
@@ -53,10 +56,16 @@ public class DialogBase : MonoBehaviour
         }).AddTo(this);
 
         _dialogCommonParts.CancelButton.gameObject.SetActive(!dialogOption.HideCancelButton);
+        _dialogCommonParts.OkButton.gameObject.SetActive(!dialogOption.HideOkButton);
     }
 
     public virtual void ClosePanel(DialogResultType resultType)
     {
+        // Okの場合はボタン側で鳴らしたい
+        if (resultType != DialogResultType.Ok)
+        {
+            SEManager.instance.PlaySe(SeName.Cancel);
+        }        
         _onCloseDialog.OnNext(new DialogResultBase
         {
             ResultType = resultType,

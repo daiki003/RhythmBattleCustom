@@ -28,11 +28,6 @@ public class MenuButton : MonoBehaviour
         }
     }
 
-    public void OnClick()
-    {
-        SetLight(true);
-    }
-
     public void SetLight(bool isActive)
     {
         var buttonImage = _mainImage.GetComponent<Image>();

@@ -467,7 +467,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   _text: {fileID: 0}
-  _seType: 5
+  _highLight: {fileID: 0}
+  _seType: 0
 --- !u!1001 &3604007144243095011
 PrefabInstance:
   m_ObjectHideFlags: 0

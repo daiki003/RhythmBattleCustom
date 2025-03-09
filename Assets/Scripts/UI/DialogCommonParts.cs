@@ -18,5 +18,7 @@ public class DialogCommonParts : MonoBehaviour
         _titleText.text = dialogOption.TitleText;
         _okButton.SetText(dialogOption.OkButtonText);
         _cancelButton.SetText(dialogOption.CancelButtonText);
+        _okButton.SetSeType(dialogOption.OkButtonSeType);
+        _cancelButton.SetSeType(dialogOption.CancelButtonSeType);
     }
 }

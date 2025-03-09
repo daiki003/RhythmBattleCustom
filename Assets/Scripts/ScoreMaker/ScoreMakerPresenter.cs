@@ -46,18 +46,11 @@ public class ScoreMakerPresenter : MonoBehaviour
             BGMManager.instance.Pause();
             _view.CreateLine(_currentLevelInfo.Notes);
         });
-        _view.ClickSaveButton.Subscribe(async _ =>
+        _view.ClickSaveButton.Subscribe(_ =>
         {
-            if (isNewCreate)
-            {
-                _view.DisplaySaveDialog(_model.CurrentStageInfo.StageHeader.StageName);
-            }
-            else
-            {
-                await SaveScore();
-            }
+            _view.DisplaySaveDialog(_model.CurrentStageInfo.StageHeader.StageName, isNewCreate);
         });
-        _view.OnNewSave.Subscribe(async stageName =>
+        _view.OnSave.Subscribe(async stageName =>
         {
             // 現在のレベルの譜面を保存
             await SaveScore(stageName);

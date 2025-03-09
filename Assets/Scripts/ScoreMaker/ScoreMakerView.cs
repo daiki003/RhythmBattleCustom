@@ -5,6 +5,7 @@ using R3;
 using UnityEngine.UI;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using UnityEditor.VersionControl;
 
 public class ScoreMakerView : MonoBehaviour
 {
@@ -50,13 +51,16 @@ public class ScoreMakerView : MonoBehaviour
 
     private float _currentBpm;
     private float _currentOffset;
+    // 編集された状態がセーブされていないかどうか
+    private bool _isEdited;
+    private bool _isPause;
 
     private Subject<float> _clickPracticeButton = new();
     public Observable<float> ClickPracticeButton => _clickPracticeButton;
     private Subject<(List<NoteMaster> notes, int level)> _onChangeLevel = new();
     public Observable<(List<NoteMaster> notes, int level)> OnChangeLevel => _onChangeLevel;
-    private Subject<string> _onNewSave = new();
-    public Observable<string> OnNewSave => _onNewSave;
+    private Subject<string> _onSave = new();
+    public Observable<string> OnSave => _onSave;
     private Subject<Unit> _clickSaveButton = new();
     public Observable<Unit> ClickSaveButton => _clickSaveButton;
 
@@ -91,7 +95,7 @@ public class ScoreMakerView : MonoBehaviour
             button.OnWhenClicked.Subscribe(_ =>
             {
                 DarkeningLevelButton();
-                button.OnClick();
+                button.SetLight(true);
                 ChangeLevel(level);
             });
             if (level == firstLevel)
@@ -108,6 +112,7 @@ public class ScoreMakerView : MonoBehaviour
         _offsetInput.text = _currentOffset.ToString();
         CreateLine(notes);
         _scoreScrollRect.verticalNormalizedPosition = 0;
+        _isEdited = false;
     }
 
     private void StartSubscribeMain()
@@ -136,22 +141,26 @@ public class ScoreMakerView : MonoBehaviour
             SEManager.instance.PlaySe(SeName.Button4);
             CreateMoveButton(number);
         }).AddTo(this);
-        _controlPanel.OnSelectBall.Subscribe(ballType =>
-        {
-            _currentSelectBallType = ballType;
-        }).AddTo(this);
         _playBgmButton.OnClickAsObservable().Subscribe(_ =>
         {
-            float posY = _scoreAreaRect.anchoredPosition.y;
-            var lineNumber = (_scoreAreaBottom - posY) / (_scoreAreaLayoutGroup.spacing + _scoreLineHeight);
-            float currentTime = lineNumber * _singleBeatTime + _currentOffset;
-            BGMManager.instance.SetTime(currentTime);
-            // BGMの現在時刻より前のラインは全て終わった判定にする
-            foreach (var line in _scoreLineList)
+            _isPause = !_isPause;
+            if (_isPause)
             {
-                line.IsEnd = line.GetLineTime(_currentBpm, _currentOffset) < currentTime;
+                BGMManager.instance.Pause();
             }
-            BGMManager.instance.ChangePause();
+            else
+            {
+                float posY = _scoreAreaRect.anchoredPosition.y;
+                var lineNumber = (_scoreAreaBottom - posY) / (_scoreAreaLayoutGroup.spacing + _scoreLineHeight);
+                float currentTime = lineNumber * _singleBeatTime + _currentOffset;
+                BGMManager.instance.SetTime(currentTime);
+                // BGMの現在時刻より前のラインは全て終わった判定にする
+                foreach (var line in _scoreLineList)
+                {
+                    line.IsEnd = line.GetLineTime(_currentBpm, _currentOffset) < currentTime;
+                }
+                BGMManager.instance.Restart();
+            }
         }).AddTo(this);
         _saveButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -164,39 +173,84 @@ public class ScoreMakerView : MonoBehaviour
         });
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {
-            GameManager.instance.OpenScene(SceneType.Title, new TitleSceneInfo()).Forget();
+            _isPause = false;
+            BGMManager.instance.Pause();
+            if (_isEdited)
+            {
+                // 編集が保存されていなかったら確認ダイアログを出す
+                var option = new MessageDialogOption
+                {
+                    TitleText = "ホームに戻る",
+                    MessageText = "変更が保存されていませんが、このままホームに戻りますか？",
+                    OkButtonText = "戻る",
+                };
+                var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabPath, option);
+                dialog.OnCloseDialog.Subscribe(result =>
+                {
+                    if (result.ResultType == DialogResultType.Ok)
+                    {
+                        GameManager.instance.OpenScene(SceneType.Home, new TitleSceneInfo()).Forget();
+                    }
+                });
+                return;
+            }
+            GameManager.instance.OpenScene(SceneType.Home, new TitleSceneInfo()).Forget();
         }).AddTo(this);
         _bpmInput.OnEndEditAsObservable().Subscribe(bpm =>
         {
+            _isEdited = true;
             _currentBpm = float.Parse(bpm);
         }).AddTo(this);
         _offsetInput.OnEndEditAsObservable().Subscribe(offset =>
         {
+            _isEdited = true;
             _currentOffset = float.Parse(offset);
         }).AddTo(this);
     }
 
-    public void DisplaySaveDialog(string stageName)
+    public void DisplaySaveDialog(string stageName, bool isNewCreate)
     {
-        // ステージ名入力ダイアログを出す
-        var option = new InputDialogOption
+        var dialog = CreateSaveDialog(stageName, isNewCreate);
+        dialog.OnCloseDialog.Subscribe(result  =>
         {
-            TitleText = "新規保存",
-            OkButtonText = "決定",
-            MessageText = "ステージ名を入力してください",
-            PlaceHolderText = stageName,
-            InitialInputText = stageName,
-        };
-        var inputDialog = DialogManager.instance.CreateDialog<InputDialog>("UI/InputDialog", option);
-        inputDialog.OnCloseDialog.Subscribe(result  =>
-        {
-            if (result is not InputDialogResult inputResult) return;
-
-            if (inputResult.ResultType == DialogResultType.Ok)
+            string stageName = "";
+            if (result is InputDialogResult inputResult)
             {
-                _onNewSave.OnNext(inputResult.StageName);
+                stageName = inputResult.StageName;
+            }
+            if (result.ResultType == DialogResultType.Ok)
+            {
+                _onSave.OnNext(stageName);
             }
         });
+    }
+
+    public DialogBase CreateSaveDialog(string stageName, bool isNewCreate)
+    {
+        if (isNewCreate)
+        {
+            // 新規作成ならステージ名入力ダイアログを出す
+            var option = new InputDialogOption
+            {
+                TitleText = "新規保存",
+                OkButtonText = "決定",
+                MessageText = "ステージ名を入力してください",
+                PlaceHolderText = stageName,
+                InitialInputText = stageName,
+            };
+            return DialogManager.instance.CreateDialog<InputDialog>("UI/InputDialog", option);
+        }
+        else
+        {
+            // 確認ダイアログを出す
+            var option = new MessageDialogOption
+            {
+                TitleText = "保存",
+                MessageText = "変更すると\nこのレベルのハイスコアは削除されます。\n変更を保存しますか？",
+                OkButtonText = "保存する",
+            };
+            return DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabPath, option);
+        }
     }
 
     public void DisplaySaveFinishDialog()
@@ -206,13 +260,18 @@ public class ScoreMakerView : MonoBehaviour
             TitleText = "保存完了",
             OkButtonText = "OK",
             HideCancelButton = true,
-            MessageText = "保存しました"
+            MessageText = "保存しました",
         };
-        DialogManager.instance.CreateDialog<MessageDialog>("UI/MessageDialog", option);
+        DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabPath, option);
+        _isEdited = false;
     }
 
     private void StartSubscribeControllPanel()
     {
+        _controlPanel.OnSelectBall.Subscribe(ballType =>
+        {
+            _currentSelectBallType = ballType;
+        }).AddTo(this);
         // コピー、ペーストボタン
         _selectMask.SetActive(false);
         _controlPanel.OnCopy.Subscribe(_ =>
@@ -243,6 +302,20 @@ public class ScoreMakerView : MonoBehaviour
         }).AddTo(this);
 
         _controlPanel.Init();
+    }
+
+    private void ChangePause()
+    {
+        float posY = _scoreAreaRect.anchoredPosition.y;
+        var lineNumber = (_scoreAreaBottom - posY) / (_scoreAreaLayoutGroup.spacing + _scoreLineHeight);
+        float currentTime = lineNumber * _singleBeatTime + _currentOffset;
+        BGMManager.instance.SetTime(currentTime);
+        // BGMの現在時刻より前のラインは全て終わった判定にする
+        foreach (var line in _scoreLineList)
+        {
+            line.IsEnd = line.GetLineTime(_currentBpm, _currentOffset) < currentTime;
+        }
+        BGMManager.instance.ChangePause();
     }
 
     // Editモードでのライン選択
@@ -298,6 +371,7 @@ public class ScoreMakerView : MonoBehaviour
 
     private void CreateBall(int lineNumber, bool isLeft, ScoreMakerBallType ballType)
     {
+        _isEdited = true;
         var targetLine = _scoreLineList[lineNumber];
         var createdBall = targetLine.CreateBall(ballType, isLeft);
         // ロングボールなら、線で繋げられないか検索する

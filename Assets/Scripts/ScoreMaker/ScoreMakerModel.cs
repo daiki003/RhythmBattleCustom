@@ -28,7 +28,7 @@ public class ScoreMakerModel
     {
         // 現在のレベルの譜面を保存
         UpdateCurrentLevelNotes(notes, level, overrideName);
-        await MasterManager.UpdateOverrideMaster(_currentStageInfo.StageHeader.StageId, _levelInfoList);
+        await MasterManager.UpdateStageMaster(_currentStageInfo.StageHeader.StageId, _levelInfoList);
     }
 
     // 現在のレベルの譜面状況を更新

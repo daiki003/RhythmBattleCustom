@@ -40,3 +40,19 @@ public class ScoreMakerSceneInfo : SceneInfoBase
     public bool IsNewCreate;
     public List<int> LevelList = new();
 }
+
+public static class SceneInfoExtension
+{
+    public static int GetLastLevel(this SceneInfoBase sceneInfo)
+    {
+        if (sceneInfo is BattleSceneInfo battleSceneInfo)
+        {
+            return battleSceneInfo.Level;
+        }
+        else if (sceneInfo is ScoreMakerSceneInfo scoreMakerSceneInfo)
+        {
+            return scoreMakerSceneInfo.FirstLevel;
+        }
+        return 1;
+    }
+}

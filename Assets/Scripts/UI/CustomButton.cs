@@ -62,6 +62,11 @@ public class CustomButton : Button
     {
         _highLight.SetActive(isActive);
     }
+
+    public void SetSeType(ButtonSeType seType)
+    {
+        _seType = seType;
+    }
 }
 
 #if UNITY_EDITOR

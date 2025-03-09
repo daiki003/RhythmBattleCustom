@@ -62,7 +62,6 @@ public class HomeView : MonoBehaviour
     [SerializeField] private GameObject _stageStripPanel;
     [SerializeField] private GameObject _customStripPanel;
     [SerializeField] private Button _settingButton;
-    [SerializeField] private SettingPanel _settingPanel;
 
     [SerializeField] private Button _playStageButton;
     [SerializeField] private Button _practiceStageButton;
@@ -89,19 +88,15 @@ public class HomeView : MonoBehaviour
     {
         CreateStripList(stageList);
         SetButtonInteractable(false);
-        DarkeningMenuButton();
         for (int i = 0; i < _menuButtonList.Count; i++)
         {
             var menuButton = _menuButtonList[i];
             menuButton.OnWhenClicked.Subscribe(_ =>
             {
-                DarkeningMenuButton();
-                menuButton.OnClick();
                 SetLevelPanel(menuButton.ButtonType);
             });
             if (i == lastLevel - 1)
             {
-                menuButton.SetLight(true);
                 SetLevelPanel(menuButton.ButtonType);
             }
         }
@@ -110,22 +105,55 @@ public class HomeView : MonoBehaviour
             SetLevelPanel(HomePanelType.Custom);
         }
         BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true, isFade: true);
+        // 開始ボタン
         _playStageButton.OnClickAsObservable().Subscribe(_ =>
         {
             _clickPlayStageButton.OnNext(new GetStageKey(_selectedStrip.StageId, _currentLevel));
         }).AddTo(this);
+        // 練習ボタン
         _practiceStageButton.OnClickAsObservable().Subscribe(_ =>
         {
             _clickPracticeStageButton.OnNext(new GetStageKey(_selectedStrip.StageId, _currentLevel));
         }).AddTo(this);
+        // 編集ボタン
         _editStageButton.OnClickAsObservable().Subscribe(_ =>
         {
             _clickEditStageButton.OnNext(new GetStageKey(_selectedStrip.StageId, _currentLevel));
         }).AddTo(this);
+        // 削除ボタン
         _deleteStageButton.OnClickAsObservable().Subscribe(_ =>
         {
-            // ステージ削除
+            // 確認ダイアログ
+            var option = new MessageDialogOption
+            {
+                TitleText = "ステージ削除",
+                MessageText = "本当に削除しますか？",
+                OkButtonText = "削除",
+                CancelButtonText = "キャンセル"
+            };
+            var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabPath, option);
+            dialog.OnCloseDialog.Subscribe(async result =>
+            {
+                if (result.ResultType == DialogResultType.Ok)
+                {
+                    await MasterManager.DeleteCustomStage(_selectedStrip.StageId, _currentLevel);
+                    // 短冊の選択をキャンセルしてからを削除
+                    var selectedStrip = _selectedStrip;
+                    CancelSelectStrip();
+                    DestroyStrip(selectedStrip);
+                    // 削除通知ダイアログ
+                    var option = new MessageDialogOption
+                    {
+                        TitleText = "ステージ削除",
+                        MessageText = "削除しました",
+                        OkButtonText = "OK",
+                        HideCancelButton = true
+                    };
+                    var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabPath, option);
+                }
+            });
         }).AddTo(this);
+        // 新規ステージ作成ボタン
         _newCreateButton.OnClickAsObservable().Subscribe(_ =>
         {
             CancelSelectStrip();
@@ -152,11 +180,10 @@ public class HomeView : MonoBehaviour
             });
         }).AddTo(this);
 
-        _settingPanel.Init();
-        _settingPanel.gameObject.SetActive(false);
+        // 設定ボタン
         _settingButton.OnClickAsObservable().Subscribe(_ =>
         {
-            _settingPanel.gameObject.SetActive(true);
+            DialogManager.instance.OpenSettingDialog();
         }).AddTo(this);
     }
 
@@ -168,6 +195,7 @@ public class HomeView : MonoBehaviour
         }
     }
 
+    // ステージの短冊を全て作成
     public void CreateStripList(List<StageInfo> stageList)
     {
         DestroyAllStrip();
@@ -183,6 +211,7 @@ public class HomeView : MonoBehaviour
         _totalScoreText.text = SaveDataManager.GetTotalScore().ToString();
     }
 
+    // ステージの短冊1枚を作成
     private StageStrip CreateStageStrip(StageHeader stageHeader, int level, Transform transform, string overrideName = "")
     {
         var strip = Instantiate(_stageStripPrefab, transform);
@@ -196,8 +225,12 @@ public class HomeView : MonoBehaviour
                 _selectedStrip = strip;
                 strip.SetSelected(true);
                 BGMManager.instance.SetClip(strip.StageId, isFade: true, startTime: strip.StartTime, endTime: strip.EndTime);
+                SetButtonInteractable(true);
             }
-            SetButtonInteractable(_selectedStrip != null);
+            else
+            {
+                CancelSelectStrip();
+            }
         }).AddTo(strip);
         return strip;
     }
@@ -209,17 +242,23 @@ public class HomeView : MonoBehaviour
             _selectedStrip.SetSelected(false);
             _selectedStrip = null;
             BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true, isFade: true);
+            SetButtonInteractable(false);
         }
     }
 
-    public void DestroyAllStrip()
+    private void DestroyAllStrip()
     {
         while (_stageStripList.Count > 0)
         {
             var strip = _stageStripList[0];
-            _stageStripList.RemoveAt(0);
-            Destroy(strip.gameObject);
+            DestroyStrip(strip);
         }
+    }
+
+    private void DestroyStrip(StageStrip strip)
+    {
+        _stageStripList.Remove(strip);
+        Destroy(strip.gameObject);
     }
 
     private void SetButtonInteractable(bool isActive)
@@ -230,16 +269,12 @@ public class HomeView : MonoBehaviour
         _deleteStageButton.interactable = isActive;
     }
 
-    private void DarkeningMenuButton()
-    {
-        foreach (MenuButton menuButton in _menuButtonList)
-        {
-            menuButton.SetLight(false);
-        }
-    }
-
     private void SetLevelPanel(HomePanelType titlePanelType)
     {
+        foreach (var button in _menuButtonList)
+        {
+            button.SetLight(button.ButtonType == titlePanelType);
+        }
         if (_currentPanelType.IsStage() != titlePanelType.IsStage())
         {
             CancelSelectStrip();
