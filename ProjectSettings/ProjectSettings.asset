@@ -726,7 +726,7 @@ PlayerSettings:
     WebGL: DOTWEEN
     Windows Store Apps: DOTWEEN
     XboxOne: DOTWEEN
-    iPhone: UNITASK_DOTWEEN_SUPPORT
+    iPhone: UNITASK_DOTWEEN_SUPPORT;LEVELPLAY_DEPENDENCIES_INSTALLED
     tvOS: DOTWEEN
   additionalCompilerArguments: {}
   platformArchitecture: {}
