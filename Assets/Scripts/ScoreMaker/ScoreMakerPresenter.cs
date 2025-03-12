@@ -55,6 +55,10 @@ public class ScoreMakerPresenter : MonoBehaviour
             // 現在のレベルの譜面を保存
             await SaveScore(stageName);
         });
+        _view.ClickDuplicateButton.Subscribe(_ =>
+        {
+            _view.DisplayDuplicateDialog(_model.CurrentStageInfo);
+        });
     }
 
     private async UniTask SaveScore(string overrideName = "")

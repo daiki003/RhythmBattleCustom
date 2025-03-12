@@ -65,7 +65,7 @@ public class DialogBase : MonoBehaviour
         if (resultType != DialogResultType.Ok)
         {
             SEManager.instance.PlaySe(SeName.Cancel);
-        }        
+        }
         _onCloseDialog.OnNext(new DialogResultBase
         {
             ResultType = resultType,

@@ -15,6 +15,10 @@ public class StageInfo
 {
     public StageHeader StageHeader;
     public List<LevelInfo> LevelList = new();
+    public bool HasCustomStage()
+    {
+        return LevelList.Any(l => l.Level > MasterManager.MaxDefaultLevelId);
+    }
 }
 
 public class HomeModel

@@ -20,6 +20,7 @@ public class ScoreMakerView : MonoBehaviour
 
     [SerializeField] private InputField _bpmInput;
     [SerializeField] private InputField _offsetInput;
+    [SerializeField] private Button _duplicateButton;
 
     [SerializeField] private RectTransform _scoreAreaRect;
     [SerializeField] private VerticalLayoutGroup _scoreAreaLayoutGroup;
@@ -62,6 +63,8 @@ public class ScoreMakerView : MonoBehaviour
     public Observable<string> OnSave => _onSave;
     private Subject<Unit> _clickSaveButton = new();
     public Observable<Unit> ClickSaveButton => _clickSaveButton;
+    private Subject<float> _clickDuplicateButton = new();
+    public Observable<float> ClickDuplicateButton => _clickDuplicateButton;
 
     private const float _scoreAreaBottom = -1500f;
     private const float _scoreLineHeight = 15f;
@@ -205,8 +208,14 @@ public class ScoreMakerView : MonoBehaviour
             _isEdited = true;
             _currentOffset = float.Parse(offset);
         }).AddTo(this);
+        _duplicateButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            _clickDuplicateButton.OnNext(default);
+        });
     }
 
+#region ダイアログ系
+    // セーブ確認のダイアログ表示
     public void DisplaySaveDialog(string stageName, bool isNewCreate)
     {
         var dialog = CreateSaveDialog(stageName, isNewCreate);
@@ -224,6 +233,7 @@ public class ScoreMakerView : MonoBehaviour
         });
     }
 
+    // セーブ確認のダイアログ作成
     public DialogBase CreateSaveDialog(string stageName, bool isNewCreate)
     {
         if (isNewCreate)
@@ -252,6 +262,7 @@ public class ScoreMakerView : MonoBehaviour
         }
     }
 
+    // セーブ完了通知ダイアログ
     public void DisplaySaveFinishDialog()
     {
         var option = new MessageDialogOption
@@ -264,6 +275,25 @@ public class ScoreMakerView : MonoBehaviour
         DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabPath, option);
         _isEdited = false;
     }
+
+    // ステージ複製選択ダイアログ
+    public void DisplayDuplicateDialog(StageInfo stageInfo)
+    {
+        var option = new StageDuplicateDialogOption
+        {
+            TitleText = "ステージ複製",
+            OkButtonText = "複製",
+            StageInfo = stageInfo
+        };
+        var dialog = DialogManager.instance.CreateDialog<StageDuplicateDialog>(DialogManager.StageDuplicateDialogPrefabPath, option);
+        dialog.OnCloseDialog.Subscribe(result  =>
+        {
+            if (result.ResultType != DialogResultType.Ok) return;
+            if (result is not StageDuplicateDialogResult duplicateResult) return;
+            CreateLine(duplicateResult.DuplicateNotes);
+        });
+    }
+#endregion
 
     private void StartSubscribeControllPanel()
     {

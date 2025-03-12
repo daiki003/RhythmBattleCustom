@@ -20,11 +20,7 @@ public class HomePresenter : MonoBehaviour
         _view.Init(_model.StageList, lastLevel);
         _view.ClickPlayStageButton.Subscribe(x =>
         {
-            StartBattle(x.StageId, x.Level, isPractice: false);
-        }).AddTo(this);
-        _view.ClickPracticeStageButton.Subscribe(x =>
-        {
-            StartBattle(x.StageId, x.Level, isPractice: true);
+            StartBattle(x.stageKey.StageId, x.stageKey.Level, isPractice: x.isPractice);
         }).AddTo(this);
         _view.ClickEditStageButton.Subscribe(x =>
         {

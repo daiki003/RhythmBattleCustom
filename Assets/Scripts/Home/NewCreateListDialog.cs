@@ -28,7 +28,6 @@ public class NewCreateListDialog : DialogBase
             var prefab = ResourceManager.LoadPrefab<NewCreateStrip>("NewCreateStrip");
             var strip = Instantiate(prefab, _stripTransform);
             strip.Init(master.StageHeader);
-            strip.SetStageId(master.StageId);
             strip.OnClickedStrip.Subscribe(_ =>
             {
                 _selectedStrip?.SetSelected(false);

@@ -10,17 +10,21 @@ using UnityEngine.UI;
 public class BattlePracticeUI : MonoBehaviour
 {
     [SerializeField] private Button _pauseButton;
+    [SerializeField] private CustomButton _autoButton;
     [SerializeField] private GameObject _timeUI;
     [SerializeField] private List<TimeJumpButton> _timeJumpButtonList = new();
     [SerializeField] private Transform _buttonIconArea;
     [SerializeField] private Slider _timeSlider;
 
     private bool _isPause;
+    public bool IsAuto { get; private set; }
     private const string _buttonIconPrefabPath = "JumpButtonIcon";
     private const float _sliderWidth = 780;
     private List<JumpButtonIcon> _buttonIconList = new();
 
     public Subject<bool> OnClickPauseButton = new();
+    private Subject<bool> _onClickAutoButton = new();
+    public Observable<bool> OnClickAutoButton => _onClickAutoButton;
     public Subject<float> OnSliderValueChange = new();
     public Subject<float> OnTimeJump = new();
 
@@ -33,6 +37,10 @@ public class BattlePracticeUI : MonoBehaviour
         _pauseButton.OnClickAsObservable().Subscribe(_ =>
         {
             Pause(!_isPause);
+        }).AddTo(this);
+        _autoButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            ChangeAuto(!IsAuto);
         }).AddTo(this);
         _timeSlider.OnValueChangedAsObservable().Subscribe(x =>
         {
@@ -58,6 +66,13 @@ public class BattlePracticeUI : MonoBehaviour
         _isPause = isPause;
         OnClickPauseButton.OnNext(_isPause);
         _timeUI.SetActive(_isPause);
+    }
+
+    public void ChangeAuto(bool isAuto)
+    {
+        IsAuto = isAuto;
+        _onClickAutoButton.OnNext(IsAuto);
+        _autoButton.SetHighLight(IsAuto);
     }
 
     public void MoveSlider(float value)

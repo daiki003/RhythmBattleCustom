@@ -58,7 +58,6 @@ public class BattleView : MonoBehaviour
     [SerializeField] private Text _missCountText;
     [SerializeField] private Text _comboText;
     [SerializeField] private Button _resetButton;
-    [SerializeField] private CustomButton _testButton;
     [SerializeField] private Button _backButton;
 
     [SerializeField] private BattlePracticeUI _practiceUi;
@@ -68,7 +67,6 @@ public class BattleView : MonoBehaviour
     private List<SingleBall> _launchedBallStashList = new();
 
     private bool _isTest;
-    public bool IsTest => _isTest;
     private bool _isStartBattle;
     private bool _isFinishBattle;
     private bool _isStartBgm;
@@ -154,11 +152,6 @@ public class BattleView : MonoBehaviour
                 PrepareBattle();
                 BattleStart().Forget();
             });
-        }).AddTo(this);
-        // オートプレイボタン
-        _testButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            ChangeTest();
         }).AddTo(this);
         // 戻るボタン
         _backButton.OnClickAsObservable().Subscribe(_ =>
@@ -308,12 +301,6 @@ public class BattleView : MonoBehaviour
         _currentScore = new Score();
         UpdateScoreText(_currentScore);
         BGMManager.instance.Stop();
-    }
-
-    public void ChangeTest()
-    {
-        _isTest = !_isTest;
-        _testButton.SetHighLight(_isTest);
     }
 
     private float CalcNoteTime(NoteMaster noteMaster)
@@ -497,7 +484,7 @@ public class BattleView : MonoBehaviour
         {
             LaunchBall();
         }
-        if (_isTest)
+        if (_practiceUi.IsAuto)
         {
             var activeBallList = _ballList.Where(b => Mathf.Abs(b.CriticalTime - BGMManager.instance.CurrentTime) < MasterManager.SettingMaster.TestNoteTimeBuffer);
             foreach (var ball in activeBallList)

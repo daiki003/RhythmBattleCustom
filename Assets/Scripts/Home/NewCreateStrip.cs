@@ -14,16 +14,19 @@ public class NewCreateStrip : MonoBehaviour
     [SerializeField] private Text _titleText;
 
     public string StageId { get; private set; }
+    public int Level { get; private set; }
     public float StartTime { get; private set; }
     public float EndTime { get; private set; }
 
     public Subject<Unit> OnClickedStrip { get; private set; } = new();
 
-    public void Init(StageHeader stageHeader)
+    public void Init(StageHeader stageHeader, int level = 0, bool isDisplayLevel = false)
     {
-        _titleText.text = stageHeader.StageName;
+        _titleText.text = stageHeader.StageName + (isDisplayLevel ? "Lv" + level : "");
         StartTime = stageHeader.StripStartTime;
         EndTime = stageHeader.StripEndTime;
+        SetStageId(stageHeader.StageId);
+        Level = level;
         _selectedPanel.gameObject.SetActive(false);
         _stripButton.OnClickAsObservable().Subscribe(_ =>
         {

@@ -71,10 +71,7 @@ public class BattlePresenter : MonoBehaviour
             clearState.Score = realScore;
             clearState.Combo = Math.Max(score.ComboCount, score.MaxComboCount);;
         }
-        if (!_battleView.IsTest)
-        {
-            SaveDataManager.UpdateClearState(clearState);
-        }
+        SaveDataManager.UpdateClearState(clearState);
         _battleView.StartResultAsync(clearState, SaveDataManager.GetClearState(_battleSceneInfo.StageInfo.StageHeader.StageId, _battleSceneInfo.Level), criticalMultiple, hitMultiple, missMultiple).Forget();
     }
 }

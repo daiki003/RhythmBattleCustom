@@ -16,6 +16,7 @@ public class DialogManager : MonoBehaviour
 	}
 
     public const string MessageDialogPrefabPath = "UI/MessageDialog";
+    public const string StageDuplicateDialogPrefabPath = "ScoreMaker/StageDuplicateDialog";
 
     public T CreateDialog<T>(string prefabPath, DialogOptionBase dialogOption) where T : DialogBase
     {

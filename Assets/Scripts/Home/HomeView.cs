@@ -64,17 +64,15 @@ public class HomeView : MonoBehaviour
     [SerializeField] private Button _settingButton;
 
     [SerializeField] private Button _playStageButton;
-    [SerializeField] private Button _practiceStageButton;
+    [SerializeField] private Toggle _practiceModeToggle;
     [SerializeField] private Button _editStageButton;
     [SerializeField] private Button _deleteStageButton;
     [SerializeField] private Button _newCreateButton;
 
     private List<StageStrip> _stageStripList = new List<StageStrip>();
 
-    private Subject<GetStageKey> _clickPlayStageButton = new();
-    public Observable<GetStageKey> ClickPlayStageButton => _clickPlayStageButton;
-    private Subject<GetStageKey> _clickPracticeStageButton = new();
-    public Observable<GetStageKey> ClickPracticeStageButton => _clickPracticeStageButton;
+    private Subject<(GetStageKey stageKey, bool isPractice)> _clickPlayStageButton = new();
+    public Observable<(GetStageKey stageKey, bool isPractice)> ClickPlayStageButton => _clickPlayStageButton;
     private Subject<GetStageKey> _clickEditStageButton = new();
     public Observable<GetStageKey> ClickEditStageButton => _clickEditStageButton;
     private Subject<string> _clickNewCreateStageButton = new();
@@ -88,6 +86,7 @@ public class HomeView : MonoBehaviour
     {
         CreateStripList(stageList);
         SetButtonInteractable(false);
+        _practiceModeToggle.isOn = false;
         for (int i = 0; i < _menuButtonList.Count; i++)
         {
             var menuButton = _menuButtonList[i];
@@ -108,12 +107,7 @@ public class HomeView : MonoBehaviour
         // 開始ボタン
         _playStageButton.OnClickAsObservable().Subscribe(_ =>
         {
-            _clickPlayStageButton.OnNext(new GetStageKey(_selectedStrip.StageId, _currentLevel));
-        }).AddTo(this);
-        // 練習ボタン
-        _practiceStageButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            _clickPracticeStageButton.OnNext(new GetStageKey(_selectedStrip.StageId, _currentLevel));
+            _clickPlayStageButton.OnNext((new GetStageKey(_selectedStrip.StageId, _currentLevel), _practiceModeToggle.isOn));
         }).AddTo(this);
         // 編集ボタン
         _editStageButton.OnClickAsObservable().Subscribe(_ =>
@@ -123,61 +117,12 @@ public class HomeView : MonoBehaviour
         // 削除ボタン
         _deleteStageButton.OnClickAsObservable().Subscribe(_ =>
         {
-            // 確認ダイアログ
-            var option = new MessageDialogOption
-            {
-                TitleText = "ステージ削除",
-                MessageText = "本当に削除しますか？",
-                OkButtonText = "削除",
-                CancelButtonText = "キャンセル"
-            };
-            var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabPath, option);
-            dialog.OnCloseDialog.Subscribe(async result =>
-            {
-                if (result.ResultType == DialogResultType.Ok)
-                {
-                    await MasterManager.DeleteCustomStage(_selectedStrip.StageId, _currentLevel);
-                    // 短冊の選択をキャンセルしてからを削除
-                    var selectedStrip = _selectedStrip;
-                    CancelSelectStrip();
-                    DestroyStrip(selectedStrip);
-                    // 削除通知ダイアログ
-                    var option = new MessageDialogOption
-                    {
-                        TitleText = "ステージ削除",
-                        MessageText = "削除しました",
-                        OkButtonText = "OK",
-                        HideCancelButton = true
-                    };
-                    var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabPath, option);
-                }
-            });
+            DeleteStage();
         }).AddTo(this);
         // 新規ステージ作成ボタン
         _newCreateButton.OnClickAsObservable().Subscribe(_ =>
         {
-            CancelSelectStrip();
-            var option = new DialogOptionBase
-            {
-                TitleText = "ステージ選択",
-                OkButtonText = "作成",
-                CancelButtonText = "キャンセル"
-            };
-            var dialog = DialogManager.instance.CreateDialog<NewCreateListDialog>("NewCreateListDialog", option);
-            dialog.OnCloseDialog.Subscribe(result =>
-            {
-                if (result is NewCreateDialogResult dialogResult)
-                {
-                    if (dialogResult.ResultType == DialogResultType.Ok)
-                    {
-                        _clickNewCreateStageButton.OnNext(dialogResult.SelectedStageId);
-                    }
-                    else
-                    {
-                        CancelSelectStrip();
-                    }
-                }
-            });
+            CreateStage();
         }).AddTo(this);
 
         // 設定ボタン
@@ -261,10 +206,68 @@ public class HomeView : MonoBehaviour
         Destroy(strip.gameObject);
     }
 
+    private void DeleteStage()
+    {
+        // 確認ダイアログ
+        var option = new MessageDialogOption
+        {
+            TitleText = "ステージ削除",
+            MessageText = "本当に削除しますか？",
+            OkButtonText = "削除",
+            CancelButtonText = "キャンセル"
+        };
+        var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabPath, option);
+        dialog.OnCloseDialog.Subscribe(async result =>
+        {
+            if (result.ResultType == DialogResultType.Ok)
+            {
+                await MasterManager.DeleteCustomStage(_selectedStrip.StageId, _currentLevel);
+                // 短冊の選択をキャンセルしてからを削除
+                var selectedStrip = _selectedStrip;
+                CancelSelectStrip();
+                DestroyStrip(selectedStrip);
+                // 削除通知ダイアログ
+                var option = new MessageDialogOption
+                {
+                    TitleText = "ステージ削除",
+                    MessageText = "削除しました",
+                    OkButtonText = "OK",
+                    HideCancelButton = true
+                };
+                var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabPath, option);
+            }
+        });
+    }
+
+    private void CreateStage()
+    {
+        CancelSelectStrip();
+        var option = new DialogOptionBase
+        {
+            TitleText = "ステージ選択",
+            OkButtonText = "作成",
+            CancelButtonText = "キャンセル"
+        };
+        var dialog = DialogManager.instance.CreateDialog<NewCreateListDialog>("NewCreateListDialog", option);
+        dialog.OnCloseDialog.Subscribe(result =>
+        {
+            if (result is NewCreateDialogResult dialogResult)
+            {
+                if (dialogResult.ResultType == DialogResultType.Ok)
+                {
+                    _clickNewCreateStageButton.OnNext(dialogResult.SelectedStageId);
+                }
+                else
+                {
+                    CancelSelectStrip();
+                }
+            }
+        });
+    }
+
     private void SetButtonInteractable(bool isActive)
     {
         _playStageButton.interactable = isActive;
-        _practiceStageButton.interactable = isActive;
         _editStageButton.interactable = isActive;
         _deleteStageButton.interactable = isActive;
     }
@@ -281,7 +284,6 @@ public class HomeView : MonoBehaviour
         }
         _currentPanelType = titlePanelType;
         bool isStage = titlePanelType.IsStage();
-        _practiceStageButton.gameObject.SetActive(isStage);
         // _editStageButton.gameObject.SetActive(!isStage);
         _deleteStageButton.gameObject.SetActive(!isStage);
         _newCreateButton.gameObject.SetActive(!isStage);

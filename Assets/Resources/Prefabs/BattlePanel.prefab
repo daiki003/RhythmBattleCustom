@@ -832,11 +832,11 @@ RectTransform:
   m_Children:
   - {fileID: 4313609140635085008}
   - {fileID: 6203808427501666704}
-  m_Father: {fileID: 1802112749116898741}
+  m_Father: {fileID: 763749761496415829}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 1}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -150, y: -390}
+  m_AnchorMin: {x: 1, y: 0.5}
+  m_AnchorMax: {x: 1, y: 0.5}
+  m_AnchoredPosition: {x: -150, y: 390}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3291496339016525928
@@ -1118,6 +1118,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1780775156135378307}
   - {fileID: 1744352292201732709}
   - {fileID: 7918373767216199209}
   m_Father: {fileID: 1802112749116898741}
@@ -1140,6 +1141,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _pauseButton: {fileID: 2983793934371319363}
+  _autoButton: {fileID: 4379950903919342027}
   _timeUI: {fileID: 728515228442777630}
   _timeJumpButtonList:
   - {fileID: 8891817600352941757}
@@ -1179,9 +1181,9 @@ RectTransform:
   - {fileID: 6366055544908867508}
   m_Father: {fileID: 1802112749116898741}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 0.5}
-  m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -150, y: 450}
+  m_AnchorMin: {x: 0, y: 0.5}
+  m_AnchorMax: {x: 0, y: 0.5}
+  m_AnchoredPosition: {x: 160, y: 190}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1344380945465713427
@@ -4482,7 +4484,6 @@ RectTransform:
   - {fileID: 2925887625018637049}
   - {fileID: 5862564310926012646}
   - {fileID: 5446170160698140746}
-  - {fileID: 1780775156135378307}
   - {fileID: 8384427942877747858}
   - {fileID: 1015658211197378634}
   - {fileID: 8297131625026715734}
@@ -4558,9 +4559,7 @@ MonoBehaviour:
   _missCountText: {fileID: 6400575784307856337}
   _comboText: {fileID: 685525176411332679}
   _resetButton: {fileID: 1960510873510314110}
-  _testButton: {fileID: 4379950903919342027}
   _backButton: {fileID: 6944969474119687066}
-  _testButtonImage: {fileID: 0}
   _practiceUi: {fileID: 3413709766490043780}
   _resultView: {fileID: 6542715372881187597}
 --- !u!1 &5639607827471480775
