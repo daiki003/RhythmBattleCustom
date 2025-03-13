@@ -65,6 +65,12 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         _clickHandler?.Update();
+#if UNITY_EDITOR
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            ScreenShot.CaptureScreenShot();
+        }
+#endif
     }
 
     // ゲームスタート時の処理

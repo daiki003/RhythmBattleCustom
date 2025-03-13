@@ -216,7 +216,7 @@ public class HomeView : MonoBehaviour
             OkButtonText = "削除",
             CancelButtonText = "キャンセル"
         };
-        var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabPath, option);
+        var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabName, option);
         dialog.OnCloseDialog.Subscribe(async result =>
         {
             if (result.ResultType == DialogResultType.Ok)
@@ -234,7 +234,7 @@ public class HomeView : MonoBehaviour
                     OkButtonText = "OK",
                     HideCancelButton = true
                 };
-                var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabPath, option);
+                var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabName, option);
             }
         });
     }
@@ -248,7 +248,7 @@ public class HomeView : MonoBehaviour
             OkButtonText = "作成",
             CancelButtonText = "キャンセル"
         };
-        var dialog = DialogManager.instance.CreateDialog<NewCreateListDialog>("NewCreateListDialog", option);
+        var dialog = DialogManager.instance.CreateDialog<NewCreateListDialog>(DialogManager.NewCreateListDialogPrefabName, option);
         dialog.OnCloseDialog.Subscribe(result =>
         {
             if (result is NewCreateDialogResult dialogResult)

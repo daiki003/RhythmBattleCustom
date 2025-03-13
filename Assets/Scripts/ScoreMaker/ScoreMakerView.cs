@@ -9,8 +9,6 @@ using Cysharp.Threading.Tasks;
 public class ScoreMakerView : MonoBehaviour
 {
     [SerializeField] private Transform _scoreLineTransform;
-    [SerializeField] private GameObject _singleBallSelectedPanel;
-    [SerializeField] private GameObject _longBallSelectedPanel;
     [SerializeField] private ScoreLine _scoreLinePrefab; 
     [SerializeField] private ScrollRect _scoreScrollRect;
     [SerializeField] private Button _saveButton;
@@ -20,7 +18,6 @@ public class ScoreMakerView : MonoBehaviour
 
     [SerializeField] private InputField _bpmInput;
     [SerializeField] private InputField _offsetInput;
-    [SerializeField] private Button _duplicateButton;
 
     [SerializeField] private RectTransform _scoreAreaRect;
     [SerializeField] private VerticalLayoutGroup _scoreAreaLayoutGroup;
@@ -70,6 +67,7 @@ public class ScoreMakerView : MonoBehaviour
     private const float _scoreLineHeight = 15f;
     private const float _selectMaskOffset = 50f;
     private const float _maxLineSpacing = 300f; // ライン間隔最大値
+    private const int _maxLastPastLineCount = 20;
 
     private int _lineNumber => (int)(_currentBpm * (BGMManager.instance.CurrentClipLength / 60f));
 
@@ -127,6 +125,7 @@ public class ScoreMakerView : MonoBehaviour
             }
             else
             {
+                UpdatePastScoreLineList();
                 SEManager.instance.PlaySe(SeName.Button2);
                 CreateBall(x.number, x.isLeft, _currentSelectBallType);
             }
@@ -145,24 +144,7 @@ public class ScoreMakerView : MonoBehaviour
         }).AddTo(this);
         _playBgmButton.OnClickAsObservable().Subscribe(_ =>
         {
-            _isPause = !_isPause;
-            if (_isPause)
-            {
-                BGMManager.instance.Pause();
-            }
-            else
-            {
-                float posY = _scoreAreaRect.anchoredPosition.y;
-                var lineNumber = (_scoreAreaBottom - posY) / (_scoreAreaLayoutGroup.spacing + _scoreLineHeight);
-                float currentTime = lineNumber * _singleBeatTime + _currentOffset;
-                BGMManager.instance.SetTime(currentTime);
-                // BGMの現在時刻より前のラインは全て終わった判定にする
-                foreach (var line in _scoreLineList)
-                {
-                    line.IsEnd = line.GetLineTime(_currentBpm, _currentOffset) < currentTime;
-                }
-                BGMManager.instance.Restart();
-            }
+            ChangePause();
         }).AddTo(this);
         _saveButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -186,7 +168,7 @@ public class ScoreMakerView : MonoBehaviour
                     MessageText = "変更が保存されていませんが、このままホームに戻りますか？",
                     OkButtonText = "戻る",
                 };
-                var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabPath, option);
+                var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabName, option);
                 dialog.OnCloseDialog.Subscribe(result =>
                 {
                     if (result.ResultType == DialogResultType.Ok)
@@ -208,10 +190,6 @@ public class ScoreMakerView : MonoBehaviour
             _isEdited = true;
             _currentOffset = float.Parse(offset);
         }).AddTo(this);
-        _duplicateButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            _clickDuplicateButton.OnNext(default);
-        });
     }
 
 #region ダイアログ系
@@ -247,7 +225,7 @@ public class ScoreMakerView : MonoBehaviour
                 PlaceHolderText = stageName,
                 InitialInputText = stageName,
             };
-            return DialogManager.instance.CreateDialog<InputDialog>("UI/InputDialog", option);
+            return DialogManager.instance.CreateDialog<InputDialog>(DialogManager.InputDialogPrefabName, option);
         }
         else
         {
@@ -258,7 +236,7 @@ public class ScoreMakerView : MonoBehaviour
                 MessageText = "変更すると\nこのレベルのハイスコアは削除されます。\n変更を保存しますか？",
                 OkButtonText = "保存する",
             };
-            return DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabPath, option);
+            return DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabName, option);
         }
     }
 
@@ -272,7 +250,7 @@ public class ScoreMakerView : MonoBehaviour
             HideCancelButton = true,
             MessageText = "保存しました",
         };
-        DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabPath, option);
+        DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabName, option);
         _isEdited = false;
     }
 
@@ -285,11 +263,12 @@ public class ScoreMakerView : MonoBehaviour
             OkButtonText = "複製",
             StageInfo = stageInfo
         };
-        var dialog = DialogManager.instance.CreateDialog<StageDuplicateDialog>(DialogManager.StageDuplicateDialogPrefabPath, option);
+        var dialog = DialogManager.instance.CreateDialog<StageDuplicateDialog>(DialogManager.StageDuplicateDialogPrefabName, option);
         dialog.OnCloseDialog.Subscribe(result  =>
         {
             if (result.ResultType != DialogResultType.Ok) return;
             if (result is not StageDuplicateDialogResult duplicateResult) return;
+            UpdatePastScoreLineList();
             CreateLine(duplicateResult.DuplicateNotes);
         });
     }
@@ -300,6 +279,10 @@ public class ScoreMakerView : MonoBehaviour
         _controlPanel.OnSelectBall.Subscribe(ballType =>
         {
             _currentSelectBallType = ballType;
+        }).AddTo(this);
+        _controlPanel.OnUndo.Subscribe(_ =>
+        {
+            Undo();
         }).AddTo(this);
         // コピー、ペーストボタン
         _selectMask.SetActive(false);
@@ -316,9 +299,13 @@ public class ScoreMakerView : MonoBehaviour
         {
             InversionLine();
         }).AddTo(this);
-        _controlPanel.OnUndo.Subscribe(_ =>
+        _controlPanel.OnDeleteRange.Subscribe(_ =>
         {
-            Undo();
+            ClearLine();
+        }).AddTo(this);
+        _controlPanel.OnStageDuplicate.Subscribe(_ =>
+        {
+            _clickDuplicateButton.OnNext(default);
         }).AddTo(this);
         _controlPanel.OnChangeLineSpacing.Subscribe(value =>
         {
@@ -335,16 +322,24 @@ public class ScoreMakerView : MonoBehaviour
 
     private void ChangePause()
     {
-        float posY = _scoreAreaRect.anchoredPosition.y;
-        var lineNumber = (_scoreAreaBottom - posY) / (_scoreAreaLayoutGroup.spacing + _scoreLineHeight);
-        float currentTime = lineNumber * _singleBeatTime + _currentOffset;
-        BGMManager.instance.SetTime(currentTime);
-        // BGMの現在時刻より前のラインは全て終わった判定にする
-        foreach (var line in _scoreLineList)
+        _isPause = !_isPause;
+        if (_isPause)
         {
-            line.IsEnd = line.GetLineTime(_currentBpm, _currentOffset) < currentTime;
+            BGMManager.instance.Pause();
         }
-        BGMManager.instance.ChangePause();
+        else
+        {
+            float posY = _scoreAreaRect.anchoredPosition.y;
+            var lineNumber = (_scoreAreaBottom - posY) / (_scoreAreaLayoutGroup.spacing + _scoreLineHeight);
+            float currentTime = lineNumber * _singleBeatTime + _currentOffset;
+            BGMManager.instance.SetTime(currentTime);
+            // BGMの現在時刻より前のラインは全て終わった判定にする
+            foreach (var line in _scoreLineList)
+            {
+                line.IsEnd = line.GetLineTime(_currentBpm, _currentOffset) < currentTime;
+            }
+            BGMManager.instance.Restart();
+        }
     }
 
     // Editモードでのライン選択
@@ -666,6 +661,11 @@ public class ScoreMakerView : MonoBehaviour
 
     private void UpdatePastScoreLineList()
     {
+        // _pastScoreLineListが増えすぎていたら減らす
+        while (_pastScoreLineList.Count >= _maxLastPastLineCount)
+        {
+            _pastScoreLineList.RemoveAt(0);
+        }
         var lastScoreLineList = new List<LineState>();
         foreach (var line in _scoreLineList)
         {
@@ -683,12 +683,11 @@ public class ScoreMakerView : MonoBehaviour
 
     private void Undo()
     {
-        var lastScoreLineList = _pastScoreLineList.LastOrDefault();
+        var lastScoreLineList = _pastScoreLineList.Pop();
         if (lastScoreLineList == null)
         {
             return;
         }
-        _pastScoreLineList.Remove(lastScoreLineList);
         CreateBallFromLineState(lastScoreLineList, startNumber: 0);
     }
 
@@ -710,6 +709,7 @@ public class ScoreMakerView : MonoBehaviour
     // 選択中の列を反転させる
     private void InversionLine()
     {
+        UpdatePastScoreLineList();
         foreach (var line in _selectedLineList)
         {
             var leftBall = line.GetBall(isLeft: true);
@@ -717,6 +717,15 @@ public class ScoreMakerView : MonoBehaviour
             line.ClearLine();
             CreateBall(line.LineNumber, isLeft: false, leftBall?.BallType ?? ScoreMakerBallType.None);
             CreateBall(line.LineNumber, isLeft: true, rightBall?.BallType ?? ScoreMakerBallType.None);
+        }
+    }
+
+    // 選択中の列のボールを削除する
+    private void ClearLine()
+    {
+        foreach (var line in _selectedLineList)
+        {
+            line.ClearLine();
         }
     }
 

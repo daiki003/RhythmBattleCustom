@@ -10,12 +10,14 @@ public class ScoreMakerControlPanel : MonoBehaviour
     // 1ページ目
     [SerializeField] private CustomButton _selectSingleBallButton; // シングルボール選択ボタン
     [SerializeField] private CustomButton _selectLongBallButton; // ロングボール選択ボタン
+    [SerializeField] private Button _undoButton; // 一手戻すボタン
     // 2ページ目
     [SerializeField] private Button _copyButton; // コピーボタン
     [SerializeField] private Button _pasteButton; // ペーストボタン
     [SerializeField] private Button _selectCancelButton; // 選択解除ボタン
     [SerializeField] private Button _inversionButton; // 左右反転ボタン
-    [SerializeField] private Button _undoButton; // 一手戻すボタン
+    [SerializeField] private Button _deleteRangeButton; // 範囲削除ボタン
+    [SerializeField] private Button _stageDuplicateButton; // ステージ複製ボタン
     // 3ページ目
     [SerializeField] private Slider _lineSpacingSlider; // ライン間隔調整スライダー
     [SerializeField] private Slider _ballSizeSlider; // ボールサイズ調整スライダー
@@ -44,6 +46,10 @@ public class ScoreMakerControlPanel : MonoBehaviour
     public Observable<Unit> OnInversion => _onInversion;
     private Subject<Unit> _onUndo = new();
     public Observable<Unit> OnUndo => _onUndo;
+    private Subject<Unit> _onDeleteRange = new();
+    public Observable<Unit> OnDeleteRange => _onDeleteRange;
+    private Subject<Unit> _onStageDuplicate = new();
+    public Observable<Unit> OnStageDuplicate => _onStageDuplicate;
     private Subject<float> _onChangeLineSpacing = new();
     public Observable<float> OnChangeLineSpacing => _onChangeLineSpacing;
 
@@ -62,6 +68,10 @@ public class ScoreMakerControlPanel : MonoBehaviour
             _onSelectBall.OnNext(ScoreMakerView.ScoreMakerBallType.Long);
             SetButtonHighLight(false);
         }).AddTo(this);
+        _undoButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            _onUndo.OnNext(default);
+        }).AddTo(this);
 
         _copyButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -75,16 +85,20 @@ public class ScoreMakerControlPanel : MonoBehaviour
         }).AddTo(this);
         _selectCancelButton.OnClickAsObservable().Subscribe(_ =>
         {
-            _onSelectCancel.OnNext(Unit.Default);
+            _onSelectCancel.OnNext(default);
         }).AddTo(this);
         _inversionButton.OnClickAsObservable().Subscribe(_ =>
         {
-            _onInversion.OnNext(Unit.Default);
+            _onInversion.OnNext(default);
         }).AddTo(this);
-        _undoButton.OnClickAsObservable().Subscribe(_ =>
+        _deleteRangeButton.OnClickAsObservable().Subscribe(_ =>
         {
-            _onUndo.OnNext(Unit.Default);
+            _onDeleteRange.OnNext(default);
         }).AddTo(this);
+        _stageDuplicateButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            _onStageDuplicate.OnNext(default);
+        });
 
         _pasteCancelButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -123,6 +137,7 @@ public class ScoreMakerControlPanel : MonoBehaviour
 
     private void SetPage(int pageIndex)
     {
+        _onSelectCancel.OnNext(default);
         for (int i = 0; i < _pageList.Count; i++)
         {
             _pageList[i].SetActive(i == pageIndex);
@@ -146,20 +161,12 @@ public class ScoreMakerControlPanel : MonoBehaviour
 
     void Update()
     {
+        _undoButton.interactable = _isExsistPastLine;
+
         _copyButton.interactable = _isSelectedLine;
         _inversionButton.interactable = _isSelectedLine;
         _selectCancelButton.interactable = _isSelectedLine;
+        _deleteRangeButton.interactable = _isSelectedLine;
         _pasteButton.interactable = _isCopiedLine;
-        _undoButton.interactable = _isExsistPastLine;
-        // 全てのボタンが押せないならメッセージを表示
-        if (!_isSelectedLine && !_isCopiedLine && !_isExsistPastLine)
-        {
-            _messageText.text = "対象の線を選んでください";
-            _messageMask.gameObject.SetActive(true);
-        }
-        else if (!IsWaitingPaste)
-        {
-            _messageMask.gameObject.SetActive(false);
-        }
     }
 }

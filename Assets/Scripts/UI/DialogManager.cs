@@ -15,12 +15,16 @@ public class DialogManager : MonoBehaviour
 		}
 	}
 
-    public const string MessageDialogPrefabPath = "UI/MessageDialog";
-    public const string StageDuplicateDialogPrefabPath = "ScoreMaker/StageDuplicateDialog";
+    private const string _dialogPrefabPathBase = "UI/Dialog/";
+    public const string MessageDialogPrefabName = "MessageDialog";
+    public const string InputDialogPrefabName = "InputDialog";
+    public const string SettingDialogPrefabName = "SettingDialog";
+    public const string NewCreateListDialogPrefabName = "StageDuplicateDialog";
+    public const string StageDuplicateDialogPrefabName = "StageDuplicateDialog";
 
-    public T CreateDialog<T>(string prefabPath, DialogOptionBase dialogOption) where T : DialogBase
+    public T CreateDialog<T>(string prefabName, DialogOptionBase dialogOption) where T : DialogBase
     {
-        var prefab = ResourceManager.LoadPrefab<T>(prefabPath);
+        var prefab = ResourceManager.LoadPrefab<T>(_dialogPrefabPathBase + prefabName);
         var dialog = Instantiate(prefab, DialogTransform);
         dialog.Init(dialogOption);
         return dialog;
@@ -29,7 +33,7 @@ public class DialogManager : MonoBehaviour
     public void OpenSettingDialog()
     {
         CreateDialog<SettingDialog>(
-            "UI/SettingDialog",
+            SettingDialogPrefabName,
             new DialogOptionBase
             {
                 TitleText = "設定",
