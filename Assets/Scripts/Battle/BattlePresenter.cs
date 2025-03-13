@@ -10,6 +10,7 @@ using System.Linq;
 public class BattlePresenter : MonoBehaviour
 {
     [SerializeField] private BattleView _battleView;
+    private BattleModel _model;
 
     private BattleSceneInfo _battleSceneInfo;
 
@@ -53,25 +54,7 @@ public class BattlePresenter : MonoBehaviour
 
     public void FinishBattle(Score score)
     {
-        var clearState = new ClearState()
-        {
-            StageId = _battleSceneInfo.StageInfo.StageHeader.StageId,
-            Level = _battleSceneInfo.Level,
-        };
-        float totalCount = score.CriticalCount + score.HitCount + score.MissCount;
-        float criticalMultiple = 100f / totalCount;
-        float hitMultiple = 50f / totalCount;
-        float missMultiple = -100f / totalCount;
-        float realScore = Mathf.Max(0, score.CriticalCount * criticalMultiple + score.HitCount * hitMultiple + score.MissCount * missMultiple);
-        if (clearState != null && clearState.Score <= realScore)
-        {
-            clearState.CriticalNumber = score.CriticalCount;
-            clearState.HitNumber = score.HitCount;
-            clearState.MissNumber = score.MissCount;
-            clearState.Score = realScore;
-            clearState.Combo = Math.Max(score.ComboCount, score.MaxComboCount);;
-        }
-        SaveDataManager.UpdateClearState(clearState);
-        _battleView.StartResultAsync(clearState, SaveDataManager.GetClearState(_battleSceneInfo.StageInfo.StageHeader.StageId, _battleSceneInfo.Level), criticalMultiple, hitMultiple, missMultiple).Forget();
+        var clearState = _model.CalculateScore(score, _battleSceneInfo.StageInfo.StageHeader.StageId, _battleSceneInfo.Level);
+        _battleView.StartResultAsync(clearState, SaveDataManager.GetClearState(_battleSceneInfo.StageInfo.StageHeader.StageId, _battleSceneInfo.Level), _model.CriticalMultiple, _model.HitMultiple, _model.MissMultiple).Forget();
     }
 }

@@ -214,7 +214,7 @@ public class BattleView : MonoBehaviour
     private void DisplayDialog(MessageDialogOption option, Action okAction)
     {
         Pause(isPause: true);
-        var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabPath, option);
+        var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabName, option);
         dialog.OnCloseDialog.Subscribe(result =>
         {
             if (result.ResultType == DialogResultType.Ok)
