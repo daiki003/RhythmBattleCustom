@@ -47,6 +47,7 @@ public class NewCreateListDialog : DialogBase
         });
         if (resultType != DialogResultType.Ok)
         {
+            SEManager.instance.PlaySe(SeName.Cancel);
             BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true, isFade: true);
         }
         Destroy(gameObject);

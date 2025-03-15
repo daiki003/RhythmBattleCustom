@@ -10,7 +10,7 @@ public class ScoreMakerControlPanel : MonoBehaviour
     // 1ページ目
     [SerializeField] private CustomButton _selectSingleBallButton; // シングルボール選択ボタン
     [SerializeField] private CustomButton _selectLongBallButton; // ロングボール選択ボタン
-    [SerializeField] private Button _undoButton; // 一手戻すボタン
+    [SerializeField] private Button _practiceButton; // 練習ボタン
     // 2ページ目
     [SerializeField] private Button _copyButton; // コピーボタン
     [SerializeField] private Button _pasteButton; // ペーストボタン
@@ -44,8 +44,8 @@ public class ScoreMakerControlPanel : MonoBehaviour
     public Observable<Unit> OnSelectCancel => _onSelectCancel;
     private Subject<Unit> _onInversion = new();
     public Observable<Unit> OnInversion => _onInversion;
-    private Subject<Unit> _onUndo = new();
-    public Observable<Unit> OnUndo => _onUndo;
+    private Subject<Unit> _onPractice = new();
+    public Observable<Unit> OnPractice => _onPractice;
     private Subject<Unit> _onDeleteRange = new();
     public Observable<Unit> OnDeleteRange => _onDeleteRange;
     private Subject<Unit> _onStageDuplicate = new();
@@ -68,9 +68,9 @@ public class ScoreMakerControlPanel : MonoBehaviour
             _onSelectBall.OnNext(ScoreMakerView.ScoreMakerBallType.Long);
             SetButtonHighLight(false);
         }).AddTo(this);
-        _undoButton.OnClickAsObservable().Subscribe(_ =>
+        _practiceButton.OnClickAsObservable().Subscribe(_ =>
         {
-            _onUndo.OnNext(default);
+            _onPractice.OnNext(default);
         }).AddTo(this);
 
         _copyButton.OnClickAsObservable().Subscribe(_ =>
@@ -161,8 +161,6 @@ public class ScoreMakerControlPanel : MonoBehaviour
 
     void Update()
     {
-        _undoButton.interactable = _isExsistPastLine;
-
         _copyButton.interactable = _isSelectedLine;
         _inversionButton.interactable = _isSelectedLine;
         _selectCancelButton.interactable = _isSelectedLine;

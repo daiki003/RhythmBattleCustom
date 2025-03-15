@@ -19,7 +19,7 @@ public class DialogManager : MonoBehaviour
     public const string MessageDialogPrefabName = "MessageDialog";
     public const string InputDialogPrefabName = "InputDialog";
     public const string SettingDialogPrefabName = "SettingDialog";
-    public const string NewCreateListDialogPrefabName = "StageDuplicateDialog";
+    public const string NewCreateListDialogPrefabName = "NewCreateListDialog";
     public const string StageDuplicateDialogPrefabName = "StageDuplicateDialog";
 
     public T CreateDialog<T>(string prefabName, DialogOptionBase dialogOption) where T : DialogBase

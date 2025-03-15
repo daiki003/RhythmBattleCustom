@@ -12,7 +12,7 @@ public class ScoreMakerView : MonoBehaviour
     [SerializeField] private ScoreLine _scoreLinePrefab; 
     [SerializeField] private ScrollRect _scoreScrollRect;
     [SerializeField] private Button _saveButton;
-    [SerializeField] private Button _practiceButton;
+    [SerializeField] private Button _undoButton;
     [SerializeField] private Button _backButton;
     [SerializeField] private List<MenuButton> _levelButtonList = new();
 
@@ -150,10 +150,9 @@ public class ScoreMakerView : MonoBehaviour
         {
             _clickSaveButton.OnNext(default);
         });
-        _practiceButton.OnClickAsObservable().Subscribe(_ =>
+        _undoButton.OnClickAsObservable().Subscribe(_ =>
         {
-            _isDuringPractice = true;
-            _clickPracticeButton.OnNext(_bgmScrollBar.value);
+            Undo();
         });
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -280,9 +279,10 @@ public class ScoreMakerView : MonoBehaviour
         {
             _currentSelectBallType = ballType;
         }).AddTo(this);
-        _controlPanel.OnUndo.Subscribe(_ =>
+        _controlPanel.OnPractice.Subscribe(_ =>
         {
-            Undo();
+            _isDuringPractice = true;
+            _clickPracticeButton.OnNext(_bgmScrollBar.value);
         }).AddTo(this);
         // コピー、ペーストボタン
         _selectMask.SetActive(false);
@@ -753,5 +753,6 @@ public class ScoreMakerView : MonoBehaviour
         bool isCopiedLine = _copiedLineState.Count > 0;
         bool isExsistPastLine = _pastScoreLineList.Count > 0;
         _controlPanel.SetButtonState(isSelectedLine, isCopiedLine, isExsistPastLine);
+        _undoButton.interactable = isExsistPastLine;
     }
 }
