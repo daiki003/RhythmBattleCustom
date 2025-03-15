@@ -76,8 +76,6 @@ public class GameManager : MonoBehaviour
     // ゲームスタート時の処理
 	private async UniTask GameStart()
 	{
-        AdsManager.InitAds();
-
         SaveDataManager.CreateSettingData();
         BGMManager.instance.PreloadBgm();
         SEManager.instance.PreloadSe();
@@ -97,10 +95,6 @@ public class GameManager : MonoBehaviour
     // 次のシーンを開く
     public async UniTask OpenScene(SceneType sceneType, SceneInfoBase nextSceneInfo, bool isPlaySe = true)
     {
-        if (sceneType != SceneType.Title)
-        {
-            AdsManager.HideBanner();
-        }
         BGMManager.instance.ResetHomeBgmTime();
         BGMManager.instance.Stop();
         if (isPlaySe)
@@ -122,10 +116,6 @@ public class GameManager : MonoBehaviour
         await _currentScene.InitAsync(_currentSceneInfo, nextSceneInfo, _loadPanel);
         _currentSceneInfo = nextSceneInfo;
         await _currentScene.StartSceneAsync();
-        if (sceneType == SceneType.Title)
-        {
-            AdsManager.ShowBanner();
-        }
     }
 
     // 追加のシーンを開く
