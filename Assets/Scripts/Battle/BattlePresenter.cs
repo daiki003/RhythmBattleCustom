@@ -16,6 +16,7 @@ public class BattlePresenter : MonoBehaviour
 
     public void Init(BattleSceneInfo battleSceneInfo)
     {
+        _model = new BattleModel();
         _battleSceneInfo = battleSceneInfo;
         _battleView.OnWhenClickedBack.Subscribe(_ =>
         {

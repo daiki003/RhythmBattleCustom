@@ -46,8 +46,8 @@ public class ScoreMakerView : MonoBehaviour
     private List<MoveButton> _moveButtonList = new(); // 特定のラインに飛ぶボタン
     private MoveButton _goLastButton; // 最後のボール位置に飛ぶボタン
 
-    private float _currentBpm;
-    private float _currentOffset;
+    public float CurrentBpm { get; private set; }
+    public float CurrentOffset  { get; private set; }
     // 編集された状態がセーブされていないかどうか
     private bool _isEdited;
     private bool _isPause;
@@ -69,7 +69,7 @@ public class ScoreMakerView : MonoBehaviour
     private const float _maxLineSpacing = 300f; // ライン間隔最大値
     private const int _maxLastPastLineCount = 20;
 
-    private int _lineNumber => (int)(_currentBpm * (BGMManager.instance.CurrentClipLength / 60f));
+    private int _lineNumber => (int)(CurrentBpm * (BGMManager.instance.CurrentClipLength / 60f));
 
     public enum ScoreMakerBallType
     {
@@ -78,14 +78,14 @@ public class ScoreMakerView : MonoBehaviour
         Long
     }
     private ScoreMakerBallType _currentSelectBallType;
-    private float _singleBeatTime => 60f / _currentBpm;
+    private float _singleBeatTime => 60f / CurrentBpm;
     private bool _isStartMake;
     private bool _isDuringPractice;
 
     public void Init(StageHeader stageHeader, List<NoteMaster> notes, int firstLevel)
     {
-        _currentBpm = stageHeader.BPM;
-        _currentOffset = stageHeader.NoteTimeOffset + SaveDataManager.SettingData.Offset;
+        CurrentBpm = stageHeader.BPM;
+        CurrentOffset = stageHeader.NoteTimeOffset + SaveDataManager.SettingData.Offset;
 
         // レベルボタン初期化
         for (int i = 0; i < _levelButtonList.Count; i++)
@@ -108,8 +108,8 @@ public class ScoreMakerView : MonoBehaviour
         _currentSelectBallType = ScoreMakerBallType.Single;
         StartSubscribeMain();
         StartSubscribeControllPanel();
-        _bpmInput.text = _currentBpm.ToString();
-        _offsetInput.text = _currentOffset.ToString();
+        _bpmInput.text = CurrentBpm.ToString();
+        _offsetInput.text = CurrentOffset.ToString();
         CreateLine(notes);
         _scoreScrollRect.verticalNormalizedPosition = 0;
         _isEdited = false;
@@ -182,12 +182,12 @@ public class ScoreMakerView : MonoBehaviour
         _bpmInput.OnEndEditAsObservable().Subscribe(bpm =>
         {
             _isEdited = true;
-            _currentBpm = float.Parse(bpm);
+            CurrentBpm = float.Parse(bpm);
         }).AddTo(this);
         _offsetInput.OnEndEditAsObservable().Subscribe(offset =>
         {
             _isEdited = true;
-            _currentOffset = float.Parse(offset);
+            CurrentOffset = float.Parse(offset);
         }).AddTo(this);
     }
 
@@ -331,12 +331,12 @@ public class ScoreMakerView : MonoBehaviour
         {
             float posY = _scoreAreaRect.anchoredPosition.y;
             var lineNumber = (_scoreAreaBottom - posY) / (_scoreAreaLayoutGroup.spacing + _scoreLineHeight);
-            float currentTime = lineNumber * _singleBeatTime + _currentOffset;
+            float currentTime = lineNumber * _singleBeatTime + CurrentOffset;
             BGMManager.instance.SetTime(currentTime);
             // BGMの現在時刻より前のラインは全て終わった判定にする
             foreach (var line in _scoreLineList)
             {
-                line.IsEnd = line.GetLineTime(_currentBpm, _currentOffset) < currentTime;
+                line.IsEnd = line.GetLineTime(CurrentBpm, CurrentOffset) < currentTime;
             }
             BGMManager.instance.Restart();
         }
@@ -532,7 +532,7 @@ public class ScoreMakerView : MonoBehaviour
 
     private float GetCurrentLineNumber()
     {
-        return (BGMManager.instance.CurrentTime - _currentOffset) / _singleBeatTime;
+        return (BGMManager.instance.CurrentTime - CurrentOffset) / _singleBeatTime;
     }
 
     public List<NoteMaster> CreateNoteList()
@@ -741,7 +741,7 @@ public class ScoreMakerView : MonoBehaviour
             float anchorY = _scoreAreaBottom - (_scoreAreaLayoutGroup.spacing + _scoreLineHeight) * currentLineNumber;
             _scoreAreaRect.anchoredPosition = new Vector2(0, anchorY);
             var nextLine = _scoreLineList.FirstOrDefault(l => !l.IsEnd);
-            if (nextLine != null && BGMManager.instance.CurrentTime > nextLine.GetLineTime(_currentBpm, _currentOffset) - MasterManager.SettingMaster.ScoreMakerNoteTimeBuffer)
+            if (nextLine != null && BGMManager.instance.CurrentTime > nextLine.GetLineTime(CurrentBpm, CurrentOffset) - MasterManager.SettingMaster.ScoreMakerNoteTimeBuffer)
             {
                 nextLine.Beat();
                 nextLine.IsEnd = true;

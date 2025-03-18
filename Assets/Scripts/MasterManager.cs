@@ -113,9 +113,11 @@ public static class MasterManager
         OverrideMasterList.AddRange(overrideMasterList);
         CustomStageList = customStageList;
     }
-    public static async UniTask UpdateStageMaster(string stageId, List<LevelInfo> levelInfoList)
+    public static async UniTask UpdateOverrideStageMaster(string stageId, List<LevelInfo> levelInfoList, float bpm, float offset)
     {
         var targetMaster = StageMasterList.FirstOrDefault(s => s.StageId == stageId);
+        targetMaster.StageHeader.BPM = bpm;
+        targetMaster.StageHeader.NoteTimeOffset = offset;
         foreach (var levelInfo in levelInfoList)
         {
             var level = levelInfo.Level;
@@ -133,33 +135,52 @@ public static class MasterManager
                     type = nn.type,
                 }).ToList()
             }).ToList();
-            if (levelInfo.Level <= MaxDefaultLevelId)
+            if (targetMaster.notes.Count >= level)
             {
                 targetMaster.notes[level - 1] = notes;
             }
-            else
-            {
-                var targetCustomStage = CustomStageList.FirstOrDefault(s => s.StageId == stageId && s.LevelId == level);
-                if (targetCustomStage != null)
-                {
-                    targetCustomStage.notes = notes;
-                }
-                else
-                {
-                    CustomStageList.Add(new SingleStageMaster
-                    {
-                        StageId = targetMaster.StageHeader.StageId,
-                        LevelId = level,
-                        StageNameOverride = levelInfo.StageNameOverride,
-                        notes = notes
-                    });
-                }
-            }
         }
         await PlayFabController.UpdateOverrideScore(targetMaster);
-        await PlayFabController.UpdateCustomStageList(CustomStageList);
         SaveDataManager.DeleteClearState(stageId, levelInfoList.Select(l => l.Level).ToList());
         SetOverrideMaster(targetMaster);
+    }
+    public static async UniTask UpdateStageMaster(string stageId, List<LevelInfo> levelInfoList)
+    {
+        foreach (var levelInfo in levelInfoList)
+        {
+            var level = levelInfo.Level;
+            var notes = levelInfo.Notes.Select(n => new NoteMaster
+            {
+                lpb = n.lpb,
+                num = n.num,
+                block = n.block,
+                type = n.type,
+                notes = n.notes.Select(nn => new NoteMaster
+                {
+                    lpb = nn.lpb,
+                    num = nn.num,
+                    block = nn.block,
+                    type = nn.type,
+                }).ToList()
+            }).ToList();
+            var targetCustomStage = CustomStageList.FirstOrDefault(s => s.StageId == stageId && s.LevelId == level);
+            if (targetCustomStage != null)
+            {
+                targetCustomStage.notes = notes;
+            }
+            else
+            {
+                CustomStageList.Add(new SingleStageMaster
+                {
+                    StageId = stageId,
+                    LevelId = level,
+                    StageNameOverride = levelInfo.StageNameOverride,
+                    notes = notes
+                });
+            }
+        }
+        await PlayFabController.UpdateCustomStageList(CustomStageList);
+        SaveDataManager.DeleteClearState(stageId, levelInfoList.Select(l => l.Level).ToList());
     }
     public static void SetOverrideMaster(StageMaster master)
     {

@@ -11,17 +11,36 @@ public class ScoreMakerModel
     private StageInfo _currentStageInfo;
     public  StageInfo CurrentStageInfo => _currentStageInfo;
 
-    public void Init(StageInfo stageInfo, List<int> levelList)
+    public void Init(StageInfo stageInfo, int targetLevel, bool isDevelopOverride)
     {
         _currentStageInfo = stageInfo;
-        foreach (var level in levelList)
+        if (isDevelopOverride)
+        {
+            // 開発用編集の場合は1～3のステージを追加
+            for (int i = 1; i <= MasterManager.MaxDefaultLevelId; i++)
+            {
+                _levelInfoList.Add(new LevelInfo
+                {
+                    Level = i,
+                    Notes = stageInfo.LevelList.FirstOrDefault(l => l.Level == i)?.Notes
+                });
+            }
+        }
+        else
         {
             _levelInfoList.Add(new LevelInfo
             {
-                Level = level,
-                Notes = stageInfo.LevelList.FirstOrDefault(l => l.Level == level)?.Notes
+                Level = targetLevel,
+                Notes = stageInfo.LevelList.FirstOrDefault(l => l.Level == targetLevel)?.Notes
             });
         }
+    }
+
+    // 開発で通常ステージを更新するとき用
+    public async UniTask OverrideScore(List<NoteMaster> notes, int level, float bpm, float offset)
+    {
+        UpdateCurrentLevelNotes(notes, level);
+        await MasterManager.UpdateOverrideStageMaster(_currentStageInfo.StageHeader.StageId, _levelInfoList, bpm, offset);
     }
 
     public async UniTask SaveScore(List<NoteMaster> notes, int level, string overrideName)

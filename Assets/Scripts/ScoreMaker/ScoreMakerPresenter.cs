@@ -15,14 +15,16 @@ public class ScoreMakerPresenter : MonoBehaviour
 
     private LevelInfo _currentLevelInfo => _model.LevelInfoList?.FirstOrDefault(l => l.Level == _currentLevel);
     private int _currentLevel;
+    private bool _isDevelopOverride;
 
-    public void Init(StageInfo stageInfo, int firstLevel, bool isNewCreate, List<int> levelList)
+    public void Init(StageInfo stageInfo, int targetLevel, bool isNewCreate, bool isDevelopOverride)
     {
-        _currentLevel = firstLevel;
+        _currentLevel = targetLevel;
+        _isDevelopOverride = isDevelopOverride;
         _model = new ScoreMakerModel();
-        _model.Init(stageInfo, levelList);
+        _model.Init(stageInfo, targetLevel, isDevelopOverride);
 
-        _view.Init(stageInfo.StageHeader, _currentLevelInfo?.Notes, firstLevel);
+        _view.Init(stageInfo.StageHeader, _currentLevelInfo?.Notes, targetLevel);
         _view.ClickPracticeButton.Subscribe(async timeRate =>
         {
             _model.UpdateCurrentLevelNotes(_view.CreateNoteList(), _currentLevel);
@@ -64,7 +66,14 @@ public class ScoreMakerPresenter : MonoBehaviour
     private async UniTask SaveScore(string overrideName = "")
     {
         // 現在のレベルの譜面を保存
-        await _model.SaveScore(_view.CreateNoteList(), _currentLevel, overrideName);
+        if (_isDevelopOverride)
+        {
+            await _model.OverrideScore(_view.CreateNoteList(), _currentLevel, _view.CurrentBpm, _view.CurrentOffset);
+        }
+        else
+        {
+            await _model.SaveScore(_view.CreateNoteList(), _currentLevel, overrideName);
+        }
         _view.DisplaySaveFinishDialog();
     }
 

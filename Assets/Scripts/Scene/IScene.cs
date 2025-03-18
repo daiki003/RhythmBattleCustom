@@ -36,9 +36,9 @@ public class TitleSceneInfo : SceneInfoBase
 public class ScoreMakerSceneInfo : SceneInfoBase
 {
     public StageInfo StageInfo;
-    public int FirstLevel;
+    public int TargetLevel;
     public bool IsNewCreate;
-    public List<int> LevelList = new();
+    public bool IsDevelopOverride;
 }
 
 public static class SceneInfoExtension
@@ -51,7 +51,7 @@ public static class SceneInfoExtension
         }
         else if (sceneInfo is ScoreMakerSceneInfo scoreMakerSceneInfo)
         {
-            return scoreMakerSceneInfo.FirstLevel;
+            return scoreMakerSceneInfo.TargetLevel;
         }
         return 1;
     }

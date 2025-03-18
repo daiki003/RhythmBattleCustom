@@ -48,9 +48,9 @@ public class HomePresenter : MonoBehaviour
         var sceneInfo = new ScoreMakerSceneInfo
         {
             StageInfo = _model.GetStageInfo(stageId),
-            FirstLevel = level,
+            TargetLevel = level,
             IsNewCreate = isNewCreate,
-            LevelList = level >= MasterManager.MinCustomLevelId ? new List<int>(){ level } : new List<int>(){ 1, 2, 3 }
+            IsDevelopOverride = level <= MasterManager.MaxDefaultLevelId,
         };
         GameManager.instance.OpenScene(SceneType.ScoreMaker, sceneInfo).Forget();
     }
