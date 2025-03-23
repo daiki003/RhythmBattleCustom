@@ -9,6 +9,20 @@ public static class RectTransformExtention
         return transform as RectTransform;
     }
 
+    public static void SetWidth(this Transform transform, float width)
+    {
+        var rectTransform = transform.GetRectTransform();
+        var sizeDelta = new Vector2(width, rectTransform.sizeDelta.y);
+        rectTransform.sizeDelta = sizeDelta;
+    }
+
+    public static void SetHeight(this Transform transform, float height)
+    {
+        var rectTransform = transform.GetRectTransform();
+        var sizeDelta = new Vector2(rectTransform.sizeDelta.x, height);
+        rectTransform.sizeDelta = sizeDelta;
+    }
+
     public static void SetAnchoredPositionX(this Transform transform, float x)
     {
         var rectTransform = transform.GetRectTransform();

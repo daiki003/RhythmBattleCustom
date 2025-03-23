@@ -30,6 +30,19 @@ public class ResultView : MonoBehaviour
     public Subject<Unit> OnWhenPushRestart = new Subject<Unit>();
     public Subject<Unit> OnWhenPushGoHome = new Subject<Unit>();
 
+    public void Init()
+    {
+        _restartButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            OnWhenPushRestart.OnNext(default);
+            gameObject.SetActive(false);
+        });
+        _goHomeButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            OnWhenPushGoHome.OnNext(default);
+        });
+    }
+
     public void SetScore(ClearState clearState, ClearState highScoreClearState, float criticalMultiple, float hitMultiple, float missMultiple)
     {
         _criticalNumberText.text = clearState.CriticalNumber.ToString();
@@ -50,15 +63,5 @@ public class ResultView : MonoBehaviour
         _highScoreMissText.text = highScoreClearState.MissNumber.ToString();
         _highScoreText.text = highScoreClearState.Score.RoundDown(2).ToString();
         _highScoreComboText.text = highScoreClearState.Combo.ToString();
-
-        _restartButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            OnWhenPushRestart.OnNext(default);
-            gameObject.SetActive(false);
-        });
-        _goHomeButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            OnWhenPushGoHome.OnNext(default);
-        });
     }
 }

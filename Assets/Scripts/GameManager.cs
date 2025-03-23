@@ -45,6 +45,7 @@ public class GameManager : MonoBehaviour
     private SceneInfoBase _currentSceneInfo;
 
     private UniTaskCompletionSource _loadPlayfabTask = new();
+    private bool _isDuaringTransitionScene;
 
     public static GameManager instance;
 	public void Awake()
@@ -95,6 +96,11 @@ public class GameManager : MonoBehaviour
     // 次のシーンを開く
     public async UniTask OpenScene(SceneType sceneType, SceneInfoBase nextSceneInfo, bool isPlaySe = true)
     {
+        if (_isDuaringTransitionScene)
+        {
+            return;
+        }
+        _isDuaringTransitionScene = true;
         BGMManager.instance.ResetHomeBgmTime();
         BGMManager.instance.Stop();
         if (isPlaySe)
@@ -116,6 +122,7 @@ public class GameManager : MonoBehaviour
         await _currentScene.InitAsync(_currentSceneInfo, nextSceneInfo, _loadPanel);
         _currentSceneInfo = nextSceneInfo;
         await _currentScene.StartSceneAsync();
+        _isDuaringTransitionScene = false;
     }
 
     // 追加のシーンを開く

@@ -170,6 +170,7 @@ public class BattleView : MonoBehaviour
         }).AddTo(this);
 
         // リザルトパネルのボタン
+        _resultView.Init();
         _resultView.OnWhenPushRestart.Subscribe(_ =>
         {
             PrepareBattle();
