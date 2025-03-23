@@ -19,6 +19,7 @@ public class DialogManager : MonoBehaviour
     public const string MessageDialogPrefabName = "MessageDialog";
     public const string InputDialogPrefabName = "InputDialog";
     public const string SettingDialogPrefabName = "SettingDialog";
+    public const string HelpDialogPrefabName = "HelpDialog";
     public const string NewCreateListDialogPrefabName = "NewCreateListDialog";
     public const string StageDuplicateDialogPrefabName = "StageDuplicateDialog";
 
@@ -39,6 +40,23 @@ public class DialogManager : MonoBehaviour
                 TitleText = "設定",
                 HideCancelButton  = true,
                 HideOkButton  = true,
+            }
+        );
+    }
+
+    public void OpenHelpDialog(HelpDialogPageType pageType)
+    {
+        CreateDialog<HelpDialog>(
+            HelpDialogPrefabName,
+            new HelpDialogOption
+            {
+                TitleText = "Tips",
+                OkButtonText = "次へ",
+                CancelButtonText = "前へ",
+                UseYellowCancelButton = true,
+                OkButtonSeType = ButtonSeType.ChangePage,
+                CancelButtonSeType = ButtonSeType.ChangePage,
+                FirstPageType = pageType
             }
         );
     }

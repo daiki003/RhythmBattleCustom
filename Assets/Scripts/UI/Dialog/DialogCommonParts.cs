@@ -9,9 +9,12 @@ public class DialogCommonParts : MonoBehaviour
     [SerializeField] private Text _titleText;
     [SerializeField] private CustomButton _okButton;
     [SerializeField] private CustomButton _cancelButton;
+    [SerializeField] private Image _cancelButtonImage;
     public Button CloseButton => _closeButton;
     public Button OkButton => _okButton;
     public Button CancelButton => _cancelButton;
+
+    private const string _yellowButtonSpritePath = "Images/Dark_Brown_GUI_kit/button/rect/button2";
 
     public virtual void Init(DialogOptionBase dialogOption)
     {
@@ -20,5 +23,9 @@ public class DialogCommonParts : MonoBehaviour
         _cancelButton.SetText(dialogOption.CancelButtonText);
         _okButton.SetSeType(dialogOption.OkButtonSeType);
         _cancelButton.SetSeType(dialogOption.CancelButtonSeType);
+        if (dialogOption.UseYellowCancelButton)
+        {
+            _cancelButtonImage.sprite = Resources.Load<Sprite>(_yellowButtonSpritePath);
+        }
     }
 }

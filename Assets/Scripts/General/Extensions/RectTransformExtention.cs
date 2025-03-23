@@ -9,6 +9,14 @@ public static class RectTransformExtention
         return transform as RectTransform;
     }
 
+    public static void DestroyAllChildren(this Transform transform)
+    {
+        foreach (Transform child in transform)
+        {
+            GameObject.Destroy(child.gameObject);
+        }
+    }
+
     public static void SetWidth(this Transform transform, float width)
     {
         var rectTransform = transform.GetRectTransform();

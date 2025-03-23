@@ -13,6 +13,7 @@ public class DialogOptionBase
     public ButtonSeType CancelButtonSeType = ButtonSeType.None;
     public bool HideCancelButton;
     public bool HideOkButton;
+    public bool UseYellowCancelButton;
 }
 
 public class DialogResultBase
@@ -34,6 +35,7 @@ public class DialogBase : MonoBehaviour
 
     protected Subject<DialogResultBase> _onCloseDialog = new();
     public virtual Observable<DialogResultBase> OnCloseDialog => _onCloseDialog;
+    protected DialogCommonParts DialogCommonParts => _dialogCommonParts;
 
     public virtual void Init(DialogOptionBase dialogOption)
     {

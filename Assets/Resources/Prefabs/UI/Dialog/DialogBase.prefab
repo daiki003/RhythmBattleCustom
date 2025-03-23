@@ -97,7 +97,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 2.5}
-  m_SizeDelta: {x: -100, y: -275}
+  m_SizeDelta: {x: -70, y: -275}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1288121693284730704
 GameObject:
@@ -194,6 +194,7 @@ MonoBehaviour:
   _titleText: {fileID: 5881595408698412502}
   _okButton: {fileID: 1970443132818272677}
   _cancelButton: {fileID: 2131387867981576631}
+  _cancelButtonImage: {fileID: 2114014463461395452}
 --- !u!1 &1613121365751248733
 GameObject:
   m_ObjectHideFlags: 0
@@ -679,6 +680,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: abe50acb8895ddc48b514891c0def419, type: 3}
+--- !u!114 &2114014463461395452 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6027435682038986550, guid: abe50acb8895ddc48b514891c0def419, type: 3}
+  m_PrefabInstance: {fileID: 5689097622855695562}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &2131387867981576631 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6009923807803557245, guid: abe50acb8895ddc48b514891c0def419, type: 3}

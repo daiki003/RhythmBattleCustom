@@ -62,6 +62,7 @@ public class HomeView : MonoBehaviour
     [SerializeField] private GameObject _stageStripPanel;
     [SerializeField] private GameObject _customStripPanel;
     [SerializeField] private Button _settingButton;
+    [SerializeField] private Button _helpButton;
 
     [SerializeField] private Button _playStageButton;
     [SerializeField] private Toggle _practiceModeToggle;
@@ -129,6 +130,10 @@ public class HomeView : MonoBehaviour
         _settingButton.OnClickAsObservable().Subscribe(_ =>
         {
             DialogManager.instance.OpenSettingDialog();
+        }).AddTo(this);
+        _helpButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            DialogManager.instance.OpenHelpDialog(HelpDialogPageType.Home);
         }).AddTo(this);
     }
 

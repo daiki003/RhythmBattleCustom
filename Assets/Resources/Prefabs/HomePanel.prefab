@@ -1237,6 +1237,7 @@ MonoBehaviour:
   _stageStripPanel: {fileID: 2334308071417652535}
   _customStripPanel: {fileID: 660504429736649192}
   _settingButton: {fileID: 5622928581587347135}
+  _helpButton: {fileID: 5197486392557873612}
   _playStageButton: {fileID: 2587291379324334676}
   _practiceModeToggle: {fileID: 8149639892561960774}
   _editStageButton: {fileID: 7745662567816372627}
@@ -2186,6 +2187,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1494916530664777618, guid: 146c0f2061782c946b651e9340db48c4, type: 3}
   m_PrefabInstance: {fileID: 528131566930115226}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &5197486392557873612 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5725590848278401878, guid: 146c0f2061782c946b651e9340db48c4, type: 3}
+  m_PrefabInstance: {fileID: 528131566930115226}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 522fd52bc49874047ae4a803e8e25175, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &773367053857285650
 PrefabInstance:
   m_ObjectHideFlags: 0
