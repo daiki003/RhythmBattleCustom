@@ -32,7 +32,6 @@ public class BattleModel
             clearState.HitNumber = score.HitCount;
             clearState.MissNumber = score.MissCount;
             clearState.Score = realScore;
-            clearState.Combo = Math.Max(score.ComboCount, score.MaxComboCount);;
         }
         SaveDataManager.UpdateClearState(clearState);
         return clearState;

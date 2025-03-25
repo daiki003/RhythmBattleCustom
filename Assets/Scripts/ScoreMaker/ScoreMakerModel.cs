@@ -8,12 +8,11 @@ public class ScoreMakerModel
 {
     private List<LevelInfo> _levelInfoList = new();
     public List<LevelInfo> LevelInfoList => _levelInfoList;
-    private StageInfo _currentStageInfo;
-    public  StageInfo CurrentStageInfo => _currentStageInfo;
+    public StageInfo OriginalStageInfo { get; private set; }
 
     public void Init(StageInfo stageInfo, int targetLevel, bool isDevelopOverride)
     {
-        _currentStageInfo = stageInfo;
+        OriginalStageInfo = stageInfo;
         if (isDevelopOverride)
         {
             // 開発用編集の場合は1～3のステージを追加
@@ -22,17 +21,21 @@ public class ScoreMakerModel
                 _levelInfoList.Add(new LevelInfo
                 {
                     Level = i,
-                    Notes = stageInfo.LevelList.FirstOrDefault(l => l.Level == i)?.Notes
+                    Notes = new List<NoteMaster>(stageInfo.LevelList.FirstOrDefault(l => l.Level == i)?.Notes)
                 });
             }
         }
         else
         {
-            _levelInfoList.Add(new LevelInfo
+            var notes = stageInfo.LevelList.FirstOrDefault(l => l.Level == targetLevel)?.Notes;
+            if (notes != null)
             {
-                Level = targetLevel,
-                Notes = stageInfo.LevelList.FirstOrDefault(l => l.Level == targetLevel)?.Notes
-            });
+                _levelInfoList.Add(new LevelInfo
+                {
+                    Level = targetLevel,
+                    Notes = new List<NoteMaster>(notes)
+                });
+            }
         }
     }
 
@@ -40,14 +43,14 @@ public class ScoreMakerModel
     public async UniTask OverrideScore(List<NoteMaster> notes, int level, float bpm, float offset)
     {
         UpdateCurrentLevelNotes(notes, level);
-        await MasterManager.UpdateOverrideStageMaster(_currentStageInfo.StageHeader.StageId, _levelInfoList, bpm, offset);
+        await MasterManager.UpdateOverrideStageMaster(OriginalStageInfo.StageHeader.StageId, _levelInfoList, bpm, offset);
     }
 
     public async UniTask SaveScore(List<NoteMaster> notes, int level, string overrideName)
     {
         // 現在のレベルの譜面を保存
         UpdateCurrentLevelNotes(notes, level, overrideName);
-        await MasterManager.UpdateStageMaster(_currentStageInfo.StageHeader.StageId, _levelInfoList);
+        await MasterManager.UpdateStageMaster(OriginalStageInfo.StageHeader.StageId, _levelInfoList);
     }
 
     // 現在のレベルの譜面状況を更新

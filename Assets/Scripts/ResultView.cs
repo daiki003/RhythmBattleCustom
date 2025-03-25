@@ -16,13 +16,11 @@ public class ResultView : MonoBehaviour
     [SerializeField] private Text _missMultipleText;
     [SerializeField] private Text _missScoreText;
     [SerializeField] private Text _totalScoreText;
-    [SerializeField] private Text _comboText;
 
     [SerializeField] private Text _highScoreCriticalText;
     [SerializeField] private Text _highScoreHitText;
     [SerializeField] private Text _highScoreMissText;
     [SerializeField] private Text _highScoreText;
-    [SerializeField] private Text _highScoreComboText;
 
     [SerializeField] private Button _restartButton;
     [SerializeField] private Button _goHomeButton;
@@ -49,7 +47,6 @@ public class ResultView : MonoBehaviour
         _hitNumberText.text = clearState.HitNumber.ToString();
         _missNumberText.text = clearState.MissNumber.ToString();
         _totalScoreText.text = clearState.Score.RoundDown(2).ToString();
-        _comboText.text = clearState.Combo.ToString();
 
         _criticalMultipleText.text = criticalMultiple.RoundDown(2).ToString();
         _hitMultipleText.text = hitMultiple.RoundDown(2).ToString();
@@ -62,6 +59,5 @@ public class ResultView : MonoBehaviour
         _highScoreHitText.text = highScoreClearState.HitNumber.ToString();
         _highScoreMissText.text = highScoreClearState.MissNumber.ToString();
         _highScoreText.text = highScoreClearState.Score.RoundDown(2).ToString();
-        _highScoreComboText.text = highScoreClearState.Combo.ToString();
     }
 }

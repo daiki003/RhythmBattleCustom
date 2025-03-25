@@ -34,10 +34,11 @@ public class HomePresenter : MonoBehaviour
 
     private void StartBattle(string stageId, int level, bool isPractice)
     {
+        var stageInfo = _model.GetStageInfo(stageId);
         var sceneInfo = new BattleSceneInfo
         {
-            StageInfo = _model.GetStageInfo(stageId),
-            Level = level,
+            StageHeader = stageInfo.StageHeader,
+            LevelInfo = stageInfo.LevelList.FirstOrDefault(l => l.Level == level),
             IsPractice = isPractice
         };
         GameManager.instance.OpenScene(SceneType.Battle, sceneInfo).Forget();

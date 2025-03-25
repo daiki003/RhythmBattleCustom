@@ -14,27 +14,28 @@ public class Score
     public int CriticalCount;
     public int HitCount;
     public int MissCount;
-    public int ComboCount;
-    public int MaxComboCount;
 
     public void CountUp(HitType hitType, int count = 1)
     {
         if (hitType == HitType.Hit)
         {
             HitCount += count;
-            ComboCount += count;
         }
         else if (hitType == HitType.Critical)
         {
             CriticalCount += count;
-            ComboCount += count;
         }
         else
         {
             MissCount += count;
-            MaxComboCount = Math.Max(ComboCount, MaxComboCount);
-            ComboCount = 0;
         }
+    }
+
+    public void Reset()
+    {
+        CriticalCount = 0;
+        HitCount = 0;
+        MissCount = 0;
     }
 }
 
@@ -56,7 +57,6 @@ public class BattleView : MonoBehaviour
     [SerializeField] private Text _criticalCountText;
     [SerializeField] private Text _hitCountText;
     [SerializeField] private Text _missCountText;
-    [SerializeField] private Text _comboText;
     [SerializeField] private Button _resetButton;
     [SerializeField] private Button _backButton;
 
@@ -66,7 +66,6 @@ public class BattleView : MonoBehaviour
     private List<SingleBall> _ballList = new();
     private List<SingleBall> _launchedBallStashList = new();
 
-    private bool _isTest;
     private bool _isStartBattle;
     private bool _isFinishBattle;
     private bool _isStartBgm;
@@ -75,6 +74,7 @@ public class BattleView : MonoBehaviour
     private float _startPauseTime; // ポーズを開始した時間
     private float _lastBeatTime;
     private bool _isPractice;
+    private bool _isAdditional;
     private CancellationTokenSource _cts;
     private CancellationTokenSource _bgmStartCts;
     private StageHeader _stageHeader;
@@ -109,12 +109,13 @@ public class BattleView : MonoBehaviour
 
     private const float _beforeReultWaitTime = 1f;
 
-    public void Init(StageHeader stageHeader, LevelInfo levelInfo, bool isPractice)
+    public void Init(StageHeader stageHeader, LevelInfo levelInfo, bool isPractice, bool isAdditional)
     {
         _cts = new CancellationTokenSource();
         _stageHeader = stageHeader;
         _levelInfo = levelInfo;
         _isPractice = isPractice;
+        _isAdditional = isAdditional;
 
         _leftEndPosition = _leftStartTransform.localPosition + _startToTargetVectorLeft * 1.5f;
         _rightEndPosition = _rightStartTransform.localPosition + _startToTargetVectorRight * 1.5f;
@@ -159,8 +160,8 @@ public class BattleView : MonoBehaviour
             // 確認ダイアログ
             var option = new MessageDialogOption
             {
-                TitleText = "ホームに戻る",
-                MessageText = "ホームに戻りますか？",
+                TitleText = "戻る",
+                MessageText = _isAdditional ? "ステージ作成に戻りますか？" : "ホームに戻りますか？",
                 OkButtonText = "戻る",
             };
             DisplayDialog(option, () =>
@@ -196,6 +197,11 @@ public class BattleView : MonoBehaviour
                 }
                 Pause(isPause);
             }).AddTo(this);
+            _practiceUi.OnClickScoreReset.Subscribe(_ =>
+            {
+                _currentScore.Reset();
+                UpdateScoreText(_currentScore);
+            });
             _practiceUi.OnSliderValueChange.Subscribe(x =>
             {
                 float time = BGMManager.instance.Length * x;
@@ -580,7 +586,6 @@ public class BattleView : MonoBehaviour
         _criticalCountText.text = score.CriticalCount.ToString();
         _hitCountText.text = score.HitCount.ToString();
         _missCountText.text = score.MissCount.ToString();
-        _comboText.text = score.ComboCount.ToString();
     }
 
     void OnDestroy()

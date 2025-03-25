@@ -21,11 +21,10 @@ public class SceneInfoBase
 
 public class BattleSceneInfo : SceneInfoBase
 {
-    public StageInfo StageInfo;
-    public int Level;
+    public StageHeader StageHeader;
+    public LevelInfo LevelInfo;
     public bool IsPractice;
     public float TimeRate;
-    public LevelInfo LevelInfo => StageInfo.LevelList.FirstOrDefault(l => l.Level == Level);
 }
 
 public class TitleSceneInfo : SceneInfoBase
@@ -47,7 +46,7 @@ public static class SceneInfoExtension
     {
         if (sceneInfo is BattleSceneInfo battleSceneInfo)
         {
-            return battleSceneInfo.Level;
+            return battleSceneInfo.LevelInfo.Level;
         }
         else if (sceneInfo is ScoreMakerSceneInfo scoreMakerSceneInfo)
         {

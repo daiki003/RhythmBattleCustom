@@ -33,7 +33,7 @@ public class BattlePresenter : MonoBehaviour
         {
             FinishBattle(score);
         }).AddTo(this);
-        _battleView.Init(_battleSceneInfo.StageInfo.StageHeader, _battleSceneInfo.LevelInfo, _battleSceneInfo.IsPractice);
+        _battleView.Init(_battleSceneInfo.StageHeader, _battleSceneInfo.LevelInfo, _battleSceneInfo.IsPractice, _battleSceneInfo.IsAdditional);
         _battleView.PrepareBattle();
         if (_battleSceneInfo.IsAdditional)
         {
@@ -55,7 +55,9 @@ public class BattlePresenter : MonoBehaviour
 
     public void FinishBattle(Score score)
     {
-        var clearState = _model.CalculateScore(score, _battleSceneInfo.StageInfo.StageHeader.StageId, _battleSceneInfo.Level);
-        _battleView.StartResultAsync(clearState, SaveDataManager.GetClearState(_battleSceneInfo.StageInfo.StageHeader.StageId, _battleSceneInfo.Level), _model.CriticalMultiple, _model.HitMultiple, _model.MissMultiple).Forget();
+        string stageId = _battleSceneInfo.StageHeader.StageId;
+        int level = _battleSceneInfo.LevelInfo.Level;
+        var clearState = _model.CalculateScore(score, stageId, level);
+        _battleView.StartResultAsync(clearState, SaveDataManager.GetClearState(stageId, level), _model.CriticalMultiple, _model.HitMultiple, _model.MissMultiple).Forget();
     }
 }

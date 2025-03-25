@@ -30,8 +30,8 @@ public class ScoreMakerPresenter : MonoBehaviour
             _model.UpdateCurrentLevelNotes(_view.CreateNoteList(), _currentLevel);
             var sceneInfo = new BattleSceneInfo
             {
-                StageInfo = _model.CurrentStageInfo,
-                Level = _currentLevel,
+                StageHeader = _model.OriginalStageInfo.StageHeader,
+                LevelInfo = _currentLevelInfo,
                 TimeRate = timeRate,
                 IsPractice = true,
                 IsAdditional = true
@@ -50,7 +50,7 @@ public class ScoreMakerPresenter : MonoBehaviour
         });
         _view.ClickSaveButton.Subscribe(_ =>
         {
-            _view.DisplaySaveDialog(_model.CurrentStageInfo.StageHeader.StageName, isNewCreate);
+            _view.DisplaySaveDialog(_model.OriginalStageInfo.StageHeader.StageName, isNewCreate);
         });
         _view.OnSave.Subscribe(async stageName =>
         {
@@ -59,7 +59,7 @@ public class ScoreMakerPresenter : MonoBehaviour
         });
         _view.ClickDuplicateButton.Subscribe(_ =>
         {
-            _view.DisplayDuplicateDialog(_model.CurrentStageInfo);
+            _view.DisplayDuplicateDialog(_model.OriginalStageInfo);
         });
     }
 

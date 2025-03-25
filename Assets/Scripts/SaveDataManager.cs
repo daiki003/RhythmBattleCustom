@@ -11,7 +11,6 @@ public class ClearState
     public int CriticalNumber;
     public int HitNumber;
     public int MissNumber;
-    public int Combo;
 }
 
 public class SettingData
@@ -69,10 +68,6 @@ public static class SaveDataManager
                 targetState.HitNumber = clearState.HitNumber;
                 targetState.MissNumber = clearState.MissNumber;
                 targetState.Score = clearState.Score;
-            }
-            if (targetState.Combo <= clearState.Combo)
-            {
-                targetState.Combo = clearState.Combo;
             }
         }
         PlayFabController.UpdateClearState(ClearStateList).Forget();

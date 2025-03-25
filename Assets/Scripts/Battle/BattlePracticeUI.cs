@@ -11,6 +11,8 @@ public class BattlePracticeUI : MonoBehaviour
 {
     [SerializeField] private Button _pauseButton;
     [SerializeField] private CustomButton _autoButton;
+    [SerializeField] private Button _helpButton;
+    [SerializeField] private Button _scoreResetButton;
     [SerializeField] private GameObject _timeUI;
     [SerializeField] private List<TimeJumpButton> _timeJumpButtonList = new();
     [SerializeField] private Transform _buttonIconArea;
@@ -22,9 +24,10 @@ public class BattlePracticeUI : MonoBehaviour
     private const float _sliderWidth = 780;
     private List<JumpButtonIcon> _buttonIconList = new();
 
-    public Subject<bool> OnClickPauseButton = new();
-    private Subject<bool> _onClickAutoButton = new();
-    public Observable<bool> OnClickAutoButton => _onClickAutoButton;
+    private Subject<bool> _onClickPauseButton = new();
+    public Observable<bool> OnClickPauseButton => _onClickPauseButton;
+    private Subject<bool> _onClickScoreReset = new();
+    public Observable<bool> OnClickScoreReset => _onClickScoreReset;
     public Subject<float> OnSliderValueChange = new();
     public Subject<float> OnTimeJump = new();
 
@@ -41,6 +44,14 @@ public class BattlePracticeUI : MonoBehaviour
         _autoButton.OnClickAsObservable().Subscribe(_ =>
         {
             ChangeAuto(!IsAuto);
+        }).AddTo(this);
+        _helpButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            DialogManager.instance.OpenHelpDialog(HelpDialogPageType.PracticeMode);
+        }).AddTo(this);
+        _scoreResetButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            _onClickScoreReset.OnNext(default);
         }).AddTo(this);
         _timeSlider.OnValueChangedAsObservable().Subscribe(x =>
         {
@@ -64,14 +75,13 @@ public class BattlePracticeUI : MonoBehaviour
     public void Pause(bool isPause)
     {
         _isPause = isPause;
-        OnClickPauseButton.OnNext(_isPause);
+        _onClickPauseButton.OnNext(isPause);
         _timeUI.SetActive(_isPause);
     }
 
     public void ChangeAuto(bool isAuto)
     {
         IsAuto = isAuto;
-        _onClickAutoButton.OnNext(IsAuto);
         _autoButton.SetHighLight(IsAuto);
     }
 
