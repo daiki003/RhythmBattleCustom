@@ -12,6 +12,7 @@ public class ScoreMakerView : MonoBehaviour
     [SerializeField] private ScoreLine _scoreLinePrefab; 
     [SerializeField] private ScrollRect _scoreScrollRect;
     [SerializeField] private Button _saveButton;
+    [SerializeField] private Button _helpButton;
     [SerializeField] private Button _undoButton;
     [SerializeField] private Button _backButton;
     [SerializeField] private List<MenuButton> _levelButtonList = new();
@@ -149,6 +150,10 @@ public class ScoreMakerView : MonoBehaviour
         _saveButton.OnClickAsObservable().Subscribe(_ =>
         {
             _clickSaveButton.OnNext(default);
+        });
+        _helpButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            DialogManager.instance.OpenHelpDialog(HelpDialogPageType.ScoreMaker);
         });
         _undoButton.OnClickAsObservable().Subscribe(_ =>
         {

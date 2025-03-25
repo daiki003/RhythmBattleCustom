@@ -133,7 +133,7 @@ public class HomeView : MonoBehaviour
         }).AddTo(this);
         _helpButton.OnClickAsObservable().Subscribe(_ =>
         {
-            DialogManager.instance.OpenHelpDialog(HelpDialogPageType.Home);
+            DialogManager.instance.OpenHelpDialog(_currentPanelType.IsStage() ? HelpDialogPageType.Home : HelpDialogPageType.Home2);
         }).AddTo(this);
     }
 

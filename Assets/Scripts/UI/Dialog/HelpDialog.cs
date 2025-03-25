@@ -25,6 +25,7 @@ public enum HelpDialogPageType
     PracticeMode,
     ScoreMaker,
     ScoreMaker2,
+    ScoreMaker3,
 }
 
 public static class HelpDialogPageTypeExtension
@@ -34,11 +35,12 @@ public static class HelpDialogPageTypeExtension
         return pageType switch
         {
             HelpDialogPageType.Home => "ホーム",
-            HelpDialogPageType.Home2 => "ホーム➁",
+            HelpDialogPageType.Home2 => "ホーム2",
             HelpDialogPageType.Battle => "バトル",
             HelpDialogPageType.PracticeMode => "練習モード",
             HelpDialogPageType.ScoreMaker => "ステージ作成",
-            HelpDialogPageType.ScoreMaker2 => "ステージ作成➁",
+            HelpDialogPageType.ScoreMaker2 => "ステージ作成2",
+            HelpDialogPageType.ScoreMaker3 => "ステージ作成3",
             _ => "",
         };
     }
@@ -54,16 +56,19 @@ public static class HelpDialogPageTypeExtension
                 "CustomStage"
             },
             HelpDialogPageType.Battle => new List<string>(){
-                
+                "Battle"
             },
             HelpDialogPageType.PracticeMode => new List<string>(){
-                
+                "Practice"
             },
             HelpDialogPageType.ScoreMaker => new List<string>(){
-                
+                "ScoreMaker1"
             },
             HelpDialogPageType.ScoreMaker2 => new List<string>(){
-                
+                "ScoreMaker2"
+            },
+            HelpDialogPageType.ScoreMaker3 => new List<string>(){
+                "ScoreMaker3"
             },
             _ => new List<string>(),
         };
@@ -105,7 +110,7 @@ public class HelpDialog : DialogBase
         {
             case DialogResultType.Ok:
                 // 次ページに進む
-                if (_currentPageType < HelpDialogPageType.ScoreMaker2)
+                if (_currentPageType < HelpDialogPageType.ScoreMaker3)
                 {
                     SetPage(_currentPageType + 1);
                 }
@@ -127,7 +132,7 @@ public class HelpDialog : DialogBase
     void Update()
     {
         // 端のページの場合ページ切り替えボタンを押せなくする
-        DialogCommonParts.OkButton.interactable = _currentPageType != HelpDialogPageType.ScoreMaker2;
+        DialogCommonParts.OkButton.interactable = _currentPageType != HelpDialogPageType.ScoreMaker3;
         DialogCommonParts.CancelButton.interactable = _currentPageType != HelpDialogPageType.Home;
     }
 }
