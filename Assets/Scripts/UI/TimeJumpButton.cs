@@ -17,11 +17,11 @@ public class TimeJumpButton : MonoBehaviour
         _mainButton.OnClickAsObservable().Subscribe(_ =>
         {
             OnClickMainButton.OnNext(_targetTimeRate);
-        });
+        }).AddTo(this);
         _registerButton.OnClickAsObservable().Subscribe(_ =>
         {
             OnClickRegisterButton.OnNext(default);
-        });
+        }).AddTo(this);
     }
 
     public void SetTimeRate(float timeRate)

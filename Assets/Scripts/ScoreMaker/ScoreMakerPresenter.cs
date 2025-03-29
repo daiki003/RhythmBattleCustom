@@ -37,7 +37,7 @@ public class ScoreMakerPresenter : MonoBehaviour
                 IsAdditional = true
             };
             await GameManager.instance.OpenAdditionalScene(SceneType.Battle, sceneInfo);
-        });
+        }).AddTo(this);
         _view.OnChangeLevel.Subscribe(x =>
         {
             // 現在のレベルの譜面を保存
@@ -47,20 +47,20 @@ public class ScoreMakerPresenter : MonoBehaviour
             _currentLevel = x.level;
             BGMManager.instance.Pause();
             _view.CreateLine(_currentLevelInfo.Notes);
-        });
+        }).AddTo(this);
         _view.ClickSaveButton.Subscribe(_ =>
         {
             _view.DisplaySaveDialog(_model.OriginalStageInfo.StageHeader.StageName, isNewCreate);
-        });
+        }).AddTo(this);
         _view.OnSave.Subscribe(async stageName =>
         {
             // 現在のレベルの譜面を保存
             await SaveScore(stageName);
-        });
+        }).AddTo(this);
         _view.ClickDuplicateButton.Subscribe(_ =>
         {
             _view.DisplayDuplicateDialog(_model.OriginalStageInfo);
-        });
+        }).AddTo(this);
     }
 
     private async UniTask SaveScore(string overrideName = "")

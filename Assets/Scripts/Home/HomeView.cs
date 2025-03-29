@@ -94,7 +94,7 @@ public class HomeView : MonoBehaviour
             menuButton.OnWhenClicked.Subscribe(_ =>
             {
                 SetLevelPanel(menuButton.ButtonType);
-            });
+            }).AddTo(this);
             if (i == lastLevel - 1)
             {
                 SetLevelPanel(menuButton.ButtonType);
@@ -241,7 +241,7 @@ public class HomeView : MonoBehaviour
                 };
                 var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabName, option);
             }
-        });
+        }).AddTo(this);
     }
 
     private void CreateStage()
@@ -267,7 +267,7 @@ public class HomeView : MonoBehaviour
                     CancelSelectStrip();
                 }
             }
-        });
+        }).AddTo(this);
     }
 
     private void SetButtonInteractable(bool isActive)

@@ -24,14 +24,6 @@ public class ScoreLine : MonoBehaviour
         _numberText.text = (number / 4).ToString();
         _leftPocket.SetParam(LineNumber, isLeft: true);
         _rightPocket.SetParam(LineNumber, isLeft: false);
-        _leftPocket.OnWhenDropedBall.Subscribe(ball =>
-        {
-
-        });
-        _rightPocket.OnWhenDropedBall.Subscribe(ball =>
-        {
-
-        });
     }
 
     public void Beat()

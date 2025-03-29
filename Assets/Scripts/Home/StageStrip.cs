@@ -36,7 +36,7 @@ public class StageStrip : MonoBehaviour
         _stripButton.OnClickAsObservable().Subscribe(_ =>
         {
             OnClickedStrip.OnNext(default);
-        });
+        }).AddTo(this);
     }
 
     public void UpdateScore(int level)

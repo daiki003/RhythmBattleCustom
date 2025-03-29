@@ -50,7 +50,7 @@ public class CustomButton : Button
                     SEManager.instance.PlaySe(SeName.ChangePage);
                     break;
             }
-        });
+        }).AddTo(this);
     }
 
     public void SetText(string text)

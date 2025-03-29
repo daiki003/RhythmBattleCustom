@@ -98,7 +98,7 @@ public class ScoreMakerControlPanel : MonoBehaviour
         _stageDuplicateButton.OnClickAsObservable().Subscribe(_ =>
         {
             _onStageDuplicate.OnNext(default);
-        });
+        }).AddTo(this);
 
         _pasteCancelButton.OnClickAsObservable().Subscribe(_ =>
         {

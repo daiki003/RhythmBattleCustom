@@ -57,11 +57,11 @@ public class LongBall : MonoBehaviour
         _startBall.OnWhenDestroyed.Subscribe(_ =>
         {
             Destroy(gameObject);
-        });
+        }).AddTo(this);
         _endBall.OnWhenDestroyed.Subscribe(_ =>
         {
             Destroy(gameObject);
-        });
+        }).AddTo(this);
 
         //線の幅を決める
         _lineRenderer.startWidth = _lineWidth;

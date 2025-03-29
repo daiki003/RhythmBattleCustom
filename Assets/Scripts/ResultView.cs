@@ -35,11 +35,11 @@ public class ResultView : MonoBehaviour
         {
             OnWhenPushRestart.OnNext(default);
             gameObject.SetActive(false);
-        });
+        }).AddTo(this);
         _goHomeButton.OnClickAsObservable().Subscribe(_ =>
         {
             OnWhenPushGoHome.OnNext(default);
-        });
+        }).AddTo(this);
     }
 
     public void SetScore(ClearState clearState, ClearState highScoreClearState, float criticalMultiple, float hitMultiple, float missMultiple)

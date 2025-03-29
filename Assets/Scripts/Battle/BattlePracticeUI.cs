@@ -64,11 +64,11 @@ public class BattlePracticeUI : MonoBehaviour
             jumpButton.OnClickMainButton.Subscribe(timeRate =>
             {
                 OnTimeJump.OnNext(timeRate);
-            });
+            }).AddTo(this);
             jumpButton.OnClickRegisterButton.Subscribe(_ =>
             {
                 RegisterTime(index);
-            });
+            }).AddTo(this);
         }
     }
 

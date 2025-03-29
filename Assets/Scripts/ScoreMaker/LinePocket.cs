@@ -7,7 +7,6 @@ using UnityEngine;
 public class LinePocket : MonoBehaviour
 {
     [SerializeField] private Transform _ballTransform;
-    public Subject<ScoreMakerBall> OnWhenDropedBall = new Subject<ScoreMakerBall>();
 
     public ScoreMakerBall InstalledBall;
 
@@ -47,14 +46,5 @@ public class LinePocket : MonoBehaviour
         }
 
         return InstalledBall;
-    }
-    public void DropedBall(ScoreMakerBall ball)
-    {
-        if (InstalledBall == null)
-        {
-            InstalledBall = ball;
-            SetBall(ball);
-        }
-        OnWhenDropedBall.OnNext(ball);
     }
 }

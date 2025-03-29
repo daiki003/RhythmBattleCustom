@@ -201,7 +201,7 @@ public class BattleView : MonoBehaviour
             {
                 _currentScore.Reset();
                 UpdateScoreText(_currentScore);
-            });
+            }).AddTo(this);
             _practiceUi.OnSliderValueChange.Subscribe(x =>
             {
                 float time = BGMManager.instance.Length * x;
@@ -232,7 +232,7 @@ public class BattleView : MonoBehaviour
             {
                 Pause(isPause: false);
             }
-        });
+        }).AddTo(this);
     }
 
     private void Pause(bool isPause)
@@ -396,7 +396,7 @@ public class BattleView : MonoBehaviour
             CreateLetter(ball.IsLeft, HitType.None);
             _currentScore.CountUp(HitType.None, ball.BallType == BallType.LongStart ? 2 : 1);
             UpdateScoreText(_currentScore);
-        });
+        }).AddTo(this);
     }
 
     private void AttachMoveTween()

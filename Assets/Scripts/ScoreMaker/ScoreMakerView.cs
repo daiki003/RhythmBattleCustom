@@ -98,7 +98,7 @@ public class ScoreMakerView : MonoBehaviour
                 DarkeningLevelButton();
                 button.SetLight(true);
                 ChangeLevel(level);
-            });
+            }).AddTo(this);
             if (level == firstLevel)
             {
                 DarkeningLevelButton();
@@ -150,15 +150,15 @@ public class ScoreMakerView : MonoBehaviour
         _saveButton.OnClickAsObservable().Subscribe(_ =>
         {
             _clickSaveButton.OnNext(default);
-        });
+        }).AddTo(this);
         _helpButton.OnClickAsObservable().Subscribe(_ =>
         {
             DialogManager.instance.OpenHelpDialog(HelpDialogPageType.ScoreMaker);
-        });
+        }).AddTo(this);
         _undoButton.OnClickAsObservable().Subscribe(_ =>
         {
             Undo();
-        });
+        }).AddTo(this);
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {
             _isPause = false;
@@ -212,7 +212,7 @@ public class ScoreMakerView : MonoBehaviour
             {
                 _onSave.OnNext(stageName);
             }
-        });
+        }).AddTo(this);
     }
 
     // セーブ確認のダイアログ作成
@@ -274,7 +274,7 @@ public class ScoreMakerView : MonoBehaviour
             if (result is not StageDuplicateDialogResult duplicateResult) return;
             UpdatePastScoreLineList();
             CreateLine(duplicateResult.DuplicateNotes);
-        });
+        }).AddTo(this);
     }
 #endregion
 

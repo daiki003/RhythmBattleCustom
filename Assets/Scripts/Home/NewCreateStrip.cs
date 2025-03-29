@@ -31,7 +31,7 @@ public class NewCreateStrip : MonoBehaviour
         _stripButton.OnClickAsObservable().Subscribe(_ =>
         {
             OnClickedStrip.OnNext(default);
-        });
+        }).AddTo(this);
     }
 
     public void SetStageId(string stageId)

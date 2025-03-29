@@ -24,7 +24,7 @@ public class MenuButton : MonoBehaviour
             _button.OnClickAsObservable().Subscribe(_ =>
             {
                 OnWhenClicked.OnNext(default);
-            });
+            }).AddTo(this);
         }
     }
 
