@@ -11,6 +11,20 @@ public class ClearState
     public int CriticalNumber;
     public int HitNumber;
     public int MissNumber;
+    public bool IsCleared => CriticalNumber > 0 || HitNumber > 0 || MissNumber > 0;
+
+    public ClearState CreateCopy()
+    {
+        return new ClearState
+        {
+            StageId = StageId,
+            Level = Level,
+            Score = Score,
+            CriticalNumber = CriticalNumber,
+            HitNumber = HitNumber,
+            MissNumber = MissNumber
+        };
+    }
 }
 
 public class SettingData

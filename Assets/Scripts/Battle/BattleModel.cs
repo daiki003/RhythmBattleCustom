@@ -25,6 +25,11 @@ public class BattleModel
         HitMultiple = _hitBaseMultiple / totalCount;
         MissMultiple = _missBaseMultiple / totalCount;
         float realScore = Mathf.Max(0, score.CriticalCount * CriticalMultiple + score.HitCount * HitMultiple + score.MissCount * MissMultiple);
+        // すべてクリティカルの場合は小数点以下切り捨てを避けるため100点にする
+        if (totalCount == score.CriticalCount)
+        {
+            realScore = 100f;
+        }
 
         if (clearState != null && clearState.Score <= realScore)
         {
