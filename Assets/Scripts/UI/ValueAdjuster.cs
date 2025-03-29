@@ -27,11 +27,11 @@ public class ValueAdjuster : MonoBehaviour
         _minusButton.OnClickAsObservable().Subscribe(_ =>
         {
             ChangeValue(-1 * _changeValueUnit);
-        });
+        }).AddTo(this);
         _plusButton.OnClickAsObservable().Subscribe(_ =>
         {
             ChangeValue(_changeValueUnit);
-        });
+        }).AddTo(this);
 
         _titleSizeFitter.SetLayoutVertical();
         _layputGroup.CalculateLayoutInputVertical();

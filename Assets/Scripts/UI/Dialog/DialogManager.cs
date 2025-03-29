@@ -17,6 +17,7 @@ public class DialogManager : MonoBehaviour
 
     private const string _dialogPrefabPathBase = "UI/Dialog/";
     public const string MessageDialogPrefabName = "MessageDialog";
+    public const string CreditDialogPrefabName = "CreditDialog";
     public const string InputDialogPrefabName = "InputDialog";
     public const string SettingDialogPrefabName = "SettingDialog";
     public const string HelpDialogPrefabName = "HelpDialog";
