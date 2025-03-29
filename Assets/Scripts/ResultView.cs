@@ -16,6 +16,7 @@ public class ResultView : MonoBehaviour
     [SerializeField] private Text _missMultipleText;
     [SerializeField] private Text _missScoreText;
     [SerializeField] private Text _totalScoreText;
+    [SerializeField] private GameObject _newHighScore;
 
     [SerializeField] private Text _highScoreCriticalText;
     [SerializeField] private Text _highScoreHitText;
@@ -59,5 +60,7 @@ public class ResultView : MonoBehaviour
         _highScoreHitText.text = highScoreClearState.HitNumber.ToString();
         _highScoreMissText.text = highScoreClearState.MissNumber.ToString();
         _highScoreText.text = highScoreClearState.Score.RoundDown(2).ToString();
+
+        _newHighScore.SetActive(clearState.Score > highScoreClearState.Score);
     }
 }

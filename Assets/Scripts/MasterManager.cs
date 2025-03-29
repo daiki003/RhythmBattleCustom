@@ -32,6 +32,7 @@ public class StageHeader
     public float BPM;
     public int LPB;
     public float NoteTimeOffset;
+    public float AdditionalBallSpeed;
 
     public StageHeader CreateCopy()
     {
@@ -43,7 +44,8 @@ public class StageHeader
             StripEndTime = StripEndTime,
             BPM = BPM,
             LPB = LPB,
-            NoteTimeOffset = NoteTimeOffset
+            NoteTimeOffset = NoteTimeOffset,
+            AdditionalBallSpeed = AdditionalBallSpeed
         };
     }
 }

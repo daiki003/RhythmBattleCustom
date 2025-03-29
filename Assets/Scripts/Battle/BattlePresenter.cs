@@ -57,7 +57,8 @@ public class BattlePresenter : MonoBehaviour
     {
         string stageId = _battleSceneInfo.StageHeader.StageId;
         int level = _battleSceneInfo.LevelInfo.Level;
+        var highScoreClearState = SaveDataManager.GetClearState(stageId, level);
         var clearState = _model.CalculateScore(score, stageId, level);
-        _battleView.StartResultAsync(clearState, SaveDataManager.GetClearState(stageId, level), _model.CriticalMultiple, _model.HitMultiple, _model.MissMultiple).Forget();
+        _battleView.StartResultAsync(clearState, highScoreClearState, _model.CriticalMultiple, _model.HitMultiple, _model.MissMultiple).Forget();
     }
 }
