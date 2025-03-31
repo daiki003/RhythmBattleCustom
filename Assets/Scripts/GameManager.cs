@@ -77,6 +77,8 @@ public class GameManager : MonoBehaviour
     // ゲームスタート時の処理
 	private async UniTask GameStart()
 	{
+        AdsManager.InitAds();
+
         SaveDataManager.CreateSettingData();
         BGMManager.instance.PreloadBgm();
         SEManager.instance.PreloadSe();
@@ -101,6 +103,10 @@ public class GameManager : MonoBehaviour
             return;
         }
         _isDuaringTransitionScene = true;
+        if (sceneType != SceneType.Title)
+        {
+            AdsManager.HideBanner();
+        }
         BGMManager.instance.ResetHomeBgmTime();
         BGMManager.instance.Stop();
         if (isPlaySe)
@@ -122,6 +128,11 @@ public class GameManager : MonoBehaviour
         await _currentScene.InitAsync(_currentSceneInfo, nextSceneInfo, _loadPanel);
         _currentSceneInfo = nextSceneInfo;
         await _currentScene.StartSceneAsync();
+
+        if (sceneType == SceneType.Title)
+        {
+            AdsManager.ShowBanner();
+        }
         _isDuaringTransitionScene = false;
     }
 
