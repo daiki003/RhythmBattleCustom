@@ -16,11 +16,13 @@ public interface IScene
 
 public class SceneInfoBase
 {
+    public virtual SceneType SceneType => SceneType.None;
     public bool IsAdditional;
 }
 
 public class BattleSceneInfo : SceneInfoBase
 {
+    public override SceneType SceneType => SceneType.Battle;
     public StageHeader StageHeader;
     public LevelInfo LevelInfo;
     public bool IsPractice;
@@ -29,11 +31,17 @@ public class BattleSceneInfo : SceneInfoBase
 
 public class TitleSceneInfo : SceneInfoBase
 {
-    
+    public override SceneType SceneType => SceneType.Title;
+}
+
+public class HomeSceneInfo : SceneInfoBase
+{
+    public override SceneType SceneType => SceneType.Home;
 }
 
 public class ScoreMakerSceneInfo : SceneInfoBase
 {
+    public override SceneType SceneType => SceneType.ScoreMaker;
     public StageInfo StageInfo;
     public int TargetLevel;
     public bool IsNewCreate;

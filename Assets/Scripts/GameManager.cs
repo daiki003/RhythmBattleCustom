@@ -113,6 +113,7 @@ public class GameManager : MonoBehaviour
         {
             SEManager.instance.PlaySe(sceneType == SceneType.Battle ? SeName.BattleStart : SeName.ChangeScene);
         }
+        var beforeSceneType = _currentSceneInfo?.SceneType ?? SceneType.None;
         // 前シーンを破棄
         if (_currentScene != null)
         {
@@ -123,16 +124,12 @@ public class GameManager : MonoBehaviour
         {
             await _loadPlayfabTask.Task;
         }
+        await DisplayAdsAsync(beforeSceneType, sceneType);
         // 新しいシーンを作成
         _currentScene = CreateScene(sceneType, isAdditional: false);
         await _currentScene.InitAsync(_currentSceneInfo, nextSceneInfo, _loadPanel);
         _currentSceneInfo = nextSceneInfo;
         await _currentScene.StartSceneAsync();
-
-        if (sceneType == SceneType.Title)
-        {
-            AdsManager.ShowBanner();
-        }
         _isDuaringTransitionScene = false;
     }
 
@@ -172,5 +169,21 @@ public class GameManager : MonoBehaviour
         await _additionalScene.DisposeAsync();
         _additionalScene = null;
         await _currentScene.Restart();
+    }
+
+    private async UniTask DisplayAdsAsync(SceneType beforeScene, SceneType nextScene)
+    {
+        if (nextScene == SceneType.Title)
+        {
+            AdsManager.ShowBanner();
+        }
+        else if (beforeScene != SceneType.Title && nextScene == SceneType.Home)
+        {
+            await AdsManager.ShowReward();
+        }
+        else if (nextScene == SceneType.ScoreMaker)
+        {
+            await AdsManager.ShowReward();
+        }
     }
 }

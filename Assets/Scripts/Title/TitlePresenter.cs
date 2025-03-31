@@ -19,7 +19,7 @@ public class TitlePresenter : MonoBehaviour
     {
         _bgButton.OnClickAsObservable().Subscribe(_ =>
         {
-            GameManager.instance.OpenScene(SceneType.Home, new TitleSceneInfo()).Forget();
+            GameManager.instance.OpenScene(SceneType.Home, new HomeSceneInfo()).Forget();
         }).AddTo(this);
         _settingButton.OnClickAsObservable().Subscribe(_ =>
         {

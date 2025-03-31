@@ -26,7 +26,7 @@ public class BattlePresenter : MonoBehaviour
             }
             else
             {
-                GameManager.instance.OpenScene(SceneType.Home, new TitleSceneInfo()).Forget();
+                GameManager.instance.OpenScene(SceneType.Home, new HomeSceneInfo()).Forget();
             }
         }).AddTo(this);
         _battleView.OnWhenFinishBattle.Subscribe(score =>

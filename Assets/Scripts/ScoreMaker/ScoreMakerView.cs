@@ -177,12 +177,12 @@ public class ScoreMakerView : MonoBehaviour
                 {
                     if (result.ResultType == DialogResultType.Ok)
                     {
-                        GameManager.instance.OpenScene(SceneType.Home, new TitleSceneInfo()).Forget();
+                        GameManager.instance.OpenScene(SceneType.Home, new HomeSceneInfo()).Forget();
                     }
                 });
                 return;
             }
-            GameManager.instance.OpenScene(SceneType.Home, new TitleSceneInfo()).Forget();
+            GameManager.instance.OpenScene(SceneType.Home, new HomeSceneInfo()).Forget();
         }).AddTo(this);
         _bpmInput.OnEndEditAsObservable().Subscribe(bpm =>
         {

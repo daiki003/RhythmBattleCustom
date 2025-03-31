@@ -289,7 +289,7 @@ public class HomeView : MonoBehaviour
         }
         _currentPanelType = titlePanelType;
         bool isStage = titlePanelType.IsStage();
-        // _editStageButton.gameObject.SetActive(!isStage);
+        _editStageButton.gameObject.SetActive(!isStage);
         _deleteStageButton.gameObject.SetActive(!isStage);
         _newCreateButton.gameObject.SetActive(!isStage);
         _stageStripPanel.SetActive(titlePanelType.IsStage());
