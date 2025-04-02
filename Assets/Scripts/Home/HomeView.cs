@@ -54,7 +54,8 @@ public class GetStageKey
 
 public class HomeView : MonoBehaviour
 {
-    [SerializeField] private Text _totalScoreText;
+    [SerializeField] private Text _totalStarText;
+    [SerializeField] private Text _maxStarText;
     [SerializeField] private StageStrip _stageStripPrefab;
     [SerializeField] private Transform _stripTransform;
     [SerializeField] private Transform _customStripTransform;
@@ -158,7 +159,8 @@ public class HomeView : MonoBehaviour
                 CreateStageStrip(stageInfo.StageHeader, level: customLevel.Level, _customStripTransform, customLevel.StageNameOverride);
             }
         }
-        _totalScoreText.text = SaveDataManager.GetTotalScore().ToString();
+        _totalStarText.text = SaveDataManager.GetTotalStar().ToString();
+        _maxStarText.text = SaveDataManager.GetMaxStar().ToString();
     }
 
     // ステージの短冊1枚を作成

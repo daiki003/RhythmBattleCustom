@@ -71,6 +71,43 @@ public static class SaveDataManager
         return totalScore;
     }
 
+    public static int GetTotalStar()
+    {
+        int totalStar = 0;
+        var normalStageScoreList = ClearStateList.Where(c => c.Level <= MasterManager.MaxDefaultLevelId).ToList();
+        for (int i = 0; i < normalStageScoreList.Count; i++)
+        {
+            totalStar += GetStarState(normalStageScoreList[i]);
+        }
+        return totalStar;
+    }
+
+    public static int GetMaxStar()
+    {
+        var normalStageScoreList = ClearStateList.Where(c => c.Level <= MasterManager.MaxDefaultLevelId).ToList();
+        return normalStageScoreList.Count * 3;
+    }
+
+    private static int GetStarState(ClearState clearState)
+    {
+        // スコアが100であれば3つ星
+        if (clearState.Score >= 100f)
+        {
+            return 3;
+        }
+        // ミスが1つもなければ2つ星
+        if (clearState.Score >= 80f && clearState.MissNumber == 0)
+        {
+            return 2;
+        }
+        // スコアが80以上なら1つ星
+        if (clearState.Score >= 80f)
+        {
+            return 1;
+        }
+        return 0;
+    }
+
     public static void UpdateClearState(ClearState clearState)
     {
         var targetState = GetClearState(clearState.StageId, clearState.Level);

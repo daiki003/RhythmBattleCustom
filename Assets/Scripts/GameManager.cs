@@ -181,9 +181,5 @@ public class GameManager : MonoBehaviour
         {
             await AdsManager.ShowReward();
         }
-        else if (nextScene == SceneType.ScoreMaker)
-        {
-            await AdsManager.ShowReward();
-        }
     }
 }

@@ -7,7 +7,7 @@ public class BattleModel
 {
     private const float _criticalBaseMultiple = 100f;
     private const float _hitBaseMultiple = 50f;
-    private const float _missBaseMultiple = -200f;
+    private const float _missBaseMultiple = -300f;
 
     public float CriticalMultiple { get; private set; }
     public float HitMultiple { get; private set; }
