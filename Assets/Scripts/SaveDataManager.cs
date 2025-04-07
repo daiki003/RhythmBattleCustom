@@ -134,8 +134,8 @@ public static class SaveDataManager
     {
         SettingData = new SettingData()
         {
-            BgmVolume = PlayerPrefs.GetFloat(_bgmVolumeKey),
-            SeVolume = PlayerPrefs.GetFloat(_seVolumeKey),
+            BgmVolume = PlayerPrefs.GetFloat(_bgmVolumeKey, 0.5f),
+            SeVolume = PlayerPrefs.GetFloat(_seVolumeKey, 0.5f),
             Offset = PlayerPrefs.GetFloat(_offsetKey),
             BallSpeed = PlayerPrefs.GetFloat(_ballSpeedKey)
         };
