@@ -124,7 +124,6 @@ public class GameManager : MonoBehaviour
         {
             await _loadPlayfabTask.Task;
         }
-        await DisplayAdsAsync(beforeSceneType, sceneType);
         // 新しいシーンを作成
         _currentScene = CreateScene(sceneType, isAdditional: false);
         await _currentScene.InitAsync(_currentSceneInfo, nextSceneInfo, _loadPanel);
@@ -169,17 +168,5 @@ public class GameManager : MonoBehaviour
         await _additionalScene.DisposeAsync();
         _additionalScene = null;
         await _currentScene.Restart();
-    }
-
-    private async UniTask DisplayAdsAsync(SceneType beforeScene, SceneType nextScene)
-    {
-        if (nextScene == SceneType.Title)
-        {
-            AdsManager.ShowBanner();
-        }
-        else if (beforeScene != SceneType.Title && nextScene == SceneType.Home)
-        {
-            await AdsManager.ShowReward();
-        }
     }
 }
