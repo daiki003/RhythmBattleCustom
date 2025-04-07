@@ -39,6 +39,15 @@ public class Score
     }
 }
 
+public enum BattleState
+{
+    None,
+    StartBattle,
+    DuringBgm,
+    WaitFinishBattle,
+    Result
+}
+
 public class BattleView : MonoBehaviour
 {
     [SerializeField] private Image _enemyImage;
@@ -66,10 +75,8 @@ public class BattleView : MonoBehaviour
     private List<SingleBall> _ballList = new();
     private List<SingleBall> _launchedBallStashList = new();
 
-    private bool _isStartBattle;
-    private bool _isFinishBattle;
-    private bool _isStartBgm;
     private bool _isPausedBgm;
+    private BattleState _currentState;
     private float _startBgmTime; // Bgm開始予定時間
     private float _startPauseTime; // ポーズを開始した時間
     private float _lastBeatTime;
@@ -93,7 +100,7 @@ public class BattleView : MonoBehaviour
     {
         get
         {
-            if (_isStartBgm)
+            if (_currentState >= BattleState.DuringBgm)
             {
                 return BGMManager.instance.IsPlaying ? BGMManager.instance.CurrentTime : BGMManager.instance.Length * _practiceUi.SliderValue;
             }
@@ -193,7 +200,11 @@ public class BattleView : MonoBehaviour
                     _bgmStartCts.Cancel();
                     _bgmStartCts.Dispose();
                     _bgmStartCts = null;
-                    _isStartBgm = true;
+                    _currentState = BattleState.DuringBgm;
+                }
+                if (_currentState == BattleState.Result)
+                {
+                    _currentState = BattleState.DuringBgm;
                 }
                 Pause(isPause);
             }).AddTo(this);
@@ -250,7 +261,7 @@ public class BattleView : MonoBehaviour
         }
         else
         {
-            if (!_isStartBgm)
+            if (_currentState < BattleState.DuringBgm)
             {
                 // ポーズしてた時間分曲開始時間を遅らせる
                 _startBgmTime += Time.time - _startPauseTime;
@@ -267,7 +278,7 @@ public class BattleView : MonoBehaviour
 
     public void SetSliderForAdditional(float timeRate)
     {
-        _isStartBgm = true;
+        _currentState = BattleState.DuringBgm;
         _practiceUi.Pause(true);
         _practiceUi.SetSlider(timeRate);
         _practiceUi.RegisterTime(0);
@@ -325,23 +336,20 @@ public class BattleView : MonoBehaviour
 
     public async UniTask BattleStart()
     {
-        _isStartBattle = true;
-        _isFinishBattle = false;
-        _isStartBgm = false;
+        _currentState = BattleState.StartBattle;
         // BallTimeOffset分遅れてBGMスタート
         _startBgmTime = Time.time + _ballTimeOffset;
         _bgmStartCts = new CancellationTokenSource();
         await UniTask.WaitUntil(() => !_isPausedBgm && Time.time >= _startBgmTime, cancellationToken: _bgmStartCts.Token);
         BGMManager.instance.Play();
-        _isStartBgm = true;
+        _currentState = BattleState.DuringBgm;
         _bgmStartCts.Dispose();
         _bgmStartCts = null;
     }
 
     public void BattleStartFromMiddle()
     {
-        _isStartBattle = true;
-        _isFinishBattle = false;
+        _currentState = BattleState.StartBattle;
     }
 
     public void CreateBalls(List<NoteMaster> notes)
@@ -465,13 +473,17 @@ public class BattleView : MonoBehaviour
 
     void Update()
     {
-        if (!_isStartBattle || _isPausedBgm)
+        if (_currentState < BattleState.StartBattle || _isPausedBgm)
         {
             return;
         }
-        if (BGMManager.instance.IsFinishBgm && !_isFinishBattle)
+        if (_currentState == BattleState.DuringBgm && BGMManager.instance.IsSoonFinishBgm)
         {
-            DebugPanel.instance.AddLog("IsFinishBgm && !_isFinishBattle");
+            _currentState = BattleState.WaitFinishBattle;
+        }
+        if (_currentState == BattleState.WaitFinishBattle && BGMManager.instance.IsFinishBgm)
+        {
+            _currentState = BattleState.Result;
             if (_isPractice)
             {
                 _practiceUi.Pause(true);
@@ -479,8 +491,6 @@ public class BattleView : MonoBehaviour
             }
             else
             {
-                DebugPanel.instance.AddLog("_isFinishBattle = true");
-                _isFinishBattle = true;
                 OnWhenFinishBattle.OnNext(_currentScore);
             }
             return;

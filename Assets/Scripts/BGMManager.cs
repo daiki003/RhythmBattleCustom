@@ -25,7 +25,9 @@ public class BGMManager : MonoBehaviour
 	private bool _isDuringLoopFade;
 	private float _homeBgmTime;
 
-	public bool IsFinishBgm => _currentBgmClip != null && _currentBgmClip.length <= _bgmSource.time;
+	// 残り0.5秒くらいから終わった判定を始める
+	public bool IsSoonFinishBgm => _currentBgmClip != null && _currentBgmClip.length - 0.5f <= _bgmSource.time;
+	public bool IsFinishBgm => (_bgmSource.time == 0f && !IsPlaying) || _currentBgmClip != null && _currentBgmClip.length <= _bgmSource.time;
 	public float CurrentTime => _bgmSource.time;
 	public float Length => _currentBgmClip.length;
 	public float CurrentTimeLate => CurrentTime / Length;
