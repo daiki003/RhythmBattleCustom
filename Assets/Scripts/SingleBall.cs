@@ -13,7 +13,7 @@ public class SingleBall : MonoBehaviour
     public BallState BallState;
 
     public bool IsAlive => BallState < BallState.Holded;
-    public bool IsActive => IsAlive && JudgeBall() >= HitType.Hit;
+    public bool IsActive(float currentTime) => IsAlive && JudgeBall(currentTime) >= HitType.Hit;
 
     public Subject<BallState> OnWhenSetBallState = new();
     public Subject<Unit> OnWhenMiss = new();
@@ -32,9 +32,8 @@ public class SingleBall : MonoBehaviour
         IsLeft = noteMaster.block <= 3;
     }
 
-    public HitType JudgeBall()
+    public HitType JudgeBall(float currentTime)
     {
-        float currentTime = BGMManager.instance.CurrentTime;
         float criticalTimeBuffer = MasterManager.SettingMaster.CriticalTimeBuffer;
         float hitTimeBuffer = MasterManager.SettingMaster.HitTimeBuffer;
         if (CriticalTime > currentTime - criticalTimeBuffer && CriticalTime < currentTime + criticalTimeBuffer)

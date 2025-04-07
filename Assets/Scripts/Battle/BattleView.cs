@@ -522,8 +522,7 @@ public class BattleView : MonoBehaviour
         {
             return;
         }
-        float time = BGMManager.instance.CurrentTime;
-        var firstActiveBall = _ballList.FirstOrDefault(b => b.IsActive && b.IsLeft == isLeft);
+        var firstActiveBall = _ballList.FirstOrDefault(b => b.IsActive(_currentTime) && b.IsLeft == isLeft);
         if (firstActiveBall != null)
         {
             if (firstActiveBall.BallType == BallType.LongEnd)
@@ -543,14 +542,14 @@ public class BattleView : MonoBehaviour
         float time = BGMManager.instance.CurrentTime;
         var firstBall = _ballList.FirstOrDefault(b => b.IsAlive && b.IsLeft == isLeft);
         // ロングノーツの終端の前で離したらそれを破棄
-        if (firstBall != null && firstBall.BallType == BallType.LongEnd && firstBall.JudgeBall() == HitType.None)
+        if (firstBall != null && firstBall.BallType == BallType.LongEnd && firstBall.JudgeBall(_currentTime) == HitType.None)
         {
             firstBall.SetBallState(BallState.End);
             CreateLetter(isLeft, HitType.None);
             _currentScore.CountUp(HitType.None);
             UpdateScoreText(_currentScore);
         }
-        var firstActiveBall = _ballList.FirstOrDefault(b => b.IsActive && b.IsLeft == isLeft);
+        var firstActiveBall = _ballList.FirstOrDefault(b => b.IsActive(_currentTime) && b.IsLeft == isLeft);
         if (firstActiveBall != null)
         {
             if (firstActiveBall.BallType != BallType.LongEnd)
@@ -569,8 +568,8 @@ public class BattleView : MonoBehaviour
             SEManager.instance.PlaySe(SeName.Beat);
         }
         _lastBeatTime = ball.CriticalTime;
-        CreateLetter(ball.IsLeft, ball.JudgeBall());
-        _currentScore.CountUp(ball.JudgeBall());
+        CreateLetter(ball.IsLeft, ball.JudgeBall(_currentTime));
+        _currentScore.CountUp(ball.JudgeBall(_currentTime));
         UpdateScoreText(_currentScore);
         ball.AfterBeat(isRelease);
     }
