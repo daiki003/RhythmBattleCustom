@@ -55,6 +55,7 @@ public class BattlePresenter : MonoBehaviour
 
     public void FinishBattle(Score score)
     {
+        DebugPanel.instance.AddLog("FinishBattle " + (score != null));
         string stageId = _battleSceneInfo.StageHeader.StageId;
         int level = _battleSceneInfo.LevelInfo.Level;
         var highScoreClearState = SaveDataManager.GetClearState(stageId, level).CreateCopy();

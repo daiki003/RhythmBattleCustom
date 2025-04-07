@@ -471,6 +471,7 @@ public class BattleView : MonoBehaviour
         }
         if (BGMManager.instance.IsFinishBgm && !_isFinishBattle)
         {
+            DebugPanel.instance.AddLog("IsFinishBgm && !_isFinishBattle");
             if (_isPractice)
             {
                 _practiceUi.Pause(true);
@@ -478,6 +479,7 @@ public class BattleView : MonoBehaviour
             }
             else
             {
+                DebugPanel.instance.AddLog("_isFinishBattle = true");
                 _isFinishBattle = true;
                 OnWhenFinishBattle.OnNext(_currentScore);
             }
@@ -510,7 +512,9 @@ public class BattleView : MonoBehaviour
 
     public async UniTask StartResultAsync(ClearState clearState, ClearState highScoreClearState, float criticalMultiple, float hitMultiple, float missMultiple)
     {
+        DebugPanel.instance.AddLog("StartResultAsync");
         await UniTask.WaitForSeconds(_beforeReultWaitTime, cancellationToken: _cts.Token);
+        DebugPanel.instance.AddLog("StartResultAsync afterWait");
         _resultView.SetScore(clearState, highScoreClearState, criticalMultiple, hitMultiple, missMultiple);
         _resultView.gameObject.SetActive(true);
         BGMManager.instance.SetClip(BgmName.Result, isLoop: true);
