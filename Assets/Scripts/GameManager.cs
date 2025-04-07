@@ -103,10 +103,6 @@ public class GameManager : MonoBehaviour
             return;
         }
         _isDuaringTransitionScene = true;
-        if (sceneType != SceneType.Title)
-        {
-            AdsManager.HideBanner();
-        }
         BGMManager.instance.ResetHomeBgmTime();
         BGMManager.instance.Stop();
         if (isPlaySe)
