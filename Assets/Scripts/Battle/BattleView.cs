@@ -339,6 +339,7 @@ public class BattleView : MonoBehaviour
     public async UniTask BattleStart()
     {
         _currentState = BattleState.StartBattle;
+        _beatDiffTime = 0f;
         // BallTimeOffset分遅れてBGMスタート
         _startBgmTime = Time.time + _ballTimeOffset;
         _bgmStartCts = new CancellationTokenSource();
