@@ -86,6 +86,8 @@ public class BattleView : MonoBehaviour
     private CancellationTokenSource _bgmStartCts;
     private StageHeader _stageHeader;
     private LevelInfo _levelInfo;
+    // これが大きいと全体的に叩くのが遅い
+    private float _beatDiffTime;
 
     private Vector3 _startToTargetVectorLeft => _leftTargetPoint.localPosition - _leftStartTransform.localPosition;
     private Vector3 _startToTargetVectorRight => _rightTargetPoint.localPosition - _rightStartTransform.localPosition;
@@ -522,9 +524,8 @@ public class BattleView : MonoBehaviour
 
     public async UniTask StartResultAsync(ClearState clearState, ClearState highScoreClearState, float criticalMultiple, float hitMultiple, float missMultiple)
     {
-        DebugPanel.instance.AddLog("StartResultAsync");
+        DebugPanel.instance.AddLog("BeatDiffTime " + _beatDiffTime);
         await UniTask.WaitForSeconds(_beforeReultWaitTime, cancellationToken: _cts.Token);
-        DebugPanel.instance.AddLog("StartResultAsync afterWait");
         _resultView.SetScore(clearState, highScoreClearState, criticalMultiple, hitMultiple, missMultiple);
         _resultView.gameObject.SetActive(true);
         BGMManager.instance.SetClip(BgmName.Result, isLoop: true);
@@ -582,6 +583,7 @@ public class BattleView : MonoBehaviour
             SEManager.instance.PlaySe(SeName.Beat);
         }
         _lastBeatTime = ball.CriticalTime;
+        _beatDiffTime = _currentTime - ball.CriticalTime;
         CreateLetter(ball.IsLeft, ball.JudgeBall(_currentTime));
         _currentScore.CountUp(ball.JudgeBall(_currentTime));
         UpdateScoreText(_currentScore);
