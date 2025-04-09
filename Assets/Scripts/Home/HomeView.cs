@@ -88,7 +88,6 @@ public class HomeView : MonoBehaviour
     {
         CreateStripList(stageList);
         SetButtonInteractable(false);
-        _practiceModeToggle.isOn = false;
         for (int i = 0; i < _menuButtonList.Count; i++)
         {
             var menuButton = _menuButtonList[i];
@@ -110,6 +109,12 @@ public class HomeView : MonoBehaviour
         _playStageButton.OnClickAsObservable().Subscribe(_ =>
         {
             _clickPlayStageButton.OnNext((new GetStageKey(_selectedStrip.StageId, _currentLevel), _practiceModeToggle.isOn));
+        }).AddTo(this);
+        // 練習モード切替
+        _practiceModeToggle.isOn = false;
+        _practiceModeToggle.OnValueChangedAsObservable().Subscribe(isOn =>
+        {
+            SEManager.instance.PlaySe(isOn ? SeName.Button2 : SeName.Cancel);
         }).AddTo(this);
         // 編集ボタン
         _editStageButton.OnClickAsObservable().Subscribe(_ =>

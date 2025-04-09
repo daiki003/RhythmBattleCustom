@@ -149,6 +149,10 @@ public class BattleView : MonoBehaviour
         // やり直しボタン
         _resetButton.OnClickAsObservable().Subscribe(_ =>
         {
+            if (_currentState == BattleState.Result)
+            {
+                return;
+            }
             // 確認ダイアログ
             var option = new MessageDialogOption
             {
@@ -166,6 +170,10 @@ public class BattleView : MonoBehaviour
         // 戻るボタン
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {
+            if (_currentState == BattleState.Result)
+            {
+                return;
+            }
             // 確認ダイアログ
             var option = new MessageDialogOption
             {
@@ -352,7 +360,7 @@ public class BattleView : MonoBehaviour
 
     public void BattleStartFromMiddle()
     {
-        _currentState = BattleState.StartBattle;
+        _currentState = BattleState.DuringBgm;
     }
 
     public void CreateBalls(List<NoteMaster> notes)
