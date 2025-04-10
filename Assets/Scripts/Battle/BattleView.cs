@@ -134,9 +134,6 @@ public class BattleView : MonoBehaviour
         _targetDistance = _startToTargetVectorLeft.magnitude;
         _surplusDistance = Vector3.Distance(_leftTargetPoint.localPosition, _leftEndPosition);
 
-        _leftTargetImage.color = new Color(1, 1, 1, SaveDataManager.SettingData.Target);
-        _rightTargetImage.color = new Color(1, 1, 1, SaveDataManager.SettingData.Target);
-
         GameManager.instance.ClickHandler.OnClickButton.Subscribe(isLeft =>
         {
             OnClickButton(isLeft);
@@ -352,6 +349,8 @@ public class BattleView : MonoBehaviour
 
     public async UniTask BattleStart()
     {
+        _leftTargetImage.color = new Color(1, 1, 1, 0.7f);
+        _rightTargetImage.color = new Color(1, 1, 1, 0.7f);
         _currentState = BattleState.StartBattle;
         _beatDiffTime = 0f;
         // BallTimeOffset分遅れてBGMスタート
@@ -362,6 +361,8 @@ public class BattleView : MonoBehaviour
         _currentState = BattleState.DuringBgm;
         _bgmStartCts.Dispose();
         _bgmStartCts = null;
+        var leftFadeTask = _leftTargetImage.DOFade(SaveDataManager.SettingData.Target, 0.5f).SetEase(Ease.Linear);
+        var rightFadeTask = _rightTargetImage.DOFade(SaveDataManager.SettingData.Target, 0.5f).SetEase(Ease.Linear);
     }
 
     public void BattleStartFromMiddle()
