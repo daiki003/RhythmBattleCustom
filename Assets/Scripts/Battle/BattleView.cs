@@ -72,6 +72,9 @@ public class BattleView : MonoBehaviour
     [SerializeField] private BattlePracticeUI _practiceUi;
     [SerializeField] private ResultView _resultView;
 
+    [SerializeField] private Image _leftTargetImage;
+    [SerializeField] private Image _rightTargetImage;
+
     private List<SingleBall> _ballList = new();
     private List<SingleBall> _launchedBallStashList = new();
 
@@ -130,6 +133,9 @@ public class BattleView : MonoBehaviour
         _rightEndPosition = _rightStartTransform.localPosition + _startToTargetVectorRight * 1.5f;
         _targetDistance = _startToTargetVectorLeft.magnitude;
         _surplusDistance = Vector3.Distance(_leftTargetPoint.localPosition, _leftEndPosition);
+
+        _leftTargetImage.color = new Color(1, 1, 1, SaveDataManager.SettingData.Target);
+        _rightTargetImage.color = new Color(1, 1, 1, SaveDataManager.SettingData.Target);
 
         GameManager.instance.ClickHandler.OnClickButton.Subscribe(isLeft =>
         {
