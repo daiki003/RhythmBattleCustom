@@ -111,10 +111,16 @@ public class HomeView : MonoBehaviour
             _clickPlayStageButton.OnNext((new GetStageKey(_selectedStrip.StageId, _currentLevel), _practiceModeToggle.isOn));
         }).AddTo(this);
         // 練習モード切替
+        bool enableToggleSe = false;
         _practiceModeToggle.isOn = false;
         _practiceModeToggle.OnValueChangedAsObservable().Subscribe(isOn =>
         {
-            SEManager.instance.PlaySe(isOn ? SeName.Button2 : SeName.Cancel);
+            // 初回は音を鳴らさない
+            if (enableToggleSe)
+            {
+                SEManager.instance.PlaySe(isOn ? SeName.Button2 : SeName.Cancel);
+            }
+            enableToggleSe = true;
         }).AddTo(this);
         // 編集ボタン
         _editStageButton.OnClickAsObservable().Subscribe(_ =>

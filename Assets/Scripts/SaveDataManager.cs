@@ -85,8 +85,7 @@ public static class SaveDataManager
 
     public static int GetMaxStar()
     {
-        var normalStageScoreList = ClearStateList.Where(c => c.Level <= MasterManager.MaxDefaultLevelId).ToList();
-        return normalStageScoreList.Count * 3;
+        return MasterManager.StageMasterList.Count * 9;
     }
 
     private static int GetStarState(ClearState clearState)
