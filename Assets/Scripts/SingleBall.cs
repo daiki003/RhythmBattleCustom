@@ -111,6 +111,7 @@ public class SingleBall : MonoBehaviour
         else if (!isRelease && BallType == BallType.LongStart)
         {
             BallState = BallState.Holded;
+            StopMove();
         }
     }
 
