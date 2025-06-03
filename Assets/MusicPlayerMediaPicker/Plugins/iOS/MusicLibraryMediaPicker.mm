@@ -185,20 +185,42 @@ extern "C" {
      **************************************/
     void exportSelectedItem() {
         
-        MPMediaPickerController *picker = [[MPMediaPickerController alloc] initWithMediaTypes:MPMediaTypeMusic];
-        picker.delegate = self;
-        picker.allowsPickingMultipleItems = NO;
-        [self presentViewController:picker animated:YES completion:nil];
+        // 曲情報を取得する処理（iCloudの曲を除外）
+        MPMediaQuery *songQuery = [MPMediaQuery songsQuery];
+        [songQuery addFilterPredicate:[MPMediaPropertyPredicate predicateWithValue:@NO forProperty:MPMediaItemPropertyIsCloudItem]];
+        
+        NSArray<MPMediaItem *> *items = [songQuery items];
+        NSMutableArray<MPMediaItem *> *availableItems = [[NSMutableArray alloc] init];
+        
+        for (MPMediaItem *item in items) {
+            if (![item hasProtectedAsset]) {
+                [availableItems addObject:item];
+            }
+        }
+        
+        if (availableItems.count == 0) {
+            NSLog(@"利用可能な曲が見つかりませんでした。");
+            return;
+        }
+        
+        // ランダムに1曲選んでエクスポート
+        NSUInteger index = arc4random_uniform((uint32_t)availableItems.count);
+        MPMediaItem *selectedItem = availableItems[index];
+        
+        song_id = [[selectedItem valueForProperty:MPMediaItemPropertyPersistentID] longValue];
+        song_name = [selectedItem valueForProperty:MPMediaItemPropertyTitle];
+        
+        exportItem(selectedItem);
     }
 
-    - (void)mediaPicker:(MPMediaPickerController *)mediaPicker didPickMediaItems:(MPMediaItemCollection *)mediaItemCollection {
-        [self dismissViewControllerAnimated:YES completion:nil];
-        MPMediaItem *item = [[mediaItemCollection items] firstObject];
-        // 曲をエクスポート
-        song_id = [[item valueForProperty:MPMediaItemPropertyPersistentID] longValue];
-        song_name = [item valueForProperty:MPMediaItemPropertyTitle];
-        exportItem(item);
-    }
+    // - (void)mediaPicker:(MPMediaPickerController *)mediaPicker didPickMediaItems:(MPMediaItemCollection *)mediaItemCollection {
+    //     [self dismissViewControllerAnimated:YES completion:nil];
+    //     MPMediaItem *item = [[mediaItemCollection items] firstObject];
+    //     // 曲をエクスポート
+    //     song_id = [[item valueForProperty:MPMediaItemPropertyPersistentID] longValue];
+    //     song_name = [item valueForProperty:MPMediaItemPropertyTitle];
+    //     exportItem(item);
+    // }
     
     
     /************************************
