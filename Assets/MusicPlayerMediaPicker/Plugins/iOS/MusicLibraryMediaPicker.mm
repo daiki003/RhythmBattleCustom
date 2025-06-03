@@ -15,6 +15,7 @@ extern "C" {
     
     // 関数のプロトタイプ宣言
     void exportRandomToItem();
+    void exportSelectedItem();
     long getSongId();
     char* getSongName();
     BOOL getDoExport();
@@ -174,6 +175,26 @@ extern "C" {
         // 曲をエクスポート
         NSUInteger index = arc4random_uniform([array count]);
         MPMediaItem* item = [array objectAtIndex:index];
+        song_id = [[item valueForProperty:MPMediaItemPropertyPersistentID] longValue];
+        song_name = [item valueForProperty:MPMediaItemPropertyTitle];
+        exportItem(item);
+    }
+
+    /**************************************
+     * 選んだ曲をエクスポートする
+     **************************************/
+    void exportSelectedItem() {
+        
+        MPMediaPickerController *picker = [[MPMediaPickerController alloc] initWithMediaTypes:MPMediaTypeMusic];
+        picker.delegate = self;
+        picker.allowsPickingMultipleItems = NO;
+        [self presentViewController:picker animated:YES completion:nil];
+    }
+
+    - (void)mediaPicker:(MPMediaPickerController *)mediaPicker didPickMediaItems:(MPMediaItemCollection *)mediaItemCollection {
+        [self dismissViewControllerAnimated:YES completion:nil];
+        MPMediaItem *item = [[mediaItemCollection items] firstObject];
+        // 曲をエクスポート
         song_id = [[item valueForProperty:MPMediaItemPropertyPersistentID] longValue];
         song_name = [item valueForProperty:MPMediaItemPropertyTitle];
         exportItem(item);

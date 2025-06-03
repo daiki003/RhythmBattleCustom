@@ -19,6 +19,9 @@ public class MediaController : MonoBehaviour
         public static extern void exportRandomToItem();
 
         [DllImport("__Internal")]
+        public static extern void exportSelectedItem();
+
+        [DllImport("__Internal")]
         public static extern long getSongId();
 
         [DllImport("__Internal")]
@@ -28,6 +31,7 @@ public class MediaController : MonoBehaviour
         public static extern bool getDoExport();
 #else
         private static void exportRandomToItem() { }
+        private static void exportSelectedItem() { }
 
         private static long getSongId() { return 0; }
         private static string getSongName() { return ""; }
@@ -45,7 +49,7 @@ public class MediaController : MonoBehaviour
         text.text = "楽曲エクスポート中";
 
         // 曲エクスポートを開始
-        exportRandomToItem();
+        exportSelectedItem();
 
         // 曲エクスポート完了まで待つ
         await UniTask.WaitWhile(() => getDoExport());
