@@ -186,7 +186,7 @@ extern "C" {
      * 選んだ曲をエクスポートする
      **************************************/
     void exportSelectedItem() {
-        [UnityMusicPlayerPlugin.shared presentMediaPicker];
+        [MusicLibraryMediaPicker.shared presentMediaPicker];
     }
 
 
@@ -217,6 +217,8 @@ extern "C" {
     }
 }
 
+@implementation MusicLibraryMediaPicker
+
 - (void)presentMediaPicker {
     MPMediaPickerController *picker = [[MPMediaPickerController alloc] initWithMediaTypes:MPMediaTypeMusic];
     picker.delegate = self;
@@ -233,3 +235,5 @@ extern "C" {
     song_name = [item valueForProperty:MPMediaItemPropertyTitle];
     exportItem(item);
 }
+
+@end
