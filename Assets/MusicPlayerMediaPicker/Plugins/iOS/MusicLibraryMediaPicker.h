@@ -19,7 +19,6 @@
 @property (atomic, readonly) double currentPlaybackTime;
 
 + (MusicLibraryMediaPicker*) shared;
-- (void) load:(UIViewController*)controller;
 - (void) presentMediaPicker:(UIViewController *)viewController;
 - (void) selectedPicker;
 - (double) getLevelWithChannel:(int) channel;

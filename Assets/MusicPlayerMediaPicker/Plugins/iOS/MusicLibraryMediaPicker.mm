@@ -223,7 +223,7 @@ extern "C" {
 {
 }
 @property (atomic, strong) MPMusicPlayerController* player;
-@property (atomic, weak) UIViewController* viewController;
+@property (atomic, strong) UIViewController* viewController;
 - (void) showAlert:(NSString *)title alertMessage:(NSString *) message;
 -(void) onPlaybackStateChanged:(int)state;
 typedef NS_ENUM(NSInteger, PlaybackStateType) {
