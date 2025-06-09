@@ -56,19 +56,11 @@ public class MediaController : MonoBehaviour
 
         // 曲エクスポートを開始
         exportSelectedItem();
-        if (number == 2)
-        {
-            return;
-        }
 
         // 曲エクスポート完了まで待つ
         await UniTask.WaitWhile(() => getDoExport());
 
         text.text = "楽曲インポート中";
-        if (number == 3)
-        {
-            return;
-        }
 
         // Documentsにある曲を取得
         string path = Application.persistentDataPath + "/" + getSongId() + ".wav";
@@ -76,18 +68,26 @@ public class MediaController : MonoBehaviour
 
         // インポートが完了するまで待つ
         await UniTask.WaitUntil(() => www.isDone);
-        if (number == 4)
+
+        _audioSource.clip = www.GetAudioClip(false, false);
+        if (number == 2)
         {
             return;
         }
-
-        _audioSource.clip = www.GetAudioClip(false, false);
 	    
 	    text.text = "再生します！";
 
         _audioSource.Play();
+        if (number == 3)
+        {
+            return;
+        }
 
         text.text = getSongName();
+        if (number == 4)
+        {
+            return;
+        }
 	    
     	// wavファイルを削除
         System.IO.File.Delete(path);
