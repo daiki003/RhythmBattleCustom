@@ -219,6 +219,15 @@ extern "C" {
 
 @implementation MusicLibraryMediaPicker
 
++ (MusicLibraryMediaPicker*) shared {
+    @synchronized(self) {
+        if(_shared == nil) {
+            _shared = [[self alloc] init];
+        }
+    }
+    return _shared;
+}
+
 - (void)presentMediaPicker {
     MPMediaPickerController *picker = [[MPMediaPickerController alloc] initWithMediaTypes:MPMediaTypeMusic];
     picker.delegate = self;
