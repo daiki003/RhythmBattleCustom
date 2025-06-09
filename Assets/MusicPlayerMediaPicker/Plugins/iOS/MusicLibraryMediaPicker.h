@@ -20,7 +20,7 @@
 
 + (MusicLibraryMediaPicker*) shared;
 - (void) load:(UIViewController*)controller;
-- (void) presentMediaPicker;
+- (void) presentMediaPicker:(UIViewController *)viewController;
 - (void) selectedPicker;
 - (double) getLevelWithChannel:(int) channel;
 @end

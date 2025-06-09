@@ -8,6 +8,8 @@
 
 #import "MusicLibraryMediaPicker.h"
 
+extern UIViewController* UnityGetGLViewController();
+
 extern "C" {
     
     // プロパティ
@@ -186,7 +188,7 @@ extern "C" {
      * 選んだ曲をエクスポートする
      **************************************/
     void exportSelectedItem() {
-        [MusicLibraryMediaPicker.shared presentMediaPicker];
+        [MusicLibraryMediaPicker.shared presentMediaPicker:UnityGetGLViewController()];
     }
 
 
@@ -217,6 +219,20 @@ extern "C" {
     }
 }
 
+@interface MusicLibraryMediaPicker()<MPMediaPickerControllerDelegate,AVAudioPlayerDelegate>
+{
+}
+@property (atomic, strong) MPMusicPlayerController* player;
+@property (atomic, weak) UIViewController* viewController;
+- (void) showAlert:(NSString *)title alertMessage:(NSString *) message;
+-(void) onPlaybackStateChanged:(int)state;
+typedef NS_ENUM(NSInteger, PlaybackStateType) {
+    Stopped = 0,
+    Playing,
+    Paused
+};
+@end
+
 @implementation MusicLibraryMediaPicker
 
 static MusicLibraryMediaPicker * _shared;
@@ -229,16 +245,17 @@ static MusicLibraryMediaPicker * _shared;
     return _shared;
 }
 
-- (void)presentMediaPicker {
+- (void)presentMediaPicker:(UIViewController *)viewController {
+    self.viewController = viewController;
     MPMediaPickerController *picker = [[MPMediaPickerController alloc] initWithMediaTypes:MPMediaTypeMusic];
     picker.delegate = self;
     picker.allowsPickingMultipleItems = NO; // 単一の曲を選択
-    [self presentViewController:picker animated:YES completion:nil];
+    [viewController presentViewController:picker animated:YES completion:nil];
 }
 
 
 - (void)mediaPicker:(MPMediaPickerController *)mediaPicker didPickMediaItems:(MPMediaItemCollection *)mediaItemCollection {
-    [self dismissViewControllerAnimated:YES completion:nil];
+    [self.viewController dismissViewControllerAnimated:YES completion:nil];
     MPMediaItem *item = [[mediaItemCollection items] firstObject];
     // 曲をエクスポート
     song_id = [[item valueForProperty:MPMediaItemPropertyPersistentID] longValue];
