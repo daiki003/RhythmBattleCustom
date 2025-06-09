@@ -16,6 +16,7 @@ public class MediaController : MonoBehaviour
     [SerializeField] private Button _playButton4;
     [SerializeField] private Button _loadButton;
     [SerializeField] private Text text;
+    [SerializeField] private Text logText;
 
 #if UNITY_IOS && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -32,6 +33,9 @@ public class MediaController : MonoBehaviour
 
         [DllImport("__Internal")]
         public static extern bool getDoExport();
+
+        [DllImport("__Internal")]
+        public static extern string getLog();
 #else
         private static void exportRandomToItem() { }
         private static void exportSelectedItem() { }
@@ -39,6 +43,7 @@ public class MediaController : MonoBehaviour
         private static long getSongId() { return 0; }
         private static string getSongName() { return ""; }
         private static bool getDoExport() { return false; }
+        public static string getLog() { return ""; }
 
 #endif
 
@@ -49,6 +54,11 @@ public class MediaController : MonoBehaviour
         _playButton3.OnClickAsObservable().Subscribe(async _ => await MusicImport(3)).AddTo(this);
         _playButton4.OnClickAsObservable().Subscribe(async _ => await MusicImport(4)).AddTo(this);
 	}
+
+    void Update()
+    {
+        logText.text = getLog();
+    }
 
     private async UniTask MusicImport(int number = 0)
     {

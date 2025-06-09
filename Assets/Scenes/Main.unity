@@ -2186,6 +2186,7 @@ MonoBehaviour:
   _playButton4: {fileID: 56429870}
   _loadButton: {fileID: 0}
   text: {fileID: 2003858107}
+  logText: {fileID: 1205737942}
 --- !u!1 &1391030745
 GameObject:
   m_ObjectHideFlags: 0

@@ -16,6 +16,7 @@ extern "C" {
     BOOL do_export;
     long song_id;
     NSString* song_name;
+    NSString* log;
     
     // 関数のプロトタイプ宣言
     void exportRandomToItem();
@@ -23,6 +24,7 @@ extern "C" {
     long getSongId();
     char* getSongName();
     BOOL getDoExport();
+    char* getLog();
     
     
     /***************************************************
@@ -31,6 +33,7 @@ extern "C" {
      * @return 正しく出力できたらYESを返す
      ***************************************************/
     BOOL exportItem (MPMediaItem *item) {
+        log = "エクスポート呼ばれた";
         // エクスポートフラグを立てる
         do_export = YES;
         // エラー表示用の変数
@@ -150,6 +153,7 @@ extern "C" {
             do_export = NO;
         }];
         dispatch_release(queue);
+        log = "エクスポート終了";
         return YES;
     }
     
@@ -188,6 +192,7 @@ extern "C" {
      * 選んだ曲をエクスポートする
      **************************************/
     void exportSelectedItem() {
+        log = "曲選択開始";
         [MusicLibraryMediaPicker.shared presentMediaPicker:UnityGetGLViewController()];
     }
 
@@ -207,6 +212,10 @@ extern "C" {
      ****************************************/
     char* getSongName() {
         return strdup([song_name UTF8String]);
+    }
+
+    char* getLog() {
+        return log;
     }
     
     
