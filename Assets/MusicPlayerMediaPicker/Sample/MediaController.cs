@@ -11,6 +11,9 @@ public class MediaController : MonoBehaviour
 {
     [SerializeField] private AudioSource _audioSource;
     [SerializeField] private Button _playButton;
+    [SerializeField] private Button _playButton2;
+    [SerializeField] private Button _playButton3;
+    [SerializeField] private Button _playButton4;
     [SerializeField] private Button _loadButton;
     [SerializeField] private Text text;
 
@@ -42,19 +45,30 @@ public class MediaController : MonoBehaviour
 	void Start()
     {
         _playButton.OnClickAsObservable().Subscribe(async _ => await MusicImport()).AddTo(this);
+        _playButton2.OnClickAsObservable().Subscribe(async _ => await MusicImport(2)).AddTo(this);
+        _playButton3.OnClickAsObservable().Subscribe(async _ => await MusicImport(3)).AddTo(this);
+        _playButton4.OnClickAsObservable().Subscribe(async _ => await MusicImport(4)).AddTo(this);
 	}
 
-    private async UniTask MusicImport()
+    private async UniTask MusicImport(int number = 0)
     {
         text.text = "楽曲エクスポート中";
 
         // 曲エクスポートを開始
         exportSelectedItem();
+        if (number == 2)
+        {
+            return;
+        }
 
         // 曲エクスポート完了まで待つ
         await UniTask.WaitWhile(() => getDoExport());
 
         text.text = "楽曲インポート中";
+        if (number == 3)
+        {
+            return;
+        }
 
         // Documentsにある曲を取得
         string path = Application.persistentDataPath + "/" + getSongId() + ".wav";
@@ -62,6 +76,10 @@ public class MediaController : MonoBehaviour
 
         // インポートが完了するまで待つ
         await UniTask.WaitUntil(() => www.isDone);
+        if (number == 4)
+        {
+            return;
+        }
 
         _audioSource.clip = www.GetAudioClip(false, false);
 	    
