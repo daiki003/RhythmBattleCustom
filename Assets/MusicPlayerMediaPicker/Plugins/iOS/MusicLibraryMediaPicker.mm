@@ -219,6 +219,7 @@ extern "C" {
 
 @implementation MusicLibraryMediaPicker
 
+static MusicLibraryMediaPicker * _shared;
 + (MusicLibraryMediaPicker*) shared {
     @synchronized(self) {
         if(_shared == nil) {
