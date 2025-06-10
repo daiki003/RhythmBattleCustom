@@ -114,7 +114,9 @@ public class MediaController : MonoBehaviour
 
     public async UniTask StartMusicAsync(string songId)
     {
-        // Documentsにある曲を取得
+        // 曲エクスポート完了まで待つ
+        await UniTask.WaitWhile(() => getDoExport());
+
         string path = Application.persistentDataPath + "/" + songId + ".wav";
         WWW www = new WWW("file://" + path);
 
