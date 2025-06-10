@@ -193,6 +193,7 @@ extern "C" {
      **************************************/
     void exportSelectedItem() {
         logText = @"曲選択開始";
+        do_export = YES;
         [MusicLibraryMediaPicker.shared presentMediaPicker:UnityGetGLViewController()];
     }
 
