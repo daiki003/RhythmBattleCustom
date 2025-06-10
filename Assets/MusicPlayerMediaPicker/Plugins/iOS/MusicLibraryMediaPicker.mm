@@ -33,7 +33,7 @@ extern "C" {
      * @return 正しく出力できたらYESを返す
      ***************************************************/
     BOOL exportItem (MPMediaItem *item) {
-        logText = "エクスポート呼ばれた";
+        logText = @"エクスポート呼ばれた";
         // エクスポートフラグを立てる
         do_export = YES;
         // エラー表示用の変数
@@ -153,7 +153,7 @@ extern "C" {
             do_export = NO;
         }];
         dispatch_release(queue);
-        logText = "エクスポート終了";
+        logText = @"エクスポート終了";
         return YES;
     }
     
@@ -192,7 +192,7 @@ extern "C" {
      * 選んだ曲をエクスポートする
      **************************************/
     void exportSelectedItem() {
-        logText = "曲選択開始";
+        logText = @"曲選択開始";
         [MusicLibraryMediaPicker.shared presentMediaPicker:UnityGetGLViewController()];
     }
 
