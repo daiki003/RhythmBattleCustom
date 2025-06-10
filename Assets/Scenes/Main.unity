@@ -2093,7 +2093,7 @@ GameObject:
   - component: {fileID: 1324521282}
   - component: {fileID: 1324521284}
   m_Layer: 5
-  m_Name: DebugPanel (1)
+  m_Name: MediaController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
