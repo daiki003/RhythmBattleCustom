@@ -211,11 +211,17 @@ extern "C" {
      * @return セットされている曲のタイトルを返す
      ****************************************/
     char* getSongName() {
+        if (song_name == nil) {
+            return strdup("");
+        }
         return strdup([song_name UTF8String]);
     }
 
     char* getLog() {
-        return logText;
+        if (logText == nil) {
+            return strdup("");
+        }
+        return strdup([logText UTF8String]);
     }
     
     
