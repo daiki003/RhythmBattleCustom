@@ -18,6 +18,8 @@ public class MediaController : MonoBehaviour
     [SerializeField] private Text text;
     [SerializeField] private Text logText;
 
+    private int _debugId;
+
 #if UNITY_IOS && !UNITY_EDITOR
         [DllImport("__Internal")]
         public static extern void exportRandomToItem();
@@ -62,43 +64,76 @@ public class MediaController : MonoBehaviour
 
     private async UniTask MusicImport(int number = 0)
     {
+        _debugId = number;
         text.text = "楽曲エクスポート中";
 
         // 曲エクスポートを開始
         exportSelectedItem();
 
-        // 曲エクスポート完了まで待つ
-        await UniTask.WaitWhile(() => getDoExport());
+        // // 曲エクスポート完了まで待つ
+        // await UniTask.WaitWhile(() => getDoExport());
 
-        text.text = "楽曲インポート中";
+        // text.text = "楽曲インポート中";
 
+        // // Documentsにある曲を取得
+        // string path = Application.persistentDataPath + "/" + getSongId() + ".wav";
+        // WWW www = new WWW("file://" + path);
+
+        // // インポートが完了するまで待つ
+        // await UniTask.WaitUntil(() => www.isDone);
+
+        // _audioSource.clip = www.GetAudioClip(false, false);
+        // if (number == 2)
+        // {
+        //     return;
+        // }
+	    
+	    // text.text = "再生します！";
+
+        // _audioSource.Play();
+        // if (number == 3)
+        // {
+        //     return;
+        // }
+
+        // text.text = getSongName();
+        // if (number == 4)
+        // {
+        //     return;
+        // }
+	    
+    	// // wavファイルを削除
+        // System.IO.File.Delete(path);
+    }
+
+    public void StartMusic(string songId)
+    {
+        text.text = "StartMusicAsync呼ばれた";
+        StartMusicAsync(songId).Forget();
+    }
+
+    public async UniTask StartMusicAsync(string songId)
+    {
         // Documentsにある曲を取得
-        string path = Application.persistentDataPath + "/" + getSongId() + ".wav";
+        string path = Application.persistentDataPath + "/" + songId + ".wav";
         WWW www = new WWW("file://" + path);
 
         // インポートが完了するまで待つ
         await UniTask.WaitUntil(() => www.isDone);
 
         _audioSource.clip = www.GetAudioClip(false, false);
-        if (number == 2)
-        {
-            return;
-        }
-	    
-	    text.text = "再生します！";
+        
+        text.text = "再生します！";
 
         _audioSource.Play();
-        if (number == 3)
+
+        if (_debugId == 2)
         {
             return;
         }
 
-        text.text = getSongName();
-        if (number == 4)
-        {
-            return;
-        }
-	    
+        text.text = songId;
+        
     	// wavファイルを削除
         System.IO.File.Delete(path);
     }

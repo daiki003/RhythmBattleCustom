@@ -277,6 +277,7 @@ static MusicLibraryMediaPicker * _shared;
     song_id = [[item valueForProperty:MPMediaItemPropertyPersistentID] longValue];
     song_name = [item valueForProperty:MPMediaItemPropertyTitle];
     exportItem(item);
+    UnitySendMessage("MediaController", "StartMusic", [song_id UTF8String]);
 }
 
 @end
