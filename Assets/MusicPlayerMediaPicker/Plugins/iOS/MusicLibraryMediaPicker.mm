@@ -277,7 +277,8 @@ static MusicLibraryMediaPicker * _shared;
     song_id = [[item valueForProperty:MPMediaItemPropertyPersistentID] longValue];
     song_name = [item valueForProperty:MPMediaItemPropertyTitle];
     exportItem(item);
-    UnitySendMessage("MediaController", "StartMusic", [song_id UTF8String]);
+    NSString *message = [NSString stringWithFormat:@"%ld", song_id]; 
+    UnitySendMessage("MediaController", "StartMusic", [message UTF8String]);
 }
 
 @end
