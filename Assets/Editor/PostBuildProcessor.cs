@@ -26,7 +26,7 @@ public class PostBuildProcessor
 
         // フラグを付けたいソースファイル
         string fileName = "MusicLibraryMediaPicker.mm";
-        string filePath = Path.Combine("Libraries", "Unity", fileName);
+        string filePath = Path.Combine("Libraries", "MusicPlayerMediaPicker", "Plugins", "iOS", fileName);
 
         // 対象ファイルの GUID を取得
         var fileGuid = proj.FindFileGuidByProjectPath(filePath);
