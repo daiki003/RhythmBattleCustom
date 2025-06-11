@@ -2184,7 +2184,7 @@ MonoBehaviour:
   _playButton2: {fileID: 640901387}
   _playButton3: {fileID: 1647171125}
   _playButton4: {fileID: 56429870}
-  _loadButton: {fileID: 0}
+  _loadButton: {fileID: 439594277}
   text: {fileID: 2003858107}
   logText: {fileID: 1205737942}
 --- !u!1 &1391030745

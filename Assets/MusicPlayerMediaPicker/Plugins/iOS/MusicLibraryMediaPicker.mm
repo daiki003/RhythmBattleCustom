@@ -19,7 +19,7 @@ extern "C" {
     NSString* logText;
     
     // 関数のプロトタイプ宣言
-    void exportRandomToItem();
+    void exportItemFromId(NSString* songId);
     void exportSelectedItem();
     long getSongId();
     char* getSongName();
@@ -159,9 +159,9 @@ extern "C" {
     
     
     /**************************************
-     * ランダムで曲をエクスポートする
+     * 指定した曲をエクスポートする
      **************************************/
-    void exportRandomToItem() {
+    void exportItemFromId(NSString* songId) {
         
         /// 曲情報を取得する処理
         MPMediaQuery* songQuery = [MPMediaQuery songsQuery];
@@ -172,19 +172,23 @@ extern "C" {
         // ここでiCloudにしかない曲を弾く
         [songQuery addFilterPredicate:[MPMediaPropertyPredicate predicateWithValue:[NSNumber numberWithBool:NO] forProperty:MPMediaItemPropertyIsCloudItem]];
         NSArray *songlists = songQuery.collections;
+
+        // PersistentID（固定ID）でフィルター
+        NSNumber *targetId = [NSNumber numberWithUnsignedLongLong:[songId longLongValue]];
+        MPMediaPropertyPredicate *idPredicate = [MPMediaPropertyPredicate predicateWithValue:targetId forProperty:MPMediaItemPropertyPersistentID];
+        [songQuery addFilterPredicate:idPredicate];
         
         // 使える曲リストを作成
-        for ( int i = 0; i < [songlists count]; i++ ) {
-            MPMediaItemCollection* songlist = [songlists objectAtIndex:i];
-            MPMediaItem* item = [songlist representativeItem];
-            if ( ![item hasProtectedAsset] ) [array addObject:item];
+        NSArray<MPMediaItem*> *items = [songQuery items];
+
+        if (items.count == 0) {
+            NSLog(@"指定されたsongIdの曲が見つかりませんでした: %@", songId);
+            return;
         }
-        
+
+        MPMediaItem *item = items[0];
+
         // 曲をエクスポート
-        NSUInteger index = arc4random_uniform([array count]);
-        MPMediaItem* item = [array objectAtIndex:index];
-        song_id = [[item valueForProperty:MPMediaItemPropertyPersistentID] longValue];
-        song_name = [item valueForProperty:MPMediaItemPropertyTitle];
         exportItem(item);
     }
 

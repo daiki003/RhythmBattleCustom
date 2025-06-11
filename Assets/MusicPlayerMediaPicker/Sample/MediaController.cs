@@ -19,10 +19,11 @@ public class MediaController : MonoBehaviour
     [SerializeField] private Text logText;
 
     private int _debugId;
+    private string _currentSongId;
 
 #if UNITY_IOS && !UNITY_EDITOR
         [DllImport("__Internal")]
-        public static extern void exportRandomToItem();
+        public static extern void exportItemFromId(string songId);
 
         [DllImport("__Internal")]
         public static extern void exportSelectedItem();
@@ -39,7 +40,7 @@ public class MediaController : MonoBehaviour
         [DllImport("__Internal")]
         public static extern string getLog();
 #else
-        private static void exportRandomToItem() { }
+        private static void exportItemFromId(string songId) { }
         private static void exportSelectedItem() { }
 
         private static long getSongId() { return 0; }
@@ -51,10 +52,11 @@ public class MediaController : MonoBehaviour
 
 	void Start()
     {
-        _playButton.OnClickAsObservable().Subscribe(async _ => await MusicImport()).AddTo(this);
-        _playButton2.OnClickAsObservable().Subscribe(async _ => await MusicImport(2)).AddTo(this);
-        _playButton3.OnClickAsObservable().Subscribe(async _ => await MusicImport(3)).AddTo(this);
-        _playButton4.OnClickAsObservable().Subscribe(async _ => await MusicImport(4)).AddTo(this);
+        _playButton.OnClickAsObservable().Subscribe(async _ => await StartMusicAsync()).AddTo(this);
+        _playButton2.OnClickAsObservable().Subscribe(async _ => await MusicExpote(2)).AddTo(this);
+        _playButton3.OnClickAsObservable().Subscribe(async _ => await MusicExpote(3)).AddTo(this);
+        _playButton4.OnClickAsObservable().Subscribe(async _ => await MusicExpote(4)).AddTo(this);
+        _loadButton.OnClickAsObservable().Subscribe(async _ => await MusicExpote()).AddTo(this);
 	}
 
     void Update()
@@ -62,62 +64,27 @@ public class MediaController : MonoBehaviour
         logText.text = getLog();
     }
 
-    private async UniTask MusicImport(int number = 0)
+    private async UniTask MusicExpote(int number = 0)
     {
         _debugId = number;
         text.text = "楽曲エクスポート中";
 
         // 曲エクスポートを開始
         exportSelectedItem();
-
-        // // 曲エクスポート完了まで待つ
-        // await UniTask.WaitWhile(() => getDoExport());
-
-        // text.text = "楽曲インポート中";
-
-        // // Documentsにある曲を取得
-        // string path = Application.persistentDataPath + "/" + getSongId() + ".wav";
-        // WWW www = new WWW("file://" + path);
-
-        // // インポートが完了するまで待つ
-        // await UniTask.WaitUntil(() => www.isDone);
-
-        // _audioSource.clip = www.GetAudioClip(false, false);
-        // if (number == 2)
-        // {
-        //     return;
-        // }
-	    
-	    // text.text = "再生します！";
-
-        // _audioSource.Play();
-        // if (number == 3)
-        // {
-        //     return;
-        // }
-
-        // text.text = getSongName();
-        // if (number == 4)
-        // {
-        //     return;
-        // }
-	    
-    	// // wavファイルを削除
-        // System.IO.File.Delete(path);
     }
 
     public void StartMusic(string songId)
     {
-        text.text = "StartMusicAsync呼ばれた";
-        StartMusicAsync(songId).Forget();
+        text.text = "songIdセット " + songId;
+        _currentSongId = songId;
     }
 
-    public async UniTask StartMusicAsync(string songId)
+    public async UniTask StartMusicAsync()
     {
         // 曲エクスポート完了まで待つ
         await UniTask.WaitWhile(() => getDoExport());
 
-        string path = Application.persistentDataPath + "/" + songId + ".wav";
+        string path = Application.persistentDataPath + "/" + _currentSongId + ".wav";
         WWW www = new WWW("file://" + path);
 
         // インポートが完了するまで待つ
@@ -125,7 +92,7 @@ public class MediaController : MonoBehaviour
 
         _audioSource.clip = www.GetAudioClip(false, false);
         
-        text.text = "再生します！";
+        text.text = _currentSongId + "再生します！";
 
         _audioSource.Play();
 
@@ -133,8 +100,6 @@ public class MediaController : MonoBehaviour
         {
             return;
         }
-
-        text.text = songId;
         
     	// wavファイルを削除
         System.IO.File.Delete(path);
