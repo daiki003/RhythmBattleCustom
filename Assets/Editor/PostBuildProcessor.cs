@@ -37,6 +37,6 @@ public class PostBuildProcessor
 
         // 保存
         proj.WriteToFile(projPath);
-        Debug.Log("compilerFlags が UnityFramework に追加されました");
+        Debug.Log("compilerFlags が UnityFramework に追加されました" + "\n" + fileName + "\n" + filePath + "\n" + fileGuid);
     }
 }
