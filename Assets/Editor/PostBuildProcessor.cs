@@ -17,6 +17,7 @@ public class PostBuildProcessor
 
         PBXProject proj = new PBXProject();
         proj.ReadFromFile(projPath);
+        Debug.Log("projPath " + projPath);
 
 #if UNITY_2019_3_OR_NEWER
         string targetGuid = proj.GetUnityFrameworkTargetGuid();
@@ -24,6 +25,7 @@ public class PostBuildProcessor
         string targetGuid = proj.TargetGuidByName("UnityFramework");
 #endif
 
+        Debug.Log("targetGuid " + targetGuid);
         // フラグを付けたいソースファイル
         string fileName = "MusicLibraryMediaPicker.mm";
         string filePath = Path.Combine("Libraries", "MusicPlayerMediaPicker", "Plugins", "iOS", fileName);
