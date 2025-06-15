@@ -30,6 +30,7 @@ public class PostBuildProcessor
 
         foreach (string configName in proj.BuildConfigNames())
         {
+            Debug.LogWarning("configName" + configName);
             string configGuid = proj.BuildConfigByName(targetGuid, configName);
             if (string.IsNullOrEmpty(configGuid))
             {
