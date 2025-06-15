@@ -32,6 +32,7 @@ public class PostBuildProcessor
         var fileGuid = proj.FindFileGuidByProjectPath(filePath);
         if (!string.IsNullOrEmpty(fileGuid))
         {
+            Debug.Log("ビルドログ: targetGuid" + targetGuid);
             proj.AddBuildPropertyForConfig(targetGuid, "OTHER_CFLAGS", "-fno-objc-arc");
         }
 
