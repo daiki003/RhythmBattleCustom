@@ -28,16 +28,19 @@ public class PostBuildProcessor
         string fileName = "MusicLibraryMediaPicker.mm";
         string filePath = Path.Combine("Libraries", "MusicPlayerMediaPicker", "Plugins", "iOS", fileName);
 
-        // 対象ファイルの GUID を取得
-        var fileGuid = proj.FindFileGuidByProjectPath(filePath);
-        if (!string.IsNullOrEmpty(fileGuid))
+        foreach (string configName in proj.BuildConfigNames())
         {
-            Debug.Log("ビルドログ: targetGuid" + targetGuid);
-            proj.AddBuildPropertyForConfig(targetGuid, "OTHER_CFLAGS", "-fno-objc-arc");
+            string configGuid = proj.BuildConfigByName(targetGuid, configName);
+            if (string.IsNullOrEmpty(configGuid))
+            {
+                Debug.LogWarning($"Config '{configName}' が見つかりませんでした。");
+                continue;
+            }
+
+            proj.AddBuildPropertyForConfig(configGuid, "OTHER_CFLAGS", "-fno-objc-arc");
         }
 
         // 保存
         proj.WriteToFile(projPath);
-        Debug.Log("compilerFlags が UnityFramework に追加されました" + "\n" + fileName + "\n" + filePath + "\n" + fileGuid);
     }
 }
