@@ -1,5 +1,6 @@
 // Assets/Editor/PostBuildProcessor.cs
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEditor.iOS.Xcode;
@@ -30,6 +31,7 @@ public class PostBuildProcessor
         string fileName = "MusicLibraryMediaPicker.mm";
         string filePath = Path.Combine("Libraries", "MusicPlayerMediaPicker", "Plugins", "iOS", fileName);
 
+        Debug.LogWarning("configNamesCount" + proj.BuildConfigNames().Count());
         foreach (string configName in proj.BuildConfigNames())
         {
             Debug.LogWarning("configName" + configName);
