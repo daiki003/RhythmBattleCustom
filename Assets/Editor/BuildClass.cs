@@ -14,7 +14,7 @@ public class BuildClass
 		// 実行
 		var buildReport = BuildPipeline.BuildPlayer(
 				sceneList,							//!< ビルド対象シーンリスト
-				"~/RhythumBattle_iOS/myUnityProj.exe",	//!< 出力先
+				"~/RhythumBattleCustom_iOS",	//!< 出力先
 				BuildTarget.iOS,		//!< ビルド対象プラットフォーム
 				BuildOptions.None			//!< ビルドオプション
 		);

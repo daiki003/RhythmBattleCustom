@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
 using R3;
+using UnityEngine.Networking;
 
 public class MediaController : MonoBehaviour 
 {
@@ -85,12 +86,8 @@ public class MediaController : MonoBehaviour
         await UniTask.WaitWhile(() => getDoExport());
 
         string path = Application.persistentDataPath + "/" + _currentSongId + ".wav";
-        WWW www = new WWW("file://" + path);
 
-        // インポートが完了するまで待つ
-        await UniTask.WaitUntil(() => www.isDone);
-
-        _audioSource.clip = www.GetAudioClip(false, false);
+        _audioSource.clip = await GetAudioClipAsync();
         
         text.text = _currentSongId + "再生します！";
 
@@ -103,5 +100,29 @@ public class MediaController : MonoBehaviour
         
     	// wavファイルを削除
         System.IO.File.Delete(path);
+    }
+
+    public async UniTask<AudioClip> GetAudioClipAsync()
+    {
+        string path = Application.persistentDataPath + "/" + _currentSongId + ".wav";
+        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + path, AudioType.WAV))
+        {
+            await www.SendWebRequest(); // ← ここが yield return の代替
+
+    #if UNITY_2020_1_OR_NEWER
+            if (www.result != UnityWebRequest.Result.Success)
+    #else
+            if (www.isNetworkError || www.isHttpError)
+    #endif
+            {
+                Debug.LogError("❌ Failed to load audio: " + www.error);
+                return null;
+            }
+            else
+            {
+                AudioClip clip = DownloadHandlerAudioClip.GetContent(www);
+                return clip;
+            }
+        }
     }
 }
