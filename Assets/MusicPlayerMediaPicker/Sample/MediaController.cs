@@ -12,14 +12,8 @@ public class MediaController : MonoBehaviour
 {
     [SerializeField] private AudioSource _audioSource;
     [SerializeField] private Button _playButton;
-    [SerializeField] private Button _playButton2;
-    [SerializeField] private Button _playButton3;
-    [SerializeField] private Button _playButton4;
     [SerializeField] private Button _loadButton;
-    [SerializeField] private Text text;
-    [SerializeField] private Text logText;
 
-    private int _debugId;
     private string _currentSongId;
 
 #if UNITY_IOS && !UNITY_EDITOR
@@ -51,32 +45,29 @@ public class MediaController : MonoBehaviour
 
 #endif
 
-	void Start()
-    {
-        _playButton.OnClickAsObservable().Subscribe(async _ => await StartMusicAsync()).AddTo(this);
-        _playButton2.OnClickAsObservable().Subscribe(async _ => await MusicExpote(2)).AddTo(this);
-        _playButton3.OnClickAsObservable().Subscribe(async _ => await MusicExpote(3)).AddTo(this);
-        _playButton4.OnClickAsObservable().Subscribe(async _ => await MusicExpote(4)).AddTo(this);
-        _loadButton.OnClickAsObservable().Subscribe(async _ => await MusicExpote()).AddTo(this);
+    public static MediaController instance;
+	public void Awake()
+	{
+		if (instance == null)
+		{
+			instance = this;
+		}
 	}
 
-    void Update()
+	void Start()
     {
-        logText.text = getLog();
-    }
+        _playButton?.OnClickAsObservable().Subscribe(async _ => await StartMusicAsync()).AddTo(this);
+        _loadButton?.OnClickAsObservable().Subscribe(_ => MusicExpote()).AddTo(this);
+	}
 
-    private async UniTask MusicExpote(int number = 0)
+    private void MusicExpote()
     {
-        _debugId = number;
-        text.text = "楽曲エクスポート中";
-
         // 曲エクスポートを開始
         exportSelectedItem();
     }
 
     public void StartMusic(string songId)
     {
-        text.text = "songIdセット " + songId;
         _currentSongId = songId;
     }
 
@@ -88,15 +79,8 @@ public class MediaController : MonoBehaviour
         string path = Application.persistentDataPath + "/" + _currentSongId + ".wav";
 
         _audioSource.clip = await GetAudioClipAsync();
-        
-        text.text = _currentSongId + "再生します！";
 
         _audioSource.Play();
-
-        if (_debugId == 2)
-        {
-            return;
-        }
         
     	// wavファイルを削除
         System.IO.File.Delete(path);
@@ -107,7 +91,7 @@ public class MediaController : MonoBehaviour
         string path = Application.persistentDataPath + "/" + _currentSongId + ".wav";
         using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + path, AudioType.WAV))
         {
-            await www.SendWebRequest(); // ← ここが yield return の代替
+            await www.SendWebRequest();
 
     #if UNITY_2020_1_OR_NEWER
             if (www.result != UnityWebRequest.Result.Success)

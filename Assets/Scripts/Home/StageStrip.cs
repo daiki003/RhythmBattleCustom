@@ -19,18 +19,18 @@ public class StageStrip : MonoBehaviour
     [SerializeField] private ScoreStars _scoreStars;
 
     private StageHeader _stageHeader;
-    public string StageId => _stageHeader.StageId;
+    public string StageId => _stageHeader.MusicId;
     public float StartTime => _stageHeader.StripStartTime;
     public float EndTime => _stageHeader.StripEndTime;
     public int LevelId { get; private set; }
 
     public Subject<Unit> OnClickedStrip { get; private set; } = new();
 
-    public void Init(StageHeader stageHeader, int level, string overrideName = "")
+    public void Init(StageHeader stageHeader, int level)
     {
         _stageHeader = stageHeader;
         LevelId = level;
-        _titleText.text = string.IsNullOrEmpty(overrideName) ? _stageHeader.StageName : overrideName;
+        _titleText.text = _stageHeader.StageName;
         var enemySprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + StageId);
         _enemyImage.sprite = enemySprite;
         _selectedPanel.gameObject.SetActive(false);

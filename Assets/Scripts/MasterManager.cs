@@ -25,7 +25,7 @@ public class NoteMaster
 
 public class StageHeader
 {
-    public string StageId;
+    public string MusicId;
     public string StageName;
     public float StripStartTime;
     public float StripEndTime;
@@ -38,7 +38,7 @@ public class StageHeader
     {
         return new StageHeader
         {
-            StageId = StageId,
+            MusicId = MusicId,
             StageName = StageName,
             StripStartTime = StripStartTime,
             StripEndTime = StripEndTime,
@@ -52,17 +52,16 @@ public class StageHeader
 
 public class StageMaster
 {
-    public string StageId => StageHeader.StageId;
+    public string MusicId => StageHeader.MusicId;
     public StageHeader StageHeader;
     public List<List<NoteMaster>> notes = new List<List<NoteMaster>>();
 }
 
 public class SingleStageMaster
 {
-    public string StageId;
-    public int LevelId;
-    public string StageNameOverride;
-    public List<NoteMaster> notes = new List<NoteMaster>();
+    public string MusicId;
+    public int StageId;
+    public List<NoteMaster> Notes = new List<NoteMaster>();
 }
 
 public class TitleDataResult
@@ -117,7 +116,7 @@ public static class MasterManager
     }
     public static async UniTask UpdateOverrideStageMaster(string stageId, List<LevelInfo> levelInfoList, float bpm, float offset)
     {
-        var targetMaster = StageMasterList.FirstOrDefault(s => s.StageId == stageId);
+        var targetMaster = StageMasterList.FirstOrDefault(s => s.MusicId == stageId);
         targetMaster.StageHeader.BPM = bpm;
         targetMaster.StageHeader.NoteTimeOffset = offset;
         foreach (var levelInfo in levelInfoList)
@@ -165,19 +164,18 @@ public static class MasterManager
                     type = nn.type,
                 }).ToList()
             }).ToList();
-            var targetCustomStage = CustomStageList.FirstOrDefault(s => s.StageId == stageId && s.LevelId == level);
+            var targetCustomStage = CustomStageList.FirstOrDefault(s => s.MusicId == stageId && s.StageId == level);
             if (targetCustomStage != null)
             {
-                targetCustomStage.notes = notes;
+                targetCustomStage.Notes = notes;
             }
             else
             {
                 CustomStageList.Add(new SingleStageMaster
                 {
-                    StageId = stageId,
-                    LevelId = level,
-                    StageNameOverride = levelInfo.StageNameOverride,
-                    notes = notes
+                    MusicId = stageId,
+                    StageId = level,
+                    Notes = notes
                 });
             }
         }
@@ -186,25 +184,25 @@ public static class MasterManager
     }
     public static void SetOverrideMaster(StageMaster master)
     {
-        OverrideMasterList.RemoveAll(s => s.StageId == master.StageId);
+        OverrideMasterList.RemoveAll(s => s.MusicId == master.MusicId);
         OverrideMasterList.Add(master);
     }
     public static StageMaster GetOverrideMaster(string stageId)
     {
-        return OverrideMasterList.FirstOrDefault(s => s.StageId == stageId);
+        return OverrideMasterList.FirstOrDefault(s => s.MusicId == stageId);
     }
     public static int GetNextCustumStageLevel(string stageId)
     {
-        var customStageList = CustomStageList.Where(s => s.StageId == stageId).ToList();
+        var customStageList = CustomStageList.Where(s => s.MusicId == stageId).ToList();
         if (customStageList.Count == 0)
         {
             return MinCustomLevelId;
         }
-        return customStageList.Max(s => s.LevelId) + 1;
+        return customStageList.Max(s => s.StageId) + 1;
     }
     public static async UniTask DeleteCustomStage(string stageId, int level)
     {
-        CustomStageList.RemoveAll(s => s.StageId == stageId && s.LevelId == level);
+        CustomStageList.RemoveAll(s => s.MusicId == stageId && s.StageId == level);
         await PlayFabController.UpdateCustomStageList(CustomStageList);
         SaveDataManager.DeleteClearState(stageId, new List<int>(){level});
     }

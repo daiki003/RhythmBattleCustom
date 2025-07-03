@@ -43,23 +43,22 @@ public class ScoreMakerModel
     public async UniTask OverrideScore(List<NoteMaster> notes, int level, float bpm, float offset)
     {
         UpdateCurrentLevelNotes(notes, level);
-        await MasterManager.UpdateOverrideStageMaster(OriginalStageInfo.StageHeader.StageId, _levelInfoList, bpm, offset);
+        await MasterManager.UpdateOverrideStageMaster(OriginalStageInfo.StageHeader.MusicId, _levelInfoList, bpm, offset);
     }
 
-    public async UniTask SaveScore(List<NoteMaster> notes, int level, string overrideName)
+    public async UniTask SaveScore(List<NoteMaster> notes, int level)
     {
         // 現在のレベルの譜面を保存
-        UpdateCurrentLevelNotes(notes, level, overrideName);
-        await MasterManager.UpdateStageMaster(OriginalStageInfo.StageHeader.StageId, _levelInfoList);
+        UpdateCurrentLevelNotes(notes, level);
+        await MasterManager.UpdateStageMaster(OriginalStageInfo.StageHeader.MusicId, _levelInfoList);
     }
 
     // 現在のレベルの譜面状況を更新
-    public void UpdateCurrentLevelNotes(List<NoteMaster> notes, int level, string overrideName = "")
+    public void UpdateCurrentLevelNotes(List<NoteMaster> notes, int level)
     {
         var currentLevelInfo = _levelInfoList?.FirstOrDefault(l => l.Level == level);
         if (currentLevelInfo != null)
         {
-            currentLevelInfo.StageNameOverride = overrideName;
             currentLevelInfo.Notes = notes;
         }
         else
@@ -67,7 +66,6 @@ public class ScoreMakerModel
             _levelInfoList.Add(new LevelInfo
             {
                 Level = level,
-                StageNameOverride = overrideName,
                 Notes = notes
             });
         }

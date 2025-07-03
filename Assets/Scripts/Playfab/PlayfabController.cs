@@ -14,6 +14,7 @@ public class PlayFabController
     // ログイン ---------------------------------------------------------------------------------------------------------------------------------------[]
     public static async UniTask LoginAsync()
     {
+        PlayFabSettings.staticSettings.TitleId = "1EF453";
         InfoRequestParams = new GetPlayerCombinedInfoRequestParams();
         InfoRequestParams.GetUserData = true;
         LoginResult loginResult = null;
@@ -88,7 +89,7 @@ public class PlayFabController
             {
                 var clearState = new ClearState()
                 {
-                    StageId = MasterManager.StageMasterList[i].StageId,
+                    StageId = MasterManager.StageMasterList[i].MusicId,
                     Level = j,
                 };
                 clearStates.Add(clearState);
@@ -231,7 +232,7 @@ public class PlayFabController
 
     public static async UniTask UpdateOverrideScore(StageMaster stageMaster)
     {
-        string keyName = stageMaster.StageId + "Override";
+        string keyName = stageMaster.MusicId + "Override";
         var request = new UpdateUserDataRequest()
         {
             Data = new Dictionary<string, string>

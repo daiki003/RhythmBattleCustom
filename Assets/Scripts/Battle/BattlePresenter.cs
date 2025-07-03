@@ -55,7 +55,7 @@ public class BattlePresenter : MonoBehaviour
 
     public void FinishBattle(Score score)
     {
-        string stageId = _battleSceneInfo.StageHeader.StageId;
+        string stageId = _battleSceneInfo.StageHeader.MusicId;
         int level = _battleSceneInfo.LevelInfo.Level;
         var highScoreClearState = SaveDataManager.GetClearState(stageId, level).CreateCopy();
         var clearState = _model.CalculateScore(score, stageId, level);

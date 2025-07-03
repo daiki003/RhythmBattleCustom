@@ -7,7 +7,6 @@ using UnityEngine;
 public class LevelInfo
 {
     public int Level;
-    public string StageNameOverride;
     public List<NoteMaster> Notes = new();
 }
 
@@ -36,7 +35,7 @@ public class HomeModel
         var customStageList = MasterManager.CustomStageList;
         foreach (var master in MasterManager.StageMasterList)
         {
-            var stageMaster = MasterManager.GetOverrideMaster(master.StageId) ?? master;
+            var stageMaster = MasterManager.GetOverrideMaster(master.MusicId) ?? master;
             var stageInfo = new StageInfo();
             stageInfo.StageHeader = stageMaster.StageHeader.CreateCopy();
             // 通常の3レベル分を追加
@@ -50,7 +49,7 @@ public class HomeModel
                 stageInfo.LevelList.Add(levelInfo);
             }
             // カスタムステージ分を追加
-            stageInfo.LevelList.AddRange(customStageList.Where(c => c.StageId == stageInfo.StageHeader.StageId).Select(c => CreateLevelInfo(c)));
+            stageInfo.LevelList.AddRange(customStageList.Where(c => c.MusicId == stageInfo.StageHeader.MusicId).Select(c => CreateLevelInfo(c)));
             _stageList.Add(stageInfo);
         }
     }
@@ -59,14 +58,13 @@ public class HomeModel
     {
         return new LevelInfo
         {
-            Level = singleStageMaster.LevelId,
-            StageNameOverride = singleStageMaster.StageNameOverride,
-            Notes = new List<NoteMaster>(singleStageMaster.notes),
+            Level = singleStageMaster.StageId,
+            Notes = new List<NoteMaster>(singleStageMaster.Notes),
         };
     }
 
     public StageInfo GetStageInfo(string stageId)
     {
-        return _stageList.FirstOrDefault(s => s.StageHeader.StageId == stageId);
+        return _stageList.FirstOrDefault(s => s.StageHeader.MusicId == stageId);
     }
 }

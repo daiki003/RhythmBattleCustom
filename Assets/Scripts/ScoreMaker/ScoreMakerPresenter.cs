@@ -72,7 +72,7 @@ public class ScoreMakerPresenter : MonoBehaviour
         }
         else
         {
-            await _model.SaveScore(_view.CreateNoteList(), _currentLevel, overrideName);
+            await _model.SaveScore(_view.CreateNoteList(), _currentLevel);
         }
         _view.DisplaySaveFinishDialog();
     }

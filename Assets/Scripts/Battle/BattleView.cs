@@ -240,7 +240,7 @@ public class BattleView : MonoBehaviour
         }
 
         _resultView.gameObject.SetActive(false);
-        _enemyImage.sprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + _stageHeader.StageId);
+        _enemyImage.sprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + _stageHeader.MusicId);
     }
 
     private void DisplayDialog(MessageDialogOption option, Action okAction)
@@ -344,7 +344,7 @@ public class BattleView : MonoBehaviour
     public void PrepareBattle()
     {
         Reset();
-        BGMManager.instance.SetClip(_stageHeader.StageId, immediatePlay: false);
+        BGMManager.instance.SetClip(_stageHeader.MusicId, immediatePlay: false);
         CreateBalls(_levelInfo.Notes);
     }
 

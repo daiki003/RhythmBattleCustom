@@ -166,7 +166,7 @@ public class HomeView : MonoBehaviour
             var customStageList = stageInfo.LevelList.Where(l => l.Level >= MasterManager.MinCustomLevelId);
             foreach (var customLevel in customStageList)
             {
-                CreateStageStrip(stageInfo.StageHeader, level: customLevel.Level, _customStripTransform, customLevel.StageNameOverride);
+                CreateStageStrip(stageInfo.StageHeader, level: customLevel.Level, _customStripTransform);
             }
         }
         float achievementRate = SaveDataManager.CalculateAchievementRate().RoundDown(1);
@@ -174,11 +174,11 @@ public class HomeView : MonoBehaviour
     }
 
     // ステージの短冊1枚を作成
-    private StageStrip CreateStageStrip(StageHeader stageHeader, int level, Transform transform, string overrideName = "")
+    private StageStrip CreateStageStrip(StageHeader stageHeader, int level, Transform transform)
     {
         var strip = Instantiate(_stageStripPrefab, transform);
         _stageStripList.Add(strip);
-        strip.Init(stageHeader, level, overrideName);
+        strip.Init(stageHeader, level);
         strip.OnClickedStrip.Subscribe(_ =>
         {
             if (_selectedStrip != strip)

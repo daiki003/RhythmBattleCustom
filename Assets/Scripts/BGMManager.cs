@@ -71,7 +71,7 @@ public class BGMManager : MonoBehaviour
 		{
 			LoadClip(name);
 		}
-		foreach (string name in MasterManager.StageMasterList.Select(m => m.StageId))
+		foreach (string name in MasterManager.StageMasterList.Select(m => m.MusicId))
 		{
 			LoadClip(name);
 		}

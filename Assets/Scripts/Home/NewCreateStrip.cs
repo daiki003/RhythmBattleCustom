@@ -25,7 +25,7 @@ public class NewCreateStrip : MonoBehaviour
         _titleText.text = stageHeader.StageName + (isDisplayLevel ? "Lv" + level : "");
         StartTime = stageHeader.StripStartTime;
         EndTime = stageHeader.StripEndTime;
-        SetStageId(stageHeader.StageId);
+        SetStageId(stageHeader.MusicId);
         Level = level;
         _selectedPanel.gameObject.SetActive(false);
         _stripButton.OnClickAsObservable().Subscribe(_ =>
