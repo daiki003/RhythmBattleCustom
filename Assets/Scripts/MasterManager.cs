@@ -86,8 +86,8 @@ public static class MasterManager
     public static List<SingleStageMaster> CustomStageList = new List<SingleStageMaster>(); // カスタムステージを入れておくリスト
     // デフォルトステージの最大レベル
     public const int MaxDefaultLevelId = 3;
-    // カスタムステージの最小レベルID
-    public const int MinCustomLevelId = 100;
+    // 最小ステージID
+    public const int MinStageId = 1;
 
     public static async UniTask GetAllMasterData()
 	{
@@ -191,12 +191,12 @@ public static class MasterManager
     {
         return OverrideMasterList.FirstOrDefault(s => s.MusicId == stageId);
     }
-    public static int GetNextCustumStageLevel(string stageId)
+    public static int GetNextStageId(string musicId)
     {
-        var customStageList = CustomStageList.Where(s => s.MusicId == stageId).ToList();
+        var customStageList = CustomStageList.Where(s => s.MusicId == musicId).ToList();
         if (customStageList.Count == 0)
         {
-            return MinCustomLevelId;
+            return MinStageId;
         }
         return customStageList.Max(s => s.StageId) + 1;
     }

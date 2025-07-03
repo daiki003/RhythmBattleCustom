@@ -31,7 +31,7 @@ public class StageDuplicateDialog : DialogBase
         if (dialogOption is not StageDuplicateDialogOption option) return;
         _stageInfo = option.StageInfo;
         var stageHeader = _stageInfo.StageHeader;
-        _customStageTitle.SetActive(_stageInfo.HasCustomStage());
+        _customStageTitle.SetActive(false);
         foreach (var levelMaster in _stageInfo.LevelList)
         {
             var prefab = ResourceManager.LoadPrefab<NewCreateStrip>("NewCreateStrip");

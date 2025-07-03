@@ -14,10 +14,6 @@ public class StageInfo
 {
     public StageHeader StageHeader;
     public List<LevelInfo> LevelList = new();
-    public bool HasCustomStage()
-    {
-        return LevelList.Any(l => l.Level > MasterManager.MaxDefaultLevelId);
-    }
 }
 
 public class HomeModel
@@ -63,8 +59,8 @@ public class HomeModel
         };
     }
 
-    public StageInfo GetStageInfo(string stageId)
+    public StageInfo GetStageInfo(string musicId)
     {
-        return _stageList.FirstOrDefault(s => s.StageHeader.MusicId == stageId);
+        return _stageList.FirstOrDefault(s => s.StageHeader.MusicId == musicId);
     }
 }

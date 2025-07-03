@@ -15,6 +15,7 @@ public class MediaController : MonoBehaviour
     [SerializeField] private Button _loadButton;
 
     private string _currentSongId;
+    private bool _isFinishExport;
 
 #if UNITY_IOS && !UNITY_EDITOR
         [DllImport("__Internal")]
@@ -57,18 +58,29 @@ public class MediaController : MonoBehaviour
 	void Start()
     {
         _playButton?.OnClickAsObservable().Subscribe(async _ => await StartMusicAsync()).AddTo(this);
-        _loadButton?.OnClickAsObservable().Subscribe(_ => MusicExpote()).AddTo(this);
+        _loadButton?.OnClickAsObservable().Subscribe(_ => MusicExpote().Forget()).AddTo(this);
 	}
 
-    private void MusicExpote()
+    public async UniTask<string> MusicExpote()
     {
+        _isFinishExport = false;
         // 曲エクスポートを開始
         exportSelectedItem();
+
+        await UniTask.WaitWhile(() => _isFinishExport);
+        return _currentSongId;
     }
 
-    public void StartMusic(string songId)
+    public void FinishSelectMusic(string songId)
     {
         _currentSongId = songId;
+        WaitExport().Forget();
+    }
+
+    private async UniTask WaitExport()
+    {
+        await UniTask.WaitWhile(() => getDoExport());
+        _isFinishExport = true;
     }
 
     public async UniTask StartMusicAsync()

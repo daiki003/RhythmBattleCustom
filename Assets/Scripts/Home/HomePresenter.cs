@@ -26,9 +26,9 @@ public class HomePresenter : MonoBehaviour
         {
             StartScoreMaker(x.StageId, x.Level, isNewCreate: false);
         }).AddTo(this);
-        _view.ClickNewCreateStageButton.Subscribe(stageId =>
+        _view.ClickNewCreateStageButton.Subscribe(musicId =>
         {
-            StartScoreMaker(stageId, MasterManager.GetNextCustumStageLevel(stageId), isNewCreate: true);
+            StartScoreMaker(musicId, MasterManager.GetNextStageId(musicId), isNewCreate: true);
         }).AddTo(this);
     }
 
@@ -44,14 +44,14 @@ public class HomePresenter : MonoBehaviour
         GameManager.instance.OpenScene(SceneType.Battle, sceneInfo).Forget();
     }
 
-    private void StartScoreMaker(string stageId, int level, bool isNewCreate)
+    private void StartScoreMaker(string musicId, int stageId, bool isNewCreate)
     {
         var sceneInfo = new ScoreMakerSceneInfo
         {
-            StageInfo = _model.GetStageInfo(stageId),
-            TargetLevel = level,
+            StageInfo = _model.GetStageInfo(musicId),
+            TargetLevel = stageId,
             IsNewCreate = isNewCreate,
-            IsDevelopOverride = level <= MasterManager.MaxDefaultLevelId,
+            IsDevelopOverride = stageId <= MasterManager.MaxDefaultLevelId,
         };
         GameManager.instance.OpenScene(SceneType.ScoreMaker, sceneInfo).Forget();
     }

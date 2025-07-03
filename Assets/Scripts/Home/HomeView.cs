@@ -24,7 +24,7 @@ public static class HomePanelTypeExtension
             HomePanelType.Level1 => 1,
             HomePanelType.Level2 => 2,
             HomePanelType.Level3 => 3,
-            _ => MasterManager.MinCustomLevelId
+            _ => MasterManager.MinStageId
         };
     }
 
@@ -81,7 +81,7 @@ public class HomeView : MonoBehaviour
 
     private StageStrip _selectedStrip;
     private HomePanelType _currentPanelType;
-    private int _currentLevel => _currentPanelType.GetLevel() < MasterManager.MinCustomLevelId ? _currentPanelType.GetLevel() : _selectedStrip.LevelId;
+    private int _currentLevel => _currentPanelType.GetLevel() < MasterManager.MinStageId ? _currentPanelType.GetLevel() : _selectedStrip.LevelId;
 
     public void Init(List<StageInfo> stageList, int lastLevel)
     {
@@ -99,7 +99,7 @@ public class HomeView : MonoBehaviour
                 SetLevelPanel(menuButton.ButtonType);
             }
         }
-        if (lastLevel >= MasterManager.MinCustomLevelId)
+        if (lastLevel >= MasterManager.MinStageId)
         {
             SetLevelPanel(HomePanelType.Custom);
         }
@@ -134,7 +134,7 @@ public class HomeView : MonoBehaviour
         // 新規ステージ作成ボタン
         _newCreateButton.OnClickAsObservable().Subscribe(_ =>
         {
-            CreateStage();
+            CreateStage().Forget();
         }).AddTo(this);
 
         // 設定ボタン
@@ -163,7 +163,7 @@ public class HomeView : MonoBehaviour
         foreach (var stageInfo in stageList)
         {
             CreateStageStrip(stageInfo.StageHeader, level: 0, _stripTransform);
-            var customStageList = stageInfo.LevelList.Where(l => l.Level >= MasterManager.MinCustomLevelId);
+            var customStageList = stageInfo.LevelList.Where(l => l.Level >= MasterManager.MinStageId);
             foreach (var customLevel in customStageList)
             {
                 CreateStageStrip(stageInfo.StageHeader, level: customLevel.Level, _customStripTransform);
@@ -256,30 +256,11 @@ public class HomeView : MonoBehaviour
         }).AddTo(this);
     }
 
-    private void CreateStage()
+    private async UniTask CreateStage()
     {
         CancelSelectStrip();
-        var option = new DialogOptionBase
-        {
-            TitleText = "ステージ選択",
-            OkButtonText = "作成",
-            CancelButtonText = "キャンセル"
-        };
-        var dialog = DialogManager.instance.CreateDialog<NewCreateListDialog>(DialogManager.NewCreateListDialogPrefabName, option);
-        dialog.OnCloseDialog.Subscribe(result =>
-        {
-            if (result is NewCreateDialogResult dialogResult)
-            {
-                if (dialogResult.ResultType == DialogResultType.Ok)
-                {
-                    _clickNewCreateStageButton.OnNext(dialogResult.SelectedStageId);
-                }
-                else
-                {
-                    CancelSelectStrip();
-                }
-            }
-        }).AddTo(this);
+        string musicId = await MediaController.instance.MusicExpote();
+        _clickNewCreateStageButton.OnNext(musicId);
     }
 
     private void SetButtonInteractable(bool isActive)
