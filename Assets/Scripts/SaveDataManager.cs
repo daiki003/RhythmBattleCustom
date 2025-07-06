@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class ClearState
 {
-    public string StageId;
-    public int Level;
+    public string MusicId;
+    public int StageId;
     public float Score;
     public int CriticalNumber;
     public int HitNumber;
@@ -17,8 +17,8 @@ public class ClearState
     {
         return new ClearState
         {
+            MusicId = MusicId,
             StageId = StageId,
-            Level = Level,
             Score = Score,
             CriticalNumber = CriticalNumber,
             HitNumber = HitNumber,
@@ -48,14 +48,14 @@ public static class SaveDataManager
 
     public static ClearState GetClearState(string stageId, int level)
     {
-        var clearState = ClearStateList.FirstOrDefault(c => c.StageId == stageId && c.Level == level);
+        var clearState = ClearStateList.FirstOrDefault(c => c.MusicId == stageId && c.StageId == level);
         if (clearState == null)
         {
             // クリア状況が作られていなければここで作る
             clearState = new ClearState()
             {
-                StageId = stageId,
-                Level = level
+                MusicId = stageId,
+                StageId = level
             };
             ClearStateList.Add(clearState);
         }
@@ -80,7 +80,7 @@ public static class SaveDataManager
     private static int GetTotalStar()
     {
         int totalStar = 0;
-        var normalStageScoreList = ClearStateList.Where(c => c.Level <= MasterManager.MaxDefaultLevelId).ToList();
+        var normalStageScoreList = ClearStateList.Where(c => c.StageId <= MasterManager.MaxDefaultLevelId).ToList();
         for (int i = 0; i < normalStageScoreList.Count; i++)
         {
             totalStar += GetStarState(normalStageScoreList[i]);
@@ -123,7 +123,7 @@ public static class SaveDataManager
 
     public static void UpdateClearState(ClearState clearState)
     {
-        var targetState = GetClearState(clearState.StageId, clearState.Level);
+        var targetState = GetClearState(clearState.MusicId, clearState.StageId);
         if (targetState != null)
         {
             if (targetState.Score <= clearState.Score)
@@ -137,9 +137,9 @@ public static class SaveDataManager
         PlayFabController.UpdateClearState(ClearStateList).Forget();
     }
 
-    public static void DeleteClearState(string stageId, List<int> levelList)
+    public static void DeleteClearState(string musicId, int stageId)
     {
-        ClearStateList.RemoveAll(c => c.StageId == stageId && levelList.Contains(c.Level));
+        ClearStateList.RemoveAll(c => c.MusicId == musicId && c.StageId == stageId);
         PlayFabController.UpdateClearState(ClearStateList).Forget();
     }
 

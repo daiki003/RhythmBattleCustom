@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Unity.Burst.CompilerServices;
 using UnityEngine;
 
 public class LevelInfo
@@ -18,8 +19,10 @@ public class StageInfo
 
 public class HomeModel
 {
-    private List<StageInfo> _stageList = new();
-    public List<StageInfo> StageList => _stageList;
+    private List<SingleStageMaster> _stageMasterList = new();
+    public List<SingleStageMaster> StageMasterList => _stageMasterList;
+
+    private const int _minStageId = 1;
 
     public void Init()
     {
@@ -28,26 +31,7 @@ public class HomeModel
 
     private void CreateStageList()
     {
-        var customStageList = MasterManager.CustomStageList;
-        foreach (var master in MasterManager.StageMasterList)
-        {
-            var stageMaster = MasterManager.GetOverrideMaster(master.MusicId) ?? master;
-            var stageInfo = new StageInfo();
-            stageInfo.StageHeader = stageMaster.StageHeader.CreateCopy();
-            // 通常の3レベル分を追加
-            for (int i = 0; i < stageMaster.notes.Count; i++)
-            {
-                var levelInfo = new LevelInfo
-                {
-                    Level = i + 1,
-                    Notes = new List<NoteMaster>(stageMaster.notes[i])
-                };
-                stageInfo.LevelList.Add(levelInfo);
-            }
-            // カスタムステージ分を追加
-            stageInfo.LevelList.AddRange(customStageList.Where(c => c.MusicId == stageInfo.StageHeader.MusicId).Select(c => CreateLevelInfo(c)));
-            _stageList.Add(stageInfo);
-        }
+        _stageMasterList = MasterManager.CustomStageList;
     }
 
     private LevelInfo CreateLevelInfo(SingleStageMaster singleStageMaster)
@@ -59,8 +43,32 @@ public class HomeModel
         };
     }
 
-    public StageInfo GetStageInfo(string musicId)
+    public SingleStageMaster GetStageInfo(string musicId, int stageId)
     {
-        return _stageList.FirstOrDefault(s => s.StageHeader.MusicId == musicId);
+        var stageMaster = _stageMasterList.FirstOrDefault(s => s.MusicId == musicId && s.StageId == stageId);
+        if (stageMaster == null)
+        {
+            stageMaster = new SingleStageMaster
+            {
+                StageHeader = new StageHeader
+                {
+                    MusicId = musicId,
+                    StageName = "",
+                },
+                StageId = GetNextStageId(musicId),
+                Notes = new List<NoteMaster>(),
+            };
+        }
+        return stageMaster;
+    }
+
+    private int GetNextStageId(string musicId)
+    {
+        var stageList = _stageMasterList.Where(s => s.MusicId == musicId);
+        if (stageList.Count() == 0)
+        {
+            return _minStageId;
+        }
+        return stageList.Max(s => s.StageId) + 1;
     }
 }

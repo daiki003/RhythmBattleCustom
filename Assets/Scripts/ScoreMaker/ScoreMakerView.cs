@@ -259,13 +259,13 @@ public class ScoreMakerView : MonoBehaviour
     }
 
     // ステージ複製選択ダイアログ
-    public void DisplayDuplicateDialog(StageInfo stageInfo)
+    public void DisplayDuplicateDialog(SingleStageMaster stageMaster)
     {
         var option = new StageDuplicateDialogOption
         {
             TitleText = "ステージ複製",
             OkButtonText = "複製",
-            StageInfo = stageInfo
+            StageInfo = stageMaster
         };
         var dialog = DialogManager.instance.CreateDialog<StageDuplicateDialog>(DialogManager.StageDuplicateDialogPrefabName, option);
         dialog.OnCloseDialog.Subscribe(result  =>

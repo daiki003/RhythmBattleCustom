@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.Profiling;
 using DG.Tweening;
 using System.Threading;
+using System.Threading.Tasks;
 
 public enum BgmName
 {
@@ -101,16 +102,27 @@ public class BGMManager : MonoBehaviour
 
 	public void SetClip(string clipName, bool isLoop = false, bool immediatePlay = true, bool isFade = false, float startTime = 0f, float endTime = 0f)
 	{
+		var newClip = GetClip(clipName);
+		SetClip(newClip, isLoop, immediatePlay, isFade, startTime, endTime);
+	}
+
+	public async Task SetClipFromLibrary(string musicId, bool isLoop = false, bool immediatePlay = true, bool isFade = false, float startTime = 0f, float endTime = 0f)
+	{
+		var clip = await MediaController.instance.GetAudioClipAsync(musicId);
+		SetClip(clip, isLoop, immediatePlay, isFade, startTime, endTime);
+	}
+
+	public void SetClip(AudioClip audioClip, bool isLoop = false, bool immediatePlay = true, bool isFade = false, float startTime = 0f, float endTime = 0f)
+	{
 		_bgmSource.loop = isLoop;
 		_startTime = startTime;
 		_endTime = endTime;
-		var newClip = GetClip(clipName);
-		if (_currentBgmClip == newClip)
+		if (_currentBgmClip == audioClip)
 		{
 			return;
 		}
 		SaveHomeBgmTime();
-		_currentBgmClip = newClip;
+		_currentBgmClip = audioClip;
 		SetHomeBgmTime();
 		if (immediatePlay)
 		{

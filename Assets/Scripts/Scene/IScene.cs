@@ -25,6 +25,7 @@ public class BattleSceneInfo : SceneInfoBase
     public override SceneType SceneType => SceneType.Battle;
     public StageHeader StageHeader;
     public LevelInfo LevelInfo;
+    public SingleStageMaster StageMaster;
     public bool IsPractice;
     public float TimeRate;
 }
@@ -43,6 +44,7 @@ public class ScoreMakerSceneInfo : SceneInfoBase
 {
     public override SceneType SceneType => SceneType.ScoreMaker;
     public StageInfo StageInfo;
+    public SingleStageMaster StageMaster;
     public int TargetLevel;
     public bool IsNewCreate;
     public bool IsDevelopOverride;

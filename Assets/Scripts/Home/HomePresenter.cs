@@ -17,7 +17,7 @@ public class HomePresenter : MonoBehaviour
         _model = new HomeModel();
         _model.Init();
 
-        _view.Init(_model.StageList, lastLevel);
+        _view.Init(_model.StageMasterList, lastLevel);
         _view.ClickPlayStageButton.Subscribe(x =>
         {
             StartBattle(x.stageKey.StageId, x.stageKey.Level, isPractice: x.isPractice);
@@ -32,13 +32,12 @@ public class HomePresenter : MonoBehaviour
         }).AddTo(this);
     }
 
-    private void StartBattle(string stageId, int level, bool isPractice)
+    private void StartBattle(string musicId, int stageId, bool isPractice)
     {
-        var stageInfo = _model.GetStageInfo(stageId);
+        var stageMaster = _model.GetStageInfo(musicId, stageId);
         var sceneInfo = new BattleSceneInfo
         {
-            StageHeader = stageInfo.StageHeader,
-            LevelInfo = stageInfo.LevelList.FirstOrDefault(l => l.Level == level),
+            StageMaster = stageMaster,
             IsPractice = isPractice
         };
         GameManager.instance.OpenScene(SceneType.Battle, sceneInfo).Forget();
@@ -48,10 +47,9 @@ public class HomePresenter : MonoBehaviour
     {
         var sceneInfo = new ScoreMakerSceneInfo
         {
-            StageInfo = _model.GetStageInfo(musicId),
+            StageMaster = _model.GetStageInfo(musicId, stageId),
             TargetLevel = stageId,
             IsNewCreate = isNewCreate,
-            IsDevelopOverride = stageId <= MasterManager.MaxDefaultLevelId,
         };
         GameManager.instance.OpenScene(SceneType.ScoreMaker, sceneInfo).Forget();
     }

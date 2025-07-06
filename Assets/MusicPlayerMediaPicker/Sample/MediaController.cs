@@ -7,13 +7,10 @@ using Cysharp.Threading.Tasks;
 using System.Threading.Tasks;
 using R3;
 using UnityEngine.Networking;
+using SFB;
 
 public class MediaController : MonoBehaviour 
 {
-    [SerializeField] private AudioSource _audioSource;
-    [SerializeField] private Button _playButton;
-    [SerializeField] private Button _loadButton;
-
     private string _currentSongId;
     private bool _isFinishExport;
 
@@ -22,7 +19,7 @@ public class MediaController : MonoBehaviour
         public static extern void exportItemFromId(string songId);
 
         [DllImport("__Internal")]
-        public static extern void exportSelectedItem();
+        public static extern void selectMusic();
 
         [DllImport("__Internal")]
         public static extern long getSongId();
@@ -37,11 +34,20 @@ public class MediaController : MonoBehaviour
         public static extern string getLog();
 #else
         private static void exportItemFromId(string songId) { }
-        private static void exportSelectedItem() { }
+        private static void selectMusic()
+        {
+            string[] paths = StandaloneFileBrowser.OpenFilePanel("Select MP3", "", "mp3", false);
+            string path = "";
+            if (paths.Length > 0)
+            {
+                path = paths[0];
+            }
+            instance.FinishSelectMusic(path);
+        }
 
         private static long getSongId() { return 0; }
         private static string getSongName() { return ""; }
-        private static bool getDoExport() { return false; }
+        private static bool getDoExport() { return true; }
         public static string getLog() { return ""; }
 
 #endif
@@ -55,53 +61,30 @@ public class MediaController : MonoBehaviour
 		}
 	}
 
-	void Start()
-    {
-        _playButton?.OnClickAsObservable().Subscribe(async _ => await StartMusicAsync()).AddTo(this);
-        _loadButton?.OnClickAsObservable().Subscribe(_ => MusicExpote().Forget()).AddTo(this);
-	}
-
     public async UniTask<string> MusicExpote()
     {
         _isFinishExport = false;
-        // 曲エクスポートを開始
-        exportSelectedItem();
+        // 曲選択開始
+        selectMusic();
 
-        await UniTask.WaitWhile(() => _isFinishExport);
+        await UniTask.WaitUntil(() => _isFinishExport);
         return _currentSongId;
     }
 
     public void FinishSelectMusic(string songId)
     {
         _currentSongId = songId;
-        WaitExport().Forget();
-    }
-
-    private async UniTask WaitExport()
-    {
-        await UniTask.WaitWhile(() => getDoExport());
         _isFinishExport = true;
     }
 
-    public async UniTask StartMusicAsync()
+    public async UniTask<AudioClip> GetAudioClipAsync(string songId)
     {
-        // 曲エクスポート完了まで待つ
-        await UniTask.WaitWhile(() => getDoExport());
+        // 曲をエクスポート
+        exportItemFromId(songId);
+        await UniTask.WaitUntil(() => getDoExport());
 
-        string path = Application.persistentDataPath + "/" + _currentSongId + ".wav";
-
-        _audioSource.clip = await GetAudioClipAsync();
-
-        _audioSource.Play();
-        
-    	// wavファイルを削除
-        System.IO.File.Delete(path);
-    }
-
-    public async UniTask<AudioClip> GetAudioClipAsync()
-    {
-        string path = Application.persistentDataPath + "/" + _currentSongId + ".wav";
-        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + path, AudioType.WAV))
+        string path = GetMusicPath(songId);
+        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(path, GetAudioType()))
         {
             await www.SendWebRequest();
 
@@ -117,8 +100,34 @@ public class MediaController : MonoBehaviour
             else
             {
                 AudioClip clip = DownloadHandlerAudioClip.GetContent(www);
+#if UNITY_IOS && !UNITY_EDITOR
+                // wavファイルを削除
+                System.IO.File.Delete(path);
+#endif
                 return clip;
             }
         }
+    }
+
+    private string GetMusicPath(string songId)
+    {
+#if UNITY_IOS && !UNITY_EDITOR
+        // 曲のパスを取得
+        return "file://" + Application.persistentDataPath + "/" + songId + ".wav";
+#else
+        // StandaloneFileBrowserを使用して曲のパスを取得
+        return "file://" + songId;
+#endif
+    }
+
+    private AudioType GetAudioType()
+    {
+#if UNITY_IOS && !UNITY_EDITOR
+        // 曲のパスを取得
+        return AudioType.WAV;
+#else
+        // StandaloneFileBrowserを使用して曲のパスを取得
+        return AudioType.UNKNOWN;
+#endif
     }
 }

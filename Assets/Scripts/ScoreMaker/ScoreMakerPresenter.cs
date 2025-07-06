@@ -13,25 +13,20 @@ public class ScoreMakerPresenter : MonoBehaviour
     [SerializeField] private ScoreMakerView _view;
     private ScoreMakerModel _model;
 
-    private LevelInfo _currentLevelInfo => _model.LevelInfoList?.FirstOrDefault(l => l.Level == _currentLevel);
-    private int _currentLevel;
-    private bool _isDevelopOverride;
 
-    public void Init(StageInfo stageInfo, int targetLevel, bool isNewCreate, bool isDevelopOverride)
+    public void Init(SingleStageMaster stageMaster, int targetLevel, bool isNewCreate)
     {
-        _currentLevel = targetLevel;
-        _isDevelopOverride = isDevelopOverride;
         _model = new ScoreMakerModel();
-        _model.Init(stageInfo, targetLevel, isDevelopOverride);
+        _model.Init(stageMaster);
 
-        _view.Init(stageInfo.StageHeader, _currentLevelInfo?.Notes, targetLevel);
+        _view.Init(stageMaster.StageHeader, _model.CurrentMaster.Notes, targetLevel);
         _view.ClickPracticeButton.Subscribe(async timeRate =>
         {
-            _model.UpdateCurrentLevelNotes(_view.CreateNoteList(), _currentLevel);
+            _model.UpdateCurrentLevelNotes(_view.CreateNoteList());
             var sceneInfo = new BattleSceneInfo
             {
                 StageHeader = _model.OriginalStageInfo.StageHeader,
-                LevelInfo = _currentLevelInfo,
+                StageMaster = _model.CurrentMaster,
                 TimeRate = timeRate,
                 IsPractice = true,
                 IsAdditional = true
@@ -41,12 +36,10 @@ public class ScoreMakerPresenter : MonoBehaviour
         _view.OnChangeLevel.Subscribe(x =>
         {
             // 現在のレベルの譜面を保存
-            _model.UpdateCurrentLevelNotes(x.notes, _currentLevel);
+            _model.UpdateCurrentLevelNotes(x.notes);
 
-            // レベル更新
-            _currentLevel = x.level;
             BGMManager.instance.Pause();
-            _view.CreateLine(_currentLevelInfo.Notes);
+            _view.CreateLine(_model.CurrentMaster.Notes);
         }).AddTo(this);
         _view.ClickSaveButton.Subscribe(_ =>
         {
@@ -66,14 +59,7 @@ public class ScoreMakerPresenter : MonoBehaviour
     private async UniTask SaveScore(string overrideName = "")
     {
         // 現在のレベルの譜面を保存
-        if (_isDevelopOverride)
-        {
-            await _model.OverrideScore(_view.CreateNoteList(), _currentLevel, _view.CurrentBpm, _view.CurrentOffset);
-        }
-        else
-        {
-            await _model.SaveScore(_view.CreateNoteList(), _currentLevel);
-        }
+        await _model.SaveScore(_view.CreateNoteList());
         _view.DisplaySaveFinishDialog();
     }
 

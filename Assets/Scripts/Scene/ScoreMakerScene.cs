@@ -16,9 +16,8 @@ public class ScoreMakerScene : SceneBase
         {
             return;
         }
-        BGMManager.instance.SetClip(_scoreMakerSceneInfo.StageInfo.StageHeader.MusicId, immediatePlay: false);
-        _scoreMaker.Init(_scoreMakerSceneInfo.StageInfo, _scoreMakerSceneInfo.TargetLevel, _scoreMakerSceneInfo.IsNewCreate, _scoreMakerSceneInfo.IsDevelopOverride);
-        await UniTask.CompletedTask;
+        await BGMManager.instance.SetClipFromLibrary(_scoreMakerSceneInfo.StageMaster.StageHeader.MusicId, immediatePlay: false);
+        _scoreMaker.Init(_scoreMakerSceneInfo.StageMaster, _scoreMakerSceneInfo.TargetLevel, _scoreMakerSceneInfo.IsNewCreate);
     }
 
     public override async UniTask StartSceneAsync()

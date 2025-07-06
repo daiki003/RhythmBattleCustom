@@ -81,9 +81,9 @@ public class HomeView : MonoBehaviour
 
     private StageStrip _selectedStrip;
     private HomePanelType _currentPanelType;
-    private int _currentLevel => _currentPanelType.GetLevel() < MasterManager.MinStageId ? _currentPanelType.GetLevel() : _selectedStrip.LevelId;
+    private int _currentLevel => _currentPanelType.GetLevel();
 
-    public void Init(List<StageInfo> stageList, int lastLevel)
+    public void Init(List<SingleStageMaster> stageList, int lastLevel)
     {
         CreateStripList(stageList);
         SetButtonInteractable(false);
@@ -157,16 +157,14 @@ public class HomeView : MonoBehaviour
     }
 
     // ステージの短冊を全て作成
-    public void CreateStripList(List<StageInfo> stageList)
+    public void CreateStripList(List<SingleStageMaster> stageList)
     {
         DestroyAllStrip();
         foreach (var stageInfo in stageList)
         {
-            CreateStageStrip(stageInfo.StageHeader, level: 0, _stripTransform);
-            var customStageList = stageInfo.LevelList.Where(l => l.Level >= MasterManager.MinStageId);
-            foreach (var customLevel in customStageList)
+            foreach (var stage in stageList)
             {
-                CreateStageStrip(stageInfo.StageHeader, level: customLevel.Level, _customStripTransform);
+                CreateStageStrip(stageInfo.StageHeader, _customStripTransform);
             }
         }
         float achievementRate = SaveDataManager.CalculateAchievementRate().RoundDown(1);
@@ -174,11 +172,11 @@ public class HomeView : MonoBehaviour
     }
 
     // ステージの短冊1枚を作成
-    private StageStrip CreateStageStrip(StageHeader stageHeader, int level, Transform transform)
+    private StageStrip CreateStageStrip(StageHeader stageHeader, Transform transform)
     {
         var strip = Instantiate(_stageStripPrefab, transform);
         _stageStripList.Add(strip);
-        strip.Init(stageHeader, level);
+        strip.Init(stageHeader);
         strip.OnClickedStrip.Subscribe(_ =>
         {
             if (_selectedStrip != strip)
@@ -260,6 +258,11 @@ public class HomeView : MonoBehaviour
     {
         CancelSelectStrip();
         string musicId = await MediaController.instance.MusicExpote();
+        if (string.IsNullOrEmpty(musicId))
+        {
+            // 曲選択がキャンセルされた場合は何もしない
+            return;
+        }
         _clickNewCreateStageButton.OnNext(musicId);
     }
 

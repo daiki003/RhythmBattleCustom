@@ -7,7 +7,7 @@ using System.Linq;
 
 public class StageDuplicateDialogOption : DialogOptionBase
 {
-    public StageInfo StageInfo;
+    public SingleStageMaster StageInfo;
 }
 
 public class StageDuplicateDialogResult : DialogResultBase
@@ -22,24 +22,24 @@ public class StageDuplicateDialog : DialogBase
     [SerializeField] private GameObject _customStageTitle;
 
     private NewCreateStrip _selectedStrip;
-    private StageInfo _stageInfo;
+    private SingleStageMaster _stageMaster;
 
     public override void Init(DialogOptionBase dialogOption)
     {
         base.Init(dialogOption);
         var duplicateOption = dialogOption as StageDuplicateDialogOption;
         if (dialogOption is not StageDuplicateDialogOption option) return;
-        _stageInfo = option.StageInfo;
-        var stageHeader = _stageInfo.StageHeader;
+        _stageMaster = option.StageInfo;
+        var stageHeader = _stageMaster.StageHeader;
         _customStageTitle.SetActive(false);
-        foreach (var levelMaster in _stageInfo.LevelList)
+        var allMasterList = MasterManager.CustomStageList;
+        foreach (var master in allMasterList)
         {
             var prefab = ResourceManager.LoadPrefab<NewCreateStrip>("NewCreateStrip");
-            bool isNormalStage = levelMaster.Level <= MasterManager.MaxDefaultLevelId;
-            var targetTransform = isNormalStage ? _normalStripTransform : _customStripTransform;
+            var targetTransform = _customStripTransform;
             var strip = Instantiate(prefab, targetTransform);
             // レベル3までは名前にレベルを付ける
-            strip.Init(stageHeader, levelMaster.Level, isNormalStage);
+            strip.Init(stageHeader, 0, false);
             strip.OnClickedStrip.Subscribe(_ =>
             {
                 _selectedStrip?.SetSelected(false);
@@ -60,7 +60,7 @@ public class StageDuplicateDialog : DialogBase
         _onCloseDialog.OnNext(new StageDuplicateDialogResult
         {
             ResultType = resultType,
-            DuplicateNotes = _stageInfo.LevelList.FirstOrDefault(l => l.Level == level)?.Notes
+            DuplicateNotes = _stageMaster.Notes
         });
         Destroy(gameObject);
     }

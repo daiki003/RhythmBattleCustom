@@ -17,8 +17,8 @@ public class BattleModel
     {
         var clearState = new ClearState()
         {
-            StageId = stageId,
-            Level = level,
+            MusicId = stageId,
+            StageId = level,
         };
         float totalCount = score.CriticalCount + score.HitCount + score.MissCount;
         CriticalMultiple = _criticalBaseMultiple / totalCount;

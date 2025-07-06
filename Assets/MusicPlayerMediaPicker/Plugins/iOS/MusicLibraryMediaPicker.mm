@@ -20,7 +20,7 @@ extern "C" {
     
     // 関数のプロトタイプ宣言
     void exportItemFromId(NSString* songId);
-    void exportSelectedItem();
+    void selectMusic();
     long getSongId();
     char* getSongName();
     BOOL getDoExport();
@@ -195,7 +195,7 @@ extern "C" {
     /**************************************
      * 選んだ曲をエクスポートする
      **************************************/
-    void exportSelectedItem() {
+    void selectMusic() {
         logText = @"曲選択開始";
         do_export = YES;
         [MusicLibraryMediaPicker.shared presentMediaPicker:UnityGetGLViewController()];
@@ -280,9 +280,15 @@ static MusicLibraryMediaPicker * _shared;
     // 曲をエクスポート
     song_id = [[item valueForProperty:MPMediaItemPropertyPersistentID] longValue];
     song_name = [item valueForProperty:MPMediaItemPropertyTitle];
-    exportItem(item);
     NSString *message = [NSString stringWithFormat:@"%ld", song_id]; 
     UnitySendMessage("MediaController", "FinishSelectMusic", [message UTF8String]);
+}
+
+- (void)mediaPickerDidCancel:(MPMediaPickerController *)mediaPicker {
+    [self.viewController dismissViewControllerAnimated:YES completion:nil];
+
+    // Unity にキャンセルを通知（任意のメソッド名に変更可）
+    UnitySendMessage("MediaController", "FinishSelectMusic", "");
 }
 
 @end

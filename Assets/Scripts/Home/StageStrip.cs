@@ -22,14 +22,12 @@ public class StageStrip : MonoBehaviour
     public string StageId => _stageHeader.MusicId;
     public float StartTime => _stageHeader.StripStartTime;
     public float EndTime => _stageHeader.StripEndTime;
-    public int LevelId { get; private set; }
 
     public Subject<Unit> OnClickedStrip { get; private set; } = new();
 
-    public void Init(StageHeader stageHeader, int level)
+    public void Init(StageHeader stageHeader)
     {
         _stageHeader = stageHeader;
-        LevelId = level;
         _titleText.text = _stageHeader.StageName;
         var enemySprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + StageId);
         _enemyImage.sprite = enemySprite;

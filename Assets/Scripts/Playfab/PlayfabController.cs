@@ -89,8 +89,8 @@ public class PlayFabController
             {
                 var clearState = new ClearState()
                 {
-                    StageId = MasterManager.StageMasterList[i].MusicId,
-                    Level = j,
+                    MusicId = MasterManager.StageMasterList[i].MusicId,
+                    StageId = j,
                 };
                 clearStates.Add(clearState);
             }

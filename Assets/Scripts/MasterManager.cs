@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using UnityEditor.SceneManagement;
 
 public class SettingMaster
 {
@@ -59,9 +60,33 @@ public class StageMaster
 
 public class SingleStageMaster
 {
-    public string MusicId;
+    public StageHeader StageHeader;
+    public string MusicId => StageHeader.MusicId;
     public int StageId;
     public List<NoteMaster> Notes = new List<NoteMaster>();
+
+    public SingleStageMaster CreateCopy()
+    {
+        return new SingleStageMaster
+        {
+            StageHeader = StageHeader.CreateCopy(),
+            StageId = StageId,
+            Notes = Notes.Select(n => new NoteMaster
+            {
+                lpb = n.lpb,
+                num = n.num,
+                block = n.block,
+                type = n.type,
+                notes = n.notes.Select(nn => new NoteMaster
+                {
+                    lpb = nn.lpb,
+                    num = nn.num,
+                    block = nn.block,
+                    type = nn.type,
+                }).ToList()
+            }).ToList()
+        };
+    }
 }
 
 public class TitleDataResult
@@ -114,73 +139,19 @@ public static class MasterManager
         OverrideMasterList.AddRange(overrideMasterList);
         CustomStageList = customStageList;
     }
-    public static async UniTask UpdateOverrideStageMaster(string stageId, List<LevelInfo> levelInfoList, float bpm, float offset)
+    public static async UniTask UpdateStageMaster(SingleStageMaster stageMaster)
     {
-        var targetMaster = StageMasterList.FirstOrDefault(s => s.MusicId == stageId);
-        targetMaster.StageHeader.BPM = bpm;
-        targetMaster.StageHeader.NoteTimeOffset = offset;
-        foreach (var levelInfo in levelInfoList)
+        var targetCustomStage = CustomStageList.FirstOrDefault(s => s.MusicId == stageMaster.StageHeader.MusicId && s.StageId == stageMaster.StageId);
+        if (targetCustomStage != null)
         {
-            var level = levelInfo.Level;
-            var notes = levelInfo.Notes.Select(n => new NoteMaster
-            {
-                lpb = n.lpb,
-                num = n.num,
-                block = n.block,
-                type = n.type,
-                notes = n.notes.Select(nn => new NoteMaster
-                {
-                    lpb = nn.lpb,
-                    num = nn.num,
-                    block = nn.block,
-                    type = nn.type,
-                }).ToList()
-            }).ToList();
-            if (targetMaster.notes.Count >= level)
-            {
-                targetMaster.notes[level - 1] = notes;
-            }
+            targetCustomStage = stageMaster;
         }
-        await PlayFabController.UpdateOverrideScore(targetMaster);
-        SaveDataManager.DeleteClearState(stageId, levelInfoList.Select(l => l.Level).ToList());
-        SetOverrideMaster(targetMaster);
-    }
-    public static async UniTask UpdateStageMaster(string stageId, List<LevelInfo> levelInfoList)
-    {
-        foreach (var levelInfo in levelInfoList)
+        else
         {
-            var level = levelInfo.Level;
-            var notes = levelInfo.Notes.Select(n => new NoteMaster
-            {
-                lpb = n.lpb,
-                num = n.num,
-                block = n.block,
-                type = n.type,
-                notes = n.notes.Select(nn => new NoteMaster
-                {
-                    lpb = nn.lpb,
-                    num = nn.num,
-                    block = nn.block,
-                    type = nn.type,
-                }).ToList()
-            }).ToList();
-            var targetCustomStage = CustomStageList.FirstOrDefault(s => s.MusicId == stageId && s.StageId == level);
-            if (targetCustomStage != null)
-            {
-                targetCustomStage.Notes = notes;
-            }
-            else
-            {
-                CustomStageList.Add(new SingleStageMaster
-                {
-                    MusicId = stageId,
-                    StageId = level,
-                    Notes = notes
-                });
-            }
+            CustomStageList.Add(stageMaster);
         }
         await PlayFabController.UpdateCustomStageList(CustomStageList);
-        SaveDataManager.DeleteClearState(stageId, levelInfoList.Select(l => l.Level).ToList());
+        SaveDataManager.DeleteClearState(stageMaster.StageHeader.MusicId, stageMaster.StageId);
     }
     public static void SetOverrideMaster(StageMaster master)
     {
@@ -204,6 +175,6 @@ public static class MasterManager
     {
         CustomStageList.RemoveAll(s => s.MusicId == stageId && s.StageId == level);
         await PlayFabController.UpdateCustomStageList(CustomStageList);
-        SaveDataManager.DeleteClearState(stageId, new List<int>(){level});
+        SaveDataManager.DeleteClearState(stageId, level);
     }
 }
