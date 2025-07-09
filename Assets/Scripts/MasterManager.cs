@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Cysharp.Threading.Tasks;
-using UnityEditor.SceneManagement;
 
 public class SettingMaster
 {
