@@ -14,7 +14,7 @@ public class BattleScene : SceneBase
     {
         await base.InitAsync(lastSceneInfo, nextSceneInfo, fadePanel);
         _battleSceneInfo = _nextSceneInfo as BattleSceneInfo;
-        _battlePresenter.Init(_battleSceneInfo);
+        await _battlePresenter.Init(_battleSceneInfo);
         if (!_battleSceneInfo.IsAdditional)
         {
             // 曲が始まる前にGC.Collect

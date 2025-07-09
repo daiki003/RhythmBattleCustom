@@ -46,16 +46,16 @@ public static class SaveDataManager
     private const string _offsetKey = "Offset";
     private const string _ballSpeedKey = "BallSpeed";
 
-    public static ClearState GetClearState(string stageId, int level)
+    public static ClearState GetClearState(string musicId, int stageId)
     {
-        var clearState = ClearStateList.FirstOrDefault(c => c.MusicId == stageId && c.StageId == level);
+        var clearState = ClearStateList.FirstOrDefault(c => c.MusicId == musicId && c.StageId == stageId);
         if (clearState == null)
         {
             // クリア状況が作られていなければここで作る
             clearState = new ClearState()
             {
-                MusicId = stageId,
-                StageId = level
+                MusicId = musicId,
+                StageId = stageId
             };
             ClearStateList.Add(clearState);
         }

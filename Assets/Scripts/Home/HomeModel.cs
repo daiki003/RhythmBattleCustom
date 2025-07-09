@@ -54,6 +54,11 @@ public class HomeModel
                 {
                     MusicId = musicId,
                     StageName = "",
+                    BPM = 500,
+                    LPB = 4,
+                    StripStartTime = 0f,
+                    StripEndTime = 20f,
+                    EndTime = 100f
                 },
                 StageId = GetNextStageId(musicId),
                 Notes = new List<NoteMaster>(),

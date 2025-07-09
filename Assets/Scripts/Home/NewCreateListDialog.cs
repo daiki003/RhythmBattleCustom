@@ -28,12 +28,12 @@ public class NewCreateListDialog : DialogBase
             var prefab = ResourceManager.LoadPrefab<NewCreateStrip>("NewCreateStrip");
             var strip = Instantiate(prefab, _stripTransform);
             strip.Init(master.StageHeader);
-            strip.OnClickedStrip.Subscribe(_ =>
+            strip.OnClickedStrip.Subscribe(async _ =>
             {
                 _selectedStrip?.SetSelected(false);
                 _selectedStrip = strip;
                 strip.SetSelected(true);
-                BGMManager.instance.SetClip(strip.StageId, isFade: true, startTime: strip.StartTime, endTime: strip.EndTime);
+                await BGMManager.instance.SetClipFromLibrary(strip.MusicId, isFade: true, startTime: strip.StartTime, endTime: strip.EndTime);
             }).AddTo(this);
         }
     }
@@ -43,7 +43,7 @@ public class NewCreateListDialog : DialogBase
         _onCloseDialog.OnNext(new NewCreateDialogResult
         {
             ResultType = resultType,
-            SelectedStageId = _selectedStrip?.StageId ?? ""
+            SelectedStageId = _selectedStrip?.MusicId ?? ""
         });
         if (resultType != DialogResultType.Ok)
         {

@@ -43,12 +43,12 @@ public static class HomePanelTypeExtension
 
 public class GetStageKey
 {
-    public string StageId;
-    public int Level;
-    public GetStageKey(string stageId, int level)
+    public string MusicId;
+    public int StageId;
+    public GetStageKey(string musicId, int stageId)
     {
+        MusicId = musicId;
         StageId = stageId;
-        Level = level;
     }
 }
 
@@ -81,7 +81,6 @@ public class HomeView : MonoBehaviour
 
     private StageStrip _selectedStrip;
     private HomePanelType _currentPanelType;
-    private int _currentLevel => _currentPanelType.GetLevel();
 
     public void Init(List<SingleStageMaster> stageList, int lastLevel)
     {
@@ -107,7 +106,7 @@ public class HomeView : MonoBehaviour
         // 開始ボタン
         _playStageButton.OnClickAsObservable().Subscribe(_ =>
         {
-            _clickPlayStageButton.OnNext((new GetStageKey(_selectedStrip.StageId, _currentLevel), _practiceModeToggle.isOn));
+            _clickPlayStageButton.OnNext((new GetStageKey(_selectedStrip.MusicIdId, _selectedStrip.StageId), _practiceModeToggle.isOn));
         }).AddTo(this);
         // 練習モード切替
         bool enableToggleSe = false;
@@ -124,7 +123,7 @@ public class HomeView : MonoBehaviour
         // 編集ボタン
         _editStageButton.OnClickAsObservable().Subscribe(_ =>
         {
-            _clickEditStageButton.OnNext(new GetStageKey(_selectedStrip.StageId, _currentLevel));
+            _clickEditStageButton.OnNext(new GetStageKey(_selectedStrip.MusicIdId, _selectedStrip.StageId));
         }).AddTo(this);
         // 削除ボタン
         _deleteStageButton.OnClickAsObservable().Subscribe(_ =>
@@ -162,29 +161,26 @@ public class HomeView : MonoBehaviour
         DestroyAllStrip();
         foreach (var stageInfo in stageList)
         {
-            foreach (var stage in stageList)
-            {
-                CreateStageStrip(stageInfo.StageHeader, _customStripTransform);
-            }
+            CreateStageStrip(stageInfo.StageHeader, stageInfo.StageId, _customStripTransform);
         }
         float achievementRate = SaveDataManager.CalculateAchievementRate().RoundDown(1);
         _achievementRateText.text = (achievementRate >= 100f ? achievementRate.ToString() : achievementRate.ToString("F1")) + "%" ;
     }
 
     // ステージの短冊1枚を作成
-    private StageStrip CreateStageStrip(StageHeader stageHeader, Transform transform)
+    private StageStrip CreateStageStrip(StageHeader stageHeader, int stageId, Transform transform)
     {
         var strip = Instantiate(_stageStripPrefab, transform);
         _stageStripList.Add(strip);
-        strip.Init(stageHeader);
-        strip.OnClickedStrip.Subscribe(_ =>
+        strip.Init(stageHeader, stageId);
+        strip.OnClickedStrip.Subscribe(async _ =>
         {
             if (_selectedStrip != strip)
             {
                 _selectedStrip?.SetSelected(false);
                 _selectedStrip = strip;
                 strip.SetSelected(true);
-                BGMManager.instance.SetClip(strip.StageId, isFade: true, startTime: strip.StartTime, endTime: strip.EndTime);
+                await BGMManager.instance.SetClipFromLibrary(strip.MusicIdId, isFade: true, startTime: strip.StartTime, endTime: strip.EndTime);
                 SetButtonInteractable(true);
             }
             else
@@ -236,7 +232,7 @@ public class HomeView : MonoBehaviour
         {
             if (result.ResultType == DialogResultType.Ok)
             {
-                await MasterManager.DeleteCustomStage(_selectedStrip.StageId, _currentLevel);
+                await MasterManager.DeleteCustomStage(_selectedStrip.MusicIdId, _selectedStrip.StageId);
                 // 短冊の選択をキャンセルしてからを削除
                 var selectedStrip = _selectedStrip;
                 CancelSelectStrip();

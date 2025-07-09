@@ -13,8 +13,8 @@ public class NewCreateStrip : MonoBehaviour
     [SerializeField] private Image _enemyImage;
     [SerializeField] private Text _titleText;
 
-    public string StageId { get; private set; }
-    public int Level { get; private set; }
+    public string MusicId { get; private set; }
+    public int StageId { get; private set; }
     public float StartTime { get; private set; }
     public float EndTime { get; private set; }
 
@@ -26,7 +26,7 @@ public class NewCreateStrip : MonoBehaviour
         StartTime = stageHeader.StripStartTime;
         EndTime = stageHeader.StripEndTime;
         SetStageId(stageHeader.MusicId);
-        Level = level;
+        StageId = level;
         _selectedPanel.gameObject.SetActive(false);
         _stripButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -36,8 +36,8 @@ public class NewCreateStrip : MonoBehaviour
 
     public void SetStageId(string stageId)
     {
-        StageId = stageId;
-        var enemySprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + StageId);
+        MusicId = stageId;
+        var enemySprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + MusicId);
         _enemyImage.sprite = enemySprite;
     }
 

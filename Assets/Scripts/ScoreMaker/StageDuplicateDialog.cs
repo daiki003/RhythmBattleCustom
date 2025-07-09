@@ -56,7 +56,7 @@ public class StageDuplicateDialog : DialogBase
         {
             SEManager.instance.PlaySe(SeName.Cancel);
         }
-        int level = _selectedStrip?.Level ?? 0;
+        int level = _selectedStrip?.StageId ?? 0;
         _onCloseDialog.OnNext(new StageDuplicateDialogResult
         {
             ResultType = resultType,

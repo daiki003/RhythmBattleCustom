@@ -190,6 +190,10 @@ public class BGMManager : MonoBehaviour
 
 	public void SetTime(float time)
 	{
+		if (time < 0f)
+		{
+			time = 0f;
+		}
 		_bgmSource.time = Mathf.Min(time, Length * _maxTimeCofficient);
 	}
 

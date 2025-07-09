@@ -14,7 +14,7 @@ public class BattlePresenter : MonoBehaviour
 
     private BattleSceneInfo _battleSceneInfo;
 
-    public void Init(BattleSceneInfo battleSceneInfo)
+    public async UniTask Init(BattleSceneInfo battleSceneInfo)
     {
         _model = new BattleModel();
         _battleSceneInfo = battleSceneInfo;
@@ -33,8 +33,8 @@ public class BattlePresenter : MonoBehaviour
         {
             FinishBattle(score);
         }).AddTo(this);
-        _battleView.Init(_battleSceneInfo.StageHeader, _battleSceneInfo.LevelInfo, _battleSceneInfo.IsPractice, _battleSceneInfo.IsAdditional);
-        _battleView.PrepareBattle();
+        _battleView.Init(_battleSceneInfo.StageMaster.StageHeader, _battleSceneInfo.StageMaster.Notes, _battleSceneInfo.IsPractice, _battleSceneInfo.IsAdditional);
+        await _battleView.PrepareBattle();
         if (_battleSceneInfo.IsAdditional)
         {
             _battleView.SetSliderForAdditional(_battleSceneInfo.TimeRate);
@@ -55,10 +55,10 @@ public class BattlePresenter : MonoBehaviour
 
     public void FinishBattle(Score score)
     {
-        string stageId = _battleSceneInfo.StageHeader.MusicId;
-        int level = _battleSceneInfo.LevelInfo.Level;
-        var highScoreClearState = SaveDataManager.GetClearState(stageId, level).CreateCopy();
-        var clearState = _model.CalculateScore(score, stageId, level);
+        string musicId = _battleSceneInfo.StageMaster.StageHeader.MusicId;
+        int stageId = _battleSceneInfo.StageMaster.StageId;
+        var highScoreClearState = SaveDataManager.GetClearState(musicId, stageId).CreateCopy();
+        var clearState = _model.CalculateScore(score, musicId, stageId);
         _battleView.StartResultAsync(clearState, highScoreClearState, _model.CriticalMultiple, _model.HitMultiple, _model.MissMultiple).Forget();
     }
 }

@@ -14,18 +14,17 @@ public class ScoreMakerPresenter : MonoBehaviour
     private ScoreMakerModel _model;
 
 
-    public void Init(SingleStageMaster stageMaster, int targetLevel, bool isNewCreate)
+    public void Init(SingleStageMaster stageMaster, bool isNewCreate)
     {
         _model = new ScoreMakerModel();
         _model.Init(stageMaster);
 
-        _view.Init(stageMaster.StageHeader, _model.CurrentMaster.Notes, targetLevel);
+        _view.Init(stageMaster.StageHeader, _model.CurrentMaster.Notes);
         _view.ClickPracticeButton.Subscribe(async timeRate =>
         {
             _model.UpdateCurrentLevelNotes(_view.CreateNoteList());
             var sceneInfo = new BattleSceneInfo
             {
-                StageHeader = _model.OriginalStageInfo.StageHeader,
                 StageMaster = _model.CurrentMaster,
                 TimeRate = timeRate,
                 IsPractice = true,
@@ -33,22 +32,14 @@ public class ScoreMakerPresenter : MonoBehaviour
             };
             await GameManager.instance.OpenAdditionalScene(SceneType.Battle, sceneInfo);
         }).AddTo(this);
-        _view.OnChangeLevel.Subscribe(x =>
-        {
-            // 現在のレベルの譜面を保存
-            _model.UpdateCurrentLevelNotes(x.notes);
-
-            BGMManager.instance.Pause();
-            _view.CreateLine(_model.CurrentMaster.Notes);
-        }).AddTo(this);
         _view.ClickSaveButton.Subscribe(_ =>
         {
             _view.DisplaySaveDialog(_model.OriginalStageInfo.StageHeader.StageName, isNewCreate);
         }).AddTo(this);
-        _view.OnSave.Subscribe(async stageName =>
+        _view.OnSave.Subscribe(async x =>
         {
             // 現在のレベルの譜面を保存
-            await SaveScore(stageName);
+            await SaveScore(x.Item1, x.Item2);
         }).AddTo(this);
         _view.ClickDuplicateButton.Subscribe(_ =>
         {
@@ -56,10 +47,10 @@ public class ScoreMakerPresenter : MonoBehaviour
         }).AddTo(this);
     }
 
-    private async UniTask SaveScore(string overrideName = "")
+    private async UniTask SaveScore(string stageName, MusicParameter parameter)
     {
         // 現在のレベルの譜面を保存
-        await _model.SaveScore(_view.CreateNoteList());
+        await _model.SaveScore(_view.CreateNoteList(), stageName, parameter);
         _view.DisplaySaveFinishDialog();
     }
 

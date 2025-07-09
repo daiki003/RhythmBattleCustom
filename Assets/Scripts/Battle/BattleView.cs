@@ -82,13 +82,13 @@ public class BattleView : MonoBehaviour
     private BattleState _currentState;
     private float _startBgmTime; // Bgm開始予定時間
     private float _startPauseTime; // ポーズを開始した時間
-    private float _lastBeatTime;
+    private float _lastBeatTime = -1f;
     private bool _isPractice;
     private bool _isAdditional;
     private CancellationTokenSource _cts;
     private CancellationTokenSource _bgmStartCts;
     private StageHeader _stageHeader;
-    private LevelInfo _levelInfo;
+    private List<NoteMaster> _notes;
     // これが大きいと全体的に叩くのが遅い
     private float _beatDiffTime;
     private float[] _beatDiffTimeList = new float[10];
@@ -122,11 +122,11 @@ public class BattleView : MonoBehaviour
 
     private const float _beforeReultWaitTime = 1f;
 
-    public void Init(StageHeader stageHeader, LevelInfo levelInfo, bool isPractice, bool isAdditional)
+    public void Init(StageHeader stageHeader, List<NoteMaster> notes, bool isPractice, bool isAdditional)
     {
         _cts = new CancellationTokenSource();
         _stageHeader = stageHeader;
-        _levelInfo = levelInfo;
+        _notes = notes;
         _isPractice = isPractice;
         _isAdditional = isAdditional;
 
@@ -164,10 +164,10 @@ public class BattleView : MonoBehaviour
                 MessageText = "始めからやり直しますか？",
                 OkButtonText = "やり直す",
             };
-            DisplayDialog(option, () =>
+            DisplayDialog(option, async () =>
             {
                 Pause(false);
-                PrepareBattle();
+                await PrepareBattle();
                 BattleStart().Forget();
             });
         }).AddTo(this);
@@ -193,9 +193,9 @@ public class BattleView : MonoBehaviour
 
         // リザルトパネルのボタン
         _resultView.Init();
-        _resultView.OnWhenPushRestart.Subscribe(_ =>
+        _resultView.OnWhenPushRestart.Subscribe(async _ =>
         {
-            PrepareBattle();
+            await PrepareBattle();
             BattleStart().Forget();
         }).AddTo(this);
         _resultView.OnWhenPushGoHome.Subscribe(_ =>
@@ -240,7 +240,6 @@ public class BattleView : MonoBehaviour
         }
 
         _resultView.gameObject.SetActive(false);
-        _enemyImage.sprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + _stageHeader.MusicId);
     }
 
     private void DisplayDialog(MessageDialogOption option, Action okAction)
@@ -341,11 +340,11 @@ public class BattleView : MonoBehaviour
         return noteNumber * (60f / _stageHeader.BPM) + _stageHeader.NoteTimeOffset + SaveDataManager.SettingData.Offset;
     }
 
-    public void PrepareBattle()
+    public async UniTask PrepareBattle()
     {
         Reset();
-        BGMManager.instance.SetClip(_stageHeader.MusicId, immediatePlay: false);
-        CreateBalls(_levelInfo.Notes);
+        await BGMManager.instance.SetClipFromLibrary(_stageHeader.MusicId, immediatePlay: false);
+        CreateBalls(_notes);
     }
 
     public async UniTask BattleStart()

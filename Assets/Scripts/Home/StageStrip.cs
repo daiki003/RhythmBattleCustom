@@ -19,17 +19,19 @@ public class StageStrip : MonoBehaviour
     [SerializeField] private ScoreStars _scoreStars;
 
     private StageHeader _stageHeader;
-    public string StageId => _stageHeader.MusicId;
+    public int StageId { get; private set; }
+    public string MusicIdId => _stageHeader.MusicId;
     public float StartTime => _stageHeader.StripStartTime;
     public float EndTime => _stageHeader.StripEndTime;
 
     public Subject<Unit> OnClickedStrip { get; private set; } = new();
 
-    public void Init(StageHeader stageHeader)
+    public void Init(StageHeader stageHeader, int stageId)
     {
         _stageHeader = stageHeader;
+        StageId = stageId;
         _titleText.text = _stageHeader.StageName;
-        var enemySprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + StageId);
+        var enemySprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + MusicIdId);
         _enemyImage.sprite = enemySprite;
         _selectedPanel.gameObject.SetActive(false);
         _stripButton.OnClickAsObservable().Subscribe(_ =>
@@ -40,7 +42,7 @@ public class StageStrip : MonoBehaviour
 
     public void UpdateScore(int level)
     {
-        var clearState = SaveDataManager.GetClearState(StageId, level);
+        var clearState = SaveDataManager.GetClearState(MusicIdId, level);
         if (clearState == null)
         {
             return;

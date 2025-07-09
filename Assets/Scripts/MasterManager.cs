@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEditor.SceneManagement;
@@ -33,6 +34,8 @@ public class StageHeader
     public float BPM;
     public int LPB;
     public float NoteTimeOffset;
+    public float StartTime;
+    public float EndTime;
     public float AdditionalBallSpeed;
 
     public StageHeader CreateCopy()
@@ -46,6 +49,8 @@ public class StageHeader
             BPM = BPM,
             LPB = LPB,
             NoteTimeOffset = NoteTimeOffset,
+            StartTime = StartTime,
+            EndTime = EndTime,
             AdditionalBallSpeed = AdditionalBallSpeed
         };
     }
@@ -141,10 +146,10 @@ public static class MasterManager
     }
     public static async UniTask UpdateStageMaster(SingleStageMaster stageMaster)
     {
-        var targetCustomStage = CustomStageList.FirstOrDefault(s => s.MusicId == stageMaster.StageHeader.MusicId && s.StageId == stageMaster.StageId);
-        if (targetCustomStage != null)
+        int index = CustomStageList.FindIndex(s => s.MusicId == stageMaster.StageHeader.MusicId && s.StageId == stageMaster.StageId);
+        if (index >= 0)
         {
-            targetCustomStage = stageMaster;
+            CustomStageList[index] = stageMaster;
         }
         else
         {

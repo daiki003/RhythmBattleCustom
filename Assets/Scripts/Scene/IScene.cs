@@ -23,8 +23,6 @@ public class SceneInfoBase
 public class BattleSceneInfo : SceneInfoBase
 {
     public override SceneType SceneType => SceneType.Battle;
-    public StageHeader StageHeader;
-    public LevelInfo LevelInfo;
     public SingleStageMaster StageMaster;
     public bool IsPractice;
     public float TimeRate;
@@ -47,21 +45,9 @@ public class ScoreMakerSceneInfo : SceneInfoBase
     public SingleStageMaster StageMaster;
     public int TargetLevel;
     public bool IsNewCreate;
-    public bool IsDevelopOverride;
 }
 
 public static class SceneInfoExtension
 {
-    public static int GetLastLevel(this SceneInfoBase sceneInfo)
-    {
-        if (sceneInfo is BattleSceneInfo battleSceneInfo)
-        {
-            return battleSceneInfo.LevelInfo.Level;
-        }
-        else if (sceneInfo is ScoreMakerSceneInfo scoreMakerSceneInfo)
-        {
-            return scoreMakerSceneInfo.TargetLevel;
-        }
-        return 1;
-    }
+    
 }

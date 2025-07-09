@@ -12,19 +12,19 @@ public class HomePresenter : MonoBehaviour
     [SerializeField] private  HomeView _view;
     private HomeModel _model;
 
-    public void Init(int lastLevel)
+    public void Init()
     {
         _model = new HomeModel();
         _model.Init();
 
-        _view.Init(_model.StageMasterList, lastLevel);
+        _view.Init(_model.StageMasterList, 0);
         _view.ClickPlayStageButton.Subscribe(x =>
         {
-            StartBattle(x.stageKey.StageId, x.stageKey.Level, isPractice: x.isPractice);
+            StartBattle(x.stageKey.MusicId, x.stageKey.StageId, isPractice: x.isPractice);
         }).AddTo(this);
         _view.ClickEditStageButton.Subscribe(x =>
         {
-            StartScoreMaker(x.StageId, x.Level, isNewCreate: false);
+            StartScoreMaker(x.MusicId, x.StageId, isNewCreate: false);
         }).AddTo(this);
         _view.ClickNewCreateStageButton.Subscribe(musicId =>
         {

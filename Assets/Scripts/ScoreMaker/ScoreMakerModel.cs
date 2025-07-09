@@ -6,7 +6,6 @@ using System.Linq;
 
 public class ScoreMakerModel
 {
-    private List<LevelInfo> _levelInfoList = new();
     public SingleStageMaster _currentMaster = new();
     public SingleStageMaster CurrentMaster => _currentMaster;
     public SingleStageMaster OriginalStageInfo { get; private set; }
@@ -17,10 +16,15 @@ public class ScoreMakerModel
         _currentMaster = stageMaster.CreateCopy();
     }
 
-    public async UniTask SaveScore(List<NoteMaster> notes)
+    public async UniTask SaveScore(List<NoteMaster> notes, string stageName, MusicParameter parameter)
     {
         // 現在のレベルの譜面を保存
         UpdateCurrentLevelNotes(notes);
+        _currentMaster.StageHeader.StageName = stageName;
+        _currentMaster.StageHeader.BPM = parameter.Bpm;
+        _currentMaster.StageHeader.NoteTimeOffset = parameter.Offset;
+        _currentMaster.StageHeader.StartTime = parameter.StartTime;
+        _currentMaster.StageHeader.EndTime = parameter.EndTime;
         await MasterManager.UpdateStageMaster(_currentMaster);
     }
 
