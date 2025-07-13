@@ -16,6 +16,7 @@ public class ScoreMakerScene : SceneBase
         {
             return;
         }
+        Debug.Log("MusicId:" + _scoreMakerSceneInfo.StageMaster.StageHeader.MusicId);
         await BGMManager.instance.SetClipFromLibrary(_scoreMakerSceneInfo.StageMaster.StageHeader.MusicId, immediatePlay: false);
         _scoreMaker.Init(_scoreMakerSceneInfo.StageMaster, _scoreMakerSceneInfo.IsNewCreate);
     }

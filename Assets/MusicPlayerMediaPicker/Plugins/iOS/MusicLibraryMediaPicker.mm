@@ -187,9 +187,10 @@ extern "C" {
         }
 
         MPMediaItem *item = items[0];
+        NSLog(@"NS songID: %@", songId);
 
         // 曲をエクスポート
-        exportItem(item);
+        // exportItem(item);
     }
 
     /**************************************

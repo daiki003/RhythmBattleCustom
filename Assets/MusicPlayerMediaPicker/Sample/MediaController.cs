@@ -82,7 +82,6 @@ public class MediaController : MonoBehaviour
         // 曲をエクスポート
         exportItemFromId(songId);
         await UniTask.WaitUntil(() => getDoExport());
-        return null;
 
         string path = GetMusicPath(songId);
         using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(path, GetAudioType()))
