@@ -178,7 +178,14 @@ extern "C" {
             NSLog(@"songId is nil or empty!");
             return;
         }
-        NSNumber *targetId = [NSNumber numberWithUnsignedLongLong:[songId longLongValue]];
+        // 安全に unsigned long long に変換
+        NSScanner *scanner = [NSScanner scannerWithString:songId];
+        unsigned long long targetValue = 0;
+        if (![scanner scanUnsignedLongLong:&targetValue]) {
+            NSLog(@"Invalid songId format: %@", songId);
+            return;
+        }
+        NSNumber *targetId = [NSNumber numberWithUnsignedLongLong:[targetValue]];
         MPMediaPropertyPredicate *idPredicate = [MPMediaPropertyPredicate predicateWithValue:targetId forProperty:MPMediaItemPropertyPersistentID];
         [songQuery addFilterPredicate:idPredicate];
         
