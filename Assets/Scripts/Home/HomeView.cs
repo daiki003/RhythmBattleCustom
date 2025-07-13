@@ -259,8 +259,7 @@ public class HomeView : MonoBehaviour
             // 曲選択がキャンセルされた場合は何もしない
             return;
         }
-        return;
-        // _clickNewCreateStageButton.OnNext(musicId);
+        _clickNewCreateStageButton.OnNext(musicId);
     }
 
     private void SetButtonInteractable(bool isActive)

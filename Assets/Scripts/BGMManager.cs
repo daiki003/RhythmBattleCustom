@@ -109,6 +109,10 @@ public class BGMManager : MonoBehaviour
 	public async Task SetClipFromLibrary(string musicId, bool isLoop = false, bool immediatePlay = true, bool isFade = false, float startTime = 0f, float endTime = 0f)
 	{
 		var clip = await MediaController.instance.GetAudioClipAsync(musicId);
+		if (clip == null)
+		{
+			return;
+		}
 		SetClip(clip, isLoop, immediatePlay, isFade, startTime, endTime);
 	}
 
