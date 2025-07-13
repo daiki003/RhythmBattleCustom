@@ -174,7 +174,10 @@ extern "C" {
         NSArray *songlists = songQuery.collections;
 
         // PersistentID（固定ID）でフィルター
-        return;
+        if (songId == nil || [songId length] == 0) {
+            NSLog(@"songId is nil or empty!");
+            return;
+        }
         NSNumber *targetId = [NSNumber numberWithUnsignedLongLong:[songId longLongValue]];
         MPMediaPropertyPredicate *idPredicate = [MPMediaPropertyPredicate predicateWithValue:targetId forProperty:MPMediaItemPropertyPersistentID];
         [songQuery addFilterPredicate:idPredicate];

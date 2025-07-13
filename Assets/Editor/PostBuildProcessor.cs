@@ -26,7 +26,7 @@ public class PostBuildProcessor
 #endif
 
         // 自動署名とチームID設定
-        proj.SetTeamId(targetGuid, "YOUR_TEAM_ID"); // Apple DeveloperのTeam ID
+        proj.SetTeamId(targetGuid, "daiki watanabe"); // Apple DeveloperのTeam ID
         proj.SetBuildProperty(targetGuid, "CODE_SIGN_STYLE", "Automatic");
 //         Debug.Log("targetGuid " + targetGuid);
 //         // フラグを付けたいソースファイル
