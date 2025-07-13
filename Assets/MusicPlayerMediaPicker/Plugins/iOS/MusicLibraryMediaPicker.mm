@@ -168,10 +168,10 @@ extern "C" {
         
         // 使える曲の配列
         NSMutableArray<MPMediaItem*>* array = [[NSMutableArray<MPMediaItem*> alloc] init];
-        return;
         
         // ここでiCloudにしかない曲を弾く
         [songQuery addFilterPredicate:[MPMediaPropertyPredicate predicateWithValue:[NSNumber numberWithBool:NO] forProperty:MPMediaItemPropertyIsCloudItem]];
+        return;
         NSArray *songlists = songQuery.collections;
 
         // PersistentID（固定ID）でフィルター
