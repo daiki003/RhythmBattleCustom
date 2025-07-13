@@ -185,7 +185,7 @@ extern "C" {
             NSLog(@"Invalid songId format: %@", songId);
             return;
         }
-        NSNumber *targetId = [NSNumber numberWithUnsignedLongLong:[targetValue]];
+        NSNumber *targetId = [NSNumber numberWithUnsignedLongLong:targetValue];
         MPMediaPropertyPredicate *idPredicate = [MPMediaPropertyPredicate predicateWithValue:targetId forProperty:MPMediaItemPropertyPersistentID];
         [songQuery addFilterPredicate:idPredicate];
         
