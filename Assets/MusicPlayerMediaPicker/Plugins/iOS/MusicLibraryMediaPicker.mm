@@ -163,6 +163,7 @@ extern "C" {
      **************************************/
     void exportItemFromId(NSString* songId) {
         
+        NSLog(@"NS songID: %@", songId);
         /// 曲情報を取得する処理
         MPMediaQuery* songQuery = [MPMediaQuery songsQuery];
         
@@ -173,6 +174,8 @@ extern "C" {
         [songQuery addFilterPredicate:[MPMediaPropertyPredicate predicateWithValue:[NSNumber numberWithBool:NO] forProperty:MPMediaItemPropertyIsCloudItem]];
         NSArray *songlists = songQuery.collections;
 
+        NSLog(@"PersistentID（固定ID）でフィルターの前: %@", songId);
+        return;
         // PersistentID（固定ID）でフィルター
         NSNumber *targetId = [NSNumber numberWithUnsignedLongLong:[songId longLongValue]];
         MPMediaPropertyPredicate *idPredicate = [MPMediaPropertyPredicate predicateWithValue:targetId forProperty:MPMediaItemPropertyPersistentID];
@@ -187,10 +190,9 @@ extern "C" {
         }
 
         MPMediaItem *item = items[0];
-        NSLog(@"NS songID: %@", songId);
 
         // 曲をエクスポート
-        // exportItem(item);
+        exportItem(item);
     }
 
     /**************************************
