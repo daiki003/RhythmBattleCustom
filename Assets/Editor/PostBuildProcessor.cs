@@ -11,21 +11,23 @@ public class PostBuildProcessor
     [PostProcessBuild]
     public static void OnPostProcessBuild(BuildTarget buildTarget, string pathToBuiltProject)
     {
-//         if (buildTarget != BuildTarget.iOS) return;
+        if (buildTarget != BuildTarget.iOS) return;
 
-//         // project.pbxproj のパス
-//         var projPath = Path.Combine(pathToBuiltProject, "Unity-iPhone.xcodeproj/project.pbxproj");
+        // project.pbxproj のパス
+        var projPath = PBXProject.GetPBXProjectPath(pathToBuiltProject);
+        PBXProject proj = new PBXProject();
+        proj.ReadFromFile(projPath);
 
-//         PBXProject proj = new PBXProject();
-//         proj.ReadFromFile(projPath);
-//         Debug.Log("projPath " + projPath);
+#if UNITY_2020_1_OR_NEWER
+        string targetGuid = proj.GetUnityMainTargetGuid();
+        string frameworkTarget = proj.GetUnityFrameworkTargetGuid();
+#else
+        string targetGuid = proj.TargetGuidByName(PBXProject.GetUnityTargetName());
+#endif
 
-// #if UNITY_2019_3_OR_NEWER
-//         string targetGuid = proj.GetUnityFrameworkTargetGuid();
-// #else
-//         string targetGuid = proj.TargetGuidByName("UnityFramework");
-// #endif
-
+        // 自動署名とチームID設定
+        proj.SetTeamId(targetGuid, "YOUR_TEAM_ID"); // Apple DeveloperのTeam ID
+        proj.SetBuildProperty(targetGuid, "CODE_SIGN_STYLE", "Automatic");
 //         Debug.Log("targetGuid " + targetGuid);
 //         // フラグを付けたいソースファイル
 //         string fileName = "MusicLibraryMediaPicker.mm";
@@ -45,7 +47,7 @@ public class PostBuildProcessor
 //             proj.AddBuildPropertyForConfig(configGuid, "OTHER_CFLAGS", "-fno-objc-arc");
 //         }
 
-//         // 保存
-//         proj.WriteToFile(projPath);
+        // 保存
+        proj.WriteToFile(projPath);
     }
 }
