@@ -165,10 +165,10 @@ extern "C" {
         
         /// 曲情報を取得する処理
         MPMediaQuery* songQuery = [MPMediaQuery songsQuery];
-        return;
         
         // 使える曲の配列
         NSMutableArray<MPMediaItem*>* array = [[NSMutableArray<MPMediaItem*> alloc] init];
+        return;
         
         // ここでiCloudにしかない曲を弾く
         [songQuery addFilterPredicate:[MPMediaPropertyPredicate predicateWithValue:[NSNumber numberWithBool:NO] forProperty:MPMediaItemPropertyIsCloudItem]];
