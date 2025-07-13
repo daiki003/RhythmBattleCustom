@@ -171,8 +171,8 @@ extern "C" {
         
         // ここでiCloudにしかない曲を弾く
         [songQuery addFilterPredicate:[MPMediaPropertyPredicate predicateWithValue:[NSNumber numberWithBool:NO] forProperty:MPMediaItemPropertyIsCloudItem]];
-        return;
         NSArray *songlists = songQuery.collections;
+        return;
 
         // PersistentID（固定ID）でフィルター
         NSNumber *targetId = [NSNumber numberWithUnsignedLongLong:[songId longLongValue]];
