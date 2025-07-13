@@ -172,11 +172,11 @@ extern "C" {
         // ここでiCloudにしかない曲を弾く
         [songQuery addFilterPredicate:[MPMediaPropertyPredicate predicateWithValue:[NSNumber numberWithBool:NO] forProperty:MPMediaItemPropertyIsCloudItem]];
         NSArray *songlists = songQuery.collections;
-        return;
 
         // PersistentID（固定ID）でフィルター
         NSNumber *targetId = [NSNumber numberWithUnsignedLongLong:[songId longLongValue]];
         MPMediaPropertyPredicate *idPredicate = [MPMediaPropertyPredicate predicateWithValue:targetId forProperty:MPMediaItemPropertyPersistentID];
+        return;
         [songQuery addFilterPredicate:idPredicate];
         
         // 使える曲リストを作成
