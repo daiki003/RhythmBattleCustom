@@ -130,4 +130,9 @@ public class MediaController : MonoBehaviour
         return AudioType.UNKNOWN;
 #endif
     }
+
+    void OnNativeLog(string message)
+    {
+        Debug.Log("[iOS] " + message);
+    }
 }

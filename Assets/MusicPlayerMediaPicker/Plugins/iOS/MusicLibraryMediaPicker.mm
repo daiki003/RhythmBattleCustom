@@ -185,7 +185,10 @@ extern "C" {
             NSLog(@"Invalid songId format: %@", songId);
             return;
         }
+        NSString *logStr = [NSString stringWithFormat:@"targetId = %@", targetId];
+        UnitySendMessage("MediaController", "OnNativeLog", [logStr UTF8String]);
         NSNumber *targetId = [NSNumber numberWithUnsignedLongLong:targetValue];
+        UnitySendMessage("MediaController", "OnNativeLog", [logStr UTF8String]);
         MPMediaPropertyPredicate *idPredicate = [MPMediaPropertyPredicate predicateWithValue:targetId forProperty:MPMediaItemPropertyPersistentID];
         [songQuery addFilterPredicate:idPredicate];
         
