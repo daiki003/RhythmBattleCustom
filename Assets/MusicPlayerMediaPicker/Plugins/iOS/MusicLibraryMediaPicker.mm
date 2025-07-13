@@ -175,8 +175,8 @@ extern "C" {
 
         // PersistentID（固定ID）でフィルター
         NSNumber *targetId = [NSNumber numberWithUnsignedLongLong:[songId longLongValue]];
-        MPMediaPropertyPredicate *idPredicate = [MPMediaPropertyPredicate predicateWithValue:targetId forProperty:MPMediaItemPropertyPersistentID];
         return;
+        MPMediaPropertyPredicate *idPredicate = [MPMediaPropertyPredicate predicateWithValue:targetId forProperty:MPMediaItemPropertyPersistentID];
         [songQuery addFilterPredicate:idPredicate];
         
         // 使える曲リストを作成
