@@ -185,8 +185,8 @@ extern "C" {
             NSLog(@"Invalid songId format: %@", songId);
             return;
         }
-        UnitySendMessage("MediaController", "OnNativeLog", [songId UTF8String]);
         return;
+        UnitySendMessage("MediaController", "OnNativeLog", [songId UTF8String]);
         NSString *logStr = [NSString stringWithFormat:@"targetId = %@", songId];
         NSNumber *targetId = [NSNumber numberWithUnsignedLongLong:targetValue];
         UnitySendMessage("MediaController", "OnNativeLog", [logStr UTF8String]);
