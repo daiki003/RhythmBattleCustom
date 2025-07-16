@@ -162,8 +162,7 @@ extern "C" {
      * 指定した曲をエクスポートする
      **************************************/
     void exportItemFromId(NSString* songId) {
-        NSLog(@"Ns Log Test!");
-        fprintf(stderr, "songId = %s\n", [songId UTF8String]);
+        NSLog(@"songId = %@", songId);
         return;
         /// 曲情報を取得する処理
         MPMediaQuery* songQuery = [MPMediaQuery songsQuery];
