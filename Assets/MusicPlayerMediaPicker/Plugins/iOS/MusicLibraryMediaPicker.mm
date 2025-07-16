@@ -167,10 +167,6 @@ extern "C" {
         
         // 使える曲の配列
         NSMutableArray<MPMediaItem*>* array = [[NSMutableArray<MPMediaItem*> alloc] init];
-        const char* cSongId = songId ? strdup([songId UTF8String]) : "";
-        UnitySendMessage("MediaController", "OnNativeLog", cSongId);
-        free((void*)cSongId);
-        return;
         
         // ここでiCloudにしかない曲を弾く
         [songQuery addFilterPredicate:[MPMediaPropertyPredicate predicateWithValue:[NSNumber numberWithBool:NO] forProperty:MPMediaItemPropertyIsCloudItem]];
@@ -181,6 +177,10 @@ extern "C" {
             NSLog(@"songId is nil or empty!");
             return;
         }
+        const char* cSongId = songId ? strdup([songId UTF8String]) : "";
+        UnitySendMessage("MediaController", "OnNativeLog", cSongId);
+        free((void*)cSongId);
+        return;
         // 安全に unsigned long long に変換
         NSScanner *scanner = [NSScanner scannerWithString:songId];
         unsigned long long targetValue = 0;
