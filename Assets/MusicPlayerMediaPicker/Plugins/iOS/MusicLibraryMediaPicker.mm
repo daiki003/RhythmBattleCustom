@@ -162,7 +162,17 @@ extern "C" {
      * 指定した曲をエクスポートする
      **************************************/
     void exportItemFromId(NSString* songId) {
-        NSLog(@"songId = %@", songId);
+        @try {
+            NSLog(@"songId pointer = %p", songId);
+            if ([songId isKindOfClass:[NSString class]]) {
+                NSLog(@"songId = %@", songId);
+            } else {
+                NSLog(@"songId is not an NSString");
+            }
+        }
+        @catch (NSException* e) {
+            NSLog(@"Exception when logging songId: %@", e);
+        }
         return;
         /// 曲情報を取得する処理
         MPMediaQuery* songQuery = [MPMediaQuery songsQuery];
