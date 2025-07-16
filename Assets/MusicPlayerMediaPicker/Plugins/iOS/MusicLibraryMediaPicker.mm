@@ -19,7 +19,7 @@ extern "C" {
     NSString* logText;
     
     // 関数のプロトタイプ宣言
-    void exportItemFromId(NSString* songId);
+    void exportItemFromId(const char* cstr);
     void selectMusic();
     long getSongId();
     char* getSongName();
@@ -161,14 +161,16 @@ extern "C" {
     /**************************************
      * 指定した曲をエクスポートする
      **************************************/
-    void exportItemFromId(NSString* songId) {
-        NSLog(@"songId pointer = %p", songId);
+    void exportItemFromId(const char* cstr) {
+        if (cstr == NULL) return;
 
-        if (![songId isKindOfClass:[NSString class]]) {
-            NSLog(@"songId is not NSString!");
+        NSString* songId = [NSString stringWithUTF8String:cstr];
+        if (songId == nil || [songId length] == 0) {
+            NSLog(@"songId is nil or empty!");
             return;
         }
-        return;
+
+        NSLog(@"songId = %@", songId);
         /// 曲情報を取得する処理
         MPMediaQuery* songQuery = [MPMediaQuery songsQuery];
         

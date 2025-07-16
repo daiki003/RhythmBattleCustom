@@ -16,7 +16,7 @@ public class MediaController : MonoBehaviour
 
 #if UNITY_IOS && !UNITY_EDITOR
         [DllImport("__Internal")]
-        public static extern void exportItemFromId(string songId);
+        public static extern void exportItemFromId(IntPtr songId);
 
         [DllImport("__Internal")]
         public static extern void selectMusic();
@@ -80,7 +80,15 @@ public class MediaController : MonoBehaviour
     public async UniTask<AudioClip> GetAudioClipAsync(string songId)
     {
         // 曲をエクスポート
+#if UNITY_IOS && !UNITY_EDITOR
+        var utf8Bytes = System.Text.Encoding.UTF8.GetBytes(songId + "\0");
+        var unmanagedPtr = Marshal.AllocHGlobal(utf8Bytes.Length);
+        Marshal.Copy(utf8Bytes, 0, unmanagedPtr, utf8Bytes.Length);
+        exportItemFromId(unmanagedPtr);
+        Marshal.FreeHGlobal(unmanagedPtr);
+#else
         exportItemFromId(songId);
+#endif
         await UniTask.WaitUntil(() => getDoExport());
 
         string path = GetMusicPath(songId);
