@@ -177,7 +177,12 @@ extern "C" {
             NSLog(@"songId is nil or empty!");
             return;
         }
-        const char* cSongId = songId ? strdup([songId UTF8String]) : "";
+        const char* utf8 = [songId UTF8String];
+        if (utf8 == NULL) {
+            NSLog(@"UTF8String is NULL!");
+            return;
+        }
+        const char* cSongId = strdup(utf8);
         UnitySendMessage("MediaController", "OnNativeLog", cSongId);
         free((void*)cSongId);
         return;
