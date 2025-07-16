@@ -178,6 +178,8 @@ extern "C" {
             NSLog(@"songId is nil or empty!");
             return;
         }
+        UnitySendMessage("MediaController", "OnNativeLog", [songId UTF8String]);
+        return;
         // 安全に unsigned long long に変換
         NSScanner *scanner = [NSScanner scannerWithString:songId];
         unsigned long long targetValue = 0;
@@ -185,9 +187,8 @@ extern "C" {
             NSLog(@"Invalid songId format: %@", songId);
             return;
         }
-        return;
-        UnitySendMessage("MediaController", "OnNativeLog", [songId UTF8String]);
         NSString *logStr = [NSString stringWithFormat:@"targetId = %@", songId];
+        UnitySendMessage("MediaController", "OnNativeLog", [songId UTF8String]);
         NSNumber *targetId = [NSNumber numberWithUnsignedLongLong:targetValue];
         UnitySendMessage("MediaController", "OnNativeLog", [logStr UTF8String]);
         MPMediaPropertyPredicate *idPredicate = [MPMediaPropertyPredicate predicateWithValue:targetId forProperty:MPMediaItemPropertyPersistentID];
