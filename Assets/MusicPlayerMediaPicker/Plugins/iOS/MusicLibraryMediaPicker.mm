@@ -187,15 +187,6 @@ extern "C" {
             NSLog(@"songId is nil or empty!");
             return;
         }
-        const char* utf8 = [songId UTF8String];
-        if (utf8 == NULL) {
-            NSLog(@"UTF8String is NULL!");
-            return;
-        }
-        const char* cSongId = strdup(utf8);
-        UnitySendMessage("MediaController", "OnNativeLog", cSongId);
-        free((void*)cSongId);
-        return;
         // 安全に unsigned long long に変換
         NSScanner *scanner = [NSScanner scannerWithString:songId];
         unsigned long long targetValue = 0;
@@ -203,12 +194,10 @@ extern "C" {
             NSLog(@"Invalid songId format: %@", songId);
             return;
         }
-        NSString *logStr = [NSString stringWithFormat:@"targetId = %@", songId];
-        UnitySendMessage("MediaController", "OnNativeLog", [songId UTF8String]);
         NSNumber *targetId = [NSNumber numberWithUnsignedLongLong:targetValue];
-        UnitySendMessage("MediaController", "OnNativeLog", [logStr UTF8String]);
         MPMediaPropertyPredicate *idPredicate = [MPMediaPropertyPredicate predicateWithValue:targetId forProperty:MPMediaItemPropertyPersistentID];
         [songQuery addFilterPredicate:idPredicate];
+        NSLog(@"songQuery addFilterPredicate:idPredicate");
         
         // 使える曲リストを作成
         NSArray<MPMediaItem*> *items = [songQuery items];
@@ -222,6 +211,7 @@ extern "C" {
 
         // 曲をエクスポート
         exportItem(item);
+        NSLog(@"exportItem");
     }
 
     /**************************************
