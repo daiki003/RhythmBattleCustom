@@ -1,13 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using System.Runtime.InteropServices;
-using UnityEngine.UI;
+﻿using UnityEngine;
 using Cysharp.Threading.Tasks;
-using System.Threading.Tasks;
-using R3;
 using UnityEngine.Networking;
 using SFB;
+using System;
+using System.Runtime.InteropServices;
 
 public class MediaController : MonoBehaviour 
 {
@@ -33,7 +29,7 @@ public class MediaController : MonoBehaviour
         [DllImport("__Internal")]
         public static extern string getLog();
 #else
-        private static void exportItemFromId(string songId) { }
+        private static void exportItemFromId(IntPtr songId) { }
         private static void selectMusic()
         {
             string[] paths = StandaloneFileBrowser.OpenFilePanel("Select MP3", "", "mp3", false);
@@ -80,15 +76,11 @@ public class MediaController : MonoBehaviour
     public async UniTask<AudioClip> GetAudioClipAsync(string songId)
     {
         // 曲をエクスポート
-#if UNITY_IOS && !UNITY_EDITOR
         var utf8Bytes = System.Text.Encoding.UTF8.GetBytes(songId + "\0");
         var unmanagedPtr = Marshal.AllocHGlobal(utf8Bytes.Length);
         Marshal.Copy(utf8Bytes, 0, unmanagedPtr, utf8Bytes.Length);
         exportItemFromId(unmanagedPtr);
         Marshal.FreeHGlobal(unmanagedPtr);
-#else
-        exportItemFromId(songId);
-#endif
         await UniTask.WaitUntil(() => getDoExport());
 
         string path = GetMusicPath(songId);
