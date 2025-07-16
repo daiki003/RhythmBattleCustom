@@ -162,6 +162,7 @@ extern "C" {
      * 指定した曲をエクスポートする
      **************************************/
     void exportItemFromId(const char* cstr) {
+        NSLog(@"exportItemFromId start!");
         if (cstr == NULL) return;
 
         NSString* songId = [NSString stringWithUTF8String:cstr];
