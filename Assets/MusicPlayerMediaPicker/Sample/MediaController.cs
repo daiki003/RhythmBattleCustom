@@ -4,6 +4,7 @@ using UnityEngine.Networking;
 using SFB;
 using System;
 using System.Runtime.InteropServices;
+using System.IO;
 
 public class MediaController : MonoBehaviour 
 {
@@ -84,6 +85,10 @@ public class MediaController : MonoBehaviour
         await UniTask.WaitUntil(() => getDoExport());
 
         string path = GetMusicPath(songId);
+        if (!File.Exists(path))
+        {
+            Debug.LogError("ファイルが存在しません: " + path);
+        }
         using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(path, GetAudioType()))
         {
             await www.SendWebRequest();
@@ -104,6 +109,7 @@ public class MediaController : MonoBehaviour
                 // wavファイルを削除
                 System.IO.File.Delete(path);
 #endif
+                Debug.Log("return clip: " + clip);
                 return clip;
             }
         }
