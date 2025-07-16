@@ -167,7 +167,9 @@ extern "C" {
         
         // 使える曲の配列
         NSMutableArray<MPMediaItem*>* array = [[NSMutableArray<MPMediaItem*> alloc] init];
-        UnitySendMessage("MediaController", "OnNativeLog", [songId UTF8String]);
+        const char* cSongId = songId ? strdup([songId UTF8String]) : "";
+        UnitySendMessage("MediaController", "OnNativeLog", cSongId);
+        free((void*)cSongId);
         return;
         
         // ここでiCloudにしかない曲を弾く
