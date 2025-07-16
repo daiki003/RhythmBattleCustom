@@ -162,7 +162,6 @@ extern "C" {
      * 指定した曲をエクスポートする
      **************************************/
     void exportItemFromId(NSString* songId) {
-        return;
         /// 曲情報を取得する処理
         MPMediaQuery* songQuery = [MPMediaQuery songsQuery];
         
@@ -172,13 +171,14 @@ extern "C" {
         // ここでiCloudにしかない曲を弾く
         [songQuery addFilterPredicate:[MPMediaPropertyPredicate predicateWithValue:[NSNumber numberWithBool:NO] forProperty:MPMediaItemPropertyIsCloudItem]];
         NSArray *songlists = songQuery.collections;
+        UnitySendMessage("MediaController", "OnNativeLog", [songId UTF8String]);
+        return;
 
         // PersistentID（固定ID）でフィルター
         if (songId == nil || [songId length] == 0) {
             NSLog(@"songId is nil or empty!");
             return;
         }
-        UnitySendMessage("MediaController", "OnNativeLog", [songId UTF8String]);
         // 安全に unsigned long long に変換
         NSScanner *scanner = [NSScanner scannerWithString:songId];
         unsigned long long targetValue = 0;
