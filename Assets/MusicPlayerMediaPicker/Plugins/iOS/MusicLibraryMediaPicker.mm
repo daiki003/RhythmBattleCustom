@@ -167,12 +167,12 @@ extern "C" {
         
         // 使える曲の配列
         NSMutableArray<MPMediaItem*>* array = [[NSMutableArray<MPMediaItem*> alloc] init];
+        UnitySendMessage("MediaController", "OnNativeLog", [songId UTF8String]);
+        return;
         
         // ここでiCloudにしかない曲を弾く
         [songQuery addFilterPredicate:[MPMediaPropertyPredicate predicateWithValue:[NSNumber numberWithBool:NO] forProperty:MPMediaItemPropertyIsCloudItem]];
         NSArray *songlists = songQuery.collections;
-        UnitySendMessage("MediaController", "OnNativeLog", [songId UTF8String]);
-        return;
 
         // PersistentID（固定ID）でフィルター
         if (songId == nil || [songId length] == 0) {
