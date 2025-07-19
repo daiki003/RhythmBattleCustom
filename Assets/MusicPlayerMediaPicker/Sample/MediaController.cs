@@ -82,7 +82,7 @@ public class MediaController : MonoBehaviour
         Marshal.Copy(utf8Bytes, 0, unmanagedPtr, utf8Bytes.Length);
         exportItemFromId(unmanagedPtr);
         Marshal.FreeHGlobal(unmanagedPtr);
-        await UniTask.WaitUntil(() => getDoExport());
+        await UniTask.WaitWhile(() => getDoExport());
 
         string path = GetMusicPath(songId);
         if (!File.Exists(path))

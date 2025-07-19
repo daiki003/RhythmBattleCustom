@@ -153,7 +153,7 @@ extern "C" {
             do_export = NO;
         }];
         dispatch_release(queue);
-        logText = @"エクスポート終了";
+        NSLog(@"finish export");
         return YES;
     }
     
@@ -162,6 +162,7 @@ extern "C" {
      * 指定した曲をエクスポートする
      **************************************/
     void exportItemFromId(const char* cstr) {
+        do_export = YES;
         NSLog(@"exportItemFromId start!");
         if (cstr == NULL) return;
 
