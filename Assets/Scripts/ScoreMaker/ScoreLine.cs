@@ -54,7 +54,7 @@ public class ScoreLine : MonoBehaviour
 
     public float GetLineTime(float bpm, float offset)
     {
-        return LineNumber * (60f / bpm) + offset;
+        return LineNumber * (60f / (bpm * 4)) + offset;
     }
 
     public NoteMaster GetMaster(bool isLeft)

@@ -15,10 +15,11 @@ public class ValueAdjuster : MonoBehaviour
     [SerializeField] private ContentSizeFitter _titleSizeFitter;
     [SerializeField] private Text _valueText;
     [SerializeField] private VerticalLayoutGroup _layputGroup;
+    [SerializeField] private InputField _inputField;
 
-    private float _currentValue;
+    private ReactiveProperty<float> _currentValue = new(0f);
     private float _changeValueUnit;
-    public float CurrentValue => _currentValue;
+    public ReactiveProperty<float> CurrentValue => _currentValue;
 
     public void Init(float startValue, float changeValueUnit)
     {
@@ -33,20 +34,51 @@ public class ValueAdjuster : MonoBehaviour
             ChangeValue(_changeValueUnit);
         }).AddTo(this);
 
-        _titleSizeFitter.SetLayoutVertical();
-        _layputGroup.CalculateLayoutInputVertical();
-        _layputGroup.SetLayoutVertical();
+        // InputFieldがあるならそれも監視
+        if (_inputField != null)
+        {
+            _inputField.onEndEdit.AddListener(value =>
+            {
+                if (float.TryParse(value, out float parsedValue))
+                {
+                    SetValue(parsedValue);
+                }
+                else
+                {
+                    // パースに失敗した場合は元の値に戻す
+                    _inputField.text = _currentValue.ToString();
+                }
+            });
+        }
+
+        if (_titleSizeFitter != null)
+        {
+            _titleSizeFitter.SetLayoutVertical();
+        }
+        if (_layputGroup != null)
+        {
+            _layputGroup.CalculateLayoutInputVertical();
+            _layputGroup.SetLayoutVertical();
+        }
     }
 
     private void ChangeValue(float diff)
     {
-        SetValue(_currentValue + diff);
+        SetValue(_currentValue.Value + diff);
     }
 
-    private void SetValue(float value)
+    public void SetValue(float value)
     {
-        _currentValue = value;
+        _currentValue.Value = value;
         int decimalPlaces = _changeValueUnit.GetPrecision();
-        _valueText.text = string.Format("{0:F" + decimalPlaces + "}", _currentValue);
+        string valueString = string.Format("{0:F" + decimalPlaces + "}", _currentValue);
+        if (_inputField != null)
+        {
+            _inputField.text = valueString;
+        }
+        else
+        {
+            _valueText.text = valueString;
+        }
     }
 }

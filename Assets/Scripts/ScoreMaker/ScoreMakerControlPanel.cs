@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 using R3;
 using UnityEngine;
 using UnityEngine.UI;
@@ -19,8 +20,10 @@ public class ScoreMakerControlPanel : MonoBehaviour
     [SerializeField] private Button _deleteRangeButton; // 範囲削除ボタン
     [SerializeField] private Button _stageDuplicateButton; // ステージ複製ボタン
     // 3ページ目
-    [SerializeField] private Slider _lineSpacingSlider; // ライン間隔調整スライダー
-    [SerializeField] private Slider _ballSizeSlider; // ボールサイズ調整スライダー
+    [SerializeField] private ValueAdjuster _bpmInput;
+    [SerializeField] private ValueAdjuster _startTimeInput;
+    [SerializeField] private ValueAdjuster _endTimeInput;
+    [SerializeField] private Button _estimateBpmButton;
     // 全体
     [SerializeField] private Button _nextPageButton; // 次ページボタン
     [SerializeField] private Button _backPageButton; // 前ページボタン
@@ -50,10 +53,14 @@ public class ScoreMakerControlPanel : MonoBehaviour
     public Observable<Unit> OnDeleteRange => _onDeleteRange;
     private Subject<Unit> _onStageDuplicate = new();
     public Observable<Unit> OnStageDuplicate => _onStageDuplicate;
-    private Subject<float> _onChangeLineSpacing = new();
-    public Observable<float> OnChangeLineSpacing => _onChangeLineSpacing;
+    private ReactiveProperty<float> _bpm = new(0f);
+    public Observable<float> Bpm => _bpm;
+    private ReactiveProperty<float> _startTime = new(0f);
+    public Observable<float> StartTime => _startTime;
+    private ReactiveProperty<float> _endTime = new(0f);
+    public Observable<float> EndTime => _endTime;
 
-    public void Init()
+    public void Init(MusicParameter musicParameter, AudioClip audioClip)
     {
         SetPage(0);
         _messageMask.SetActive(false);
@@ -79,8 +86,7 @@ public class ScoreMakerControlPanel : MonoBehaviour
         }).AddTo(this);
         _pasteButton.OnClickAsObservable().Subscribe(_ =>
         {
-            _messageText.text = "貼り付け先の最初の列を選択してください";
-            _messageMask.gameObject.SetActive(true);
+            SetMessageMask("貼り付け先の最初の列を選択してください", isDisplayCancelButton: true);
             IsWaitingPaste = true;
         }).AddTo(this);
         _selectCancelButton.OnClickAsObservable().Subscribe(_ =>
@@ -105,13 +111,6 @@ public class ScoreMakerControlPanel : MonoBehaviour
             FinishPaste();
         }).AddTo(this);
 
-        _lineSpacingSlider.OnValueChangedAsObservable().Subscribe(value =>
-        {
-            _onChangeLineSpacing.OnNext(value);
-        }).AddTo(this);
-        // 初期値は中間にしておく
-        _lineSpacingSlider.value = 0.5f;
-
         _nextPageButton.OnClickAsObservable().Subscribe(_ =>
         {
             ChangePage(isNext: true);
@@ -119,7 +118,46 @@ public class ScoreMakerControlPanel : MonoBehaviour
         _backPageButton.OnClickAsObservable().Subscribe(_ =>
         {
             ChangePage(isNext: false);
-        }).AddTo(this);;
+        }).AddTo(this);
+
+        _bpmInput.Init(_bpm.Value, 0.1f);
+        _bpmInput.CurrentValue.Subscribe(value =>
+        {
+            _bpm.Value = value;
+        });
+        _startTimeInput.Init(_startTime.Value, 0.1f);
+        _startTimeInput.CurrentValue.Subscribe(value =>
+        {
+            _startTime.Value = value;
+        });
+        _endTimeInput.Init(_endTime.Value, 0.1f);
+        _endTimeInput.CurrentValue.Subscribe(value =>
+        {
+            _endTime.Value = value;
+        });
+        _estimateBpmButton.OnClickAsObservable().Subscribe(async _ =>
+        {
+            // EstimateBPMに時間がかかるので先にSEを鳴らす
+            SEManager.instance.PlaySe(SeName.Button1);
+            SetMessageMask("計測中...", isDisplayCancelButton: false);
+            await UniTask.NextFrame();
+            var bpm = AudioClipUtility.EstimateBPM(audioClip);
+            var startTime = AudioClipUtility.GetStartSoundTime(audioClip);
+            _bpmInput.SetValue(bpm);
+            _startTimeInput.SetValue(startTime);
+            _messageMask.SetActive(false);
+        }).AddTo(this);
+
+        _bpm = new ReactiveProperty<float>(musicParameter.Bpm);
+        _startTime = new ReactiveProperty<float>(musicParameter.StartTime);
+        _endTime = new ReactiveProperty<float>(musicParameter.EndTime);
+    }
+
+    private void SetMessageMask(string message, bool isDisplayCancelButton)
+    {
+        _messageMask.SetActive(true);
+        _messageText.text = message;
+        _pasteCancelButton.gameObject.SetActive(isDisplayCancelButton);
     }
 
     private void SetButtonHighLight(bool isSingle)

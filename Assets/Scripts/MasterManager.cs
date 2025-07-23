@@ -47,7 +47,6 @@ public class StageHeader
             StripEndTime = StripEndTime,
             BPM = BPM,
             LPB = LPB,
-            NoteTimeOffset = NoteTimeOffset,
             StartTime = StartTime,
             EndTime = EndTime,
             AdditionalBallSpeed = AdditionalBallSpeed

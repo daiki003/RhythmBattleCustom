@@ -62,7 +62,7 @@ public class SettingDialog : DialogBase
 
     public override void ClosePanel(DialogResultType resultType)
     {
-        SaveDataManager.UpdateSettingData(_bgmSlider.value, _seSlider.value, _offsetAdjuster.CurrentValue, _speedAdjuster.CurrentValue, _targetSlider.value);
+        SaveDataManager.UpdateSettingData(_bgmSlider.value, _seSlider.value, _offsetAdjuster.CurrentValue.Value, _speedAdjuster.CurrentValue.Value, _targetSlider.value);
         base.ClosePanel(resultType);
     }
 }

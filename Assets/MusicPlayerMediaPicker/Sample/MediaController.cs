@@ -44,7 +44,7 @@ public class MediaController : MonoBehaviour
 
         private static long getSongId() { return 0; }
         private static string getSongName() { return ""; }
-        private static bool getDoExport() { return true; }
+        private static bool getDoExport() { return false; }
         public static string getLog() { return ""; }
 
 #endif
@@ -85,10 +85,12 @@ public class MediaController : MonoBehaviour
         await UniTask.WaitWhile(() => getDoExport());
 
         string path = GetMusicPath(songId);
+#if UNITY_IOS && !UNITY_EDITOR
         if (!File.Exists(path))
         {
             Debug.LogError("ファイルが存在しません: " + path);
         }
+#endif
         using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(path, GetAudioType()))
         {
             await www.SendWebRequest();

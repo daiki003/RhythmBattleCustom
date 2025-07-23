@@ -20,6 +20,7 @@ public class BGMManager : MonoBehaviour
 {
 	[SerializeField] private AudioSource _bgmSource;
 	private AudioClip _currentBgmClip;
+	public AudioClip CurrentClip => _currentBgmClip;
 	private Dictionary<string, AudioClip> _chachClipDict = new();
 	private float _startTime;
 	private float _endTime;

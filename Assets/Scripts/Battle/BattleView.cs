@@ -337,7 +337,7 @@ public class BattleView : MonoBehaviour
     private float CalcNoteTime(NoteMaster noteMaster)
     {
         int noteNumber = noteMaster.num * (_stageHeader.LPB / noteMaster.lpb);
-        return noteNumber * (60f / _stageHeader.BPM) + _stageHeader.NoteTimeOffset + SaveDataManager.SettingData.Offset;
+        return noteNumber * (60f / _stageHeader.BPM) + _stageHeader.StartTime + SaveDataManager.SettingData.Offset;
     }
 
     public async UniTask PrepareBattle()

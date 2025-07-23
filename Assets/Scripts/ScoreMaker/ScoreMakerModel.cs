@@ -22,7 +22,6 @@ public class ScoreMakerModel
         UpdateCurrentLevelNotes(notes);
         _currentMaster.StageHeader.StageName = stageName;
         _currentMaster.StageHeader.BPM = parameter.Bpm;
-        _currentMaster.StageHeader.NoteTimeOffset = parameter.Offset;
         _currentMaster.StageHeader.StartTime = parameter.StartTime;
         _currentMaster.StageHeader.EndTime = parameter.EndTime;
         await MasterManager.UpdateStageMaster(_currentMaster);

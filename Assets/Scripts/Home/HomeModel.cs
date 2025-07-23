@@ -54,7 +54,7 @@ public class HomeModel
                 {
                     MusicId = musicId,
                     StageName = "",
-                    BPM = 500,
+                    BPM = 100,
                     LPB = 4,
                     StripStartTime = 0f,
                     StripEndTime = 20f,
