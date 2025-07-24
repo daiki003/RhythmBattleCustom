@@ -9,23 +9,11 @@ public static class AudioClipUtility
 {
     public static float EstimateBPM(AudioClip clip)
     {
-        int sampleRate = clip.frequency;
         int channels = clip.channels;
         int totalSamples = clip.samples;
 
-
         // ステレオ→モノラル
-        float[] rawData = new float[totalSamples * channels];
-        clip.GetData(rawData, 0);
-
-        float[] mono = new float[totalSamples];
-        for (int i = 0; i < totalSamples; i++)
-        {
-            float sum = 0f;
-            for (int c = 0; c < channels; c++)
-                sum += rawData[i * channels + c];
-            mono[i] = sum / channels;
-        }
+        var mono = MonoConversion(clip, channels, totalSamples);
 
         int windowSize = 1024;
         int hopSize = 512;
@@ -75,6 +63,8 @@ public static class AudioClipUtility
         for (int i = 0; i < powerSpectrum.Length; i++)
             powerSpectrum[i] = (float)(noveltyFFT[i].Magnitude * noveltyFFT[i].Magnitude);
 
+        int sampleRate = clip.frequency;
+
         // 周期 → BPM に変換
         Dictionary<float, float> bpmStrength = new();
         for (int i = 1; i < powerSpectrum.Length; i++)
@@ -100,23 +90,13 @@ public static class AudioClipUtility
 
     public static float GetStartSoundTime(AudioClip clip, float threshold = 0.01f, int windowMs = 20)
     {
-        int sampleRate = clip.frequency;
         int channels = clip.channels;
         int totalSamples = clip.samples;
 
-        // データ取得
-        float[] raw = new float[totalSamples * channels];
-        clip.GetData(raw, 0);
-
         // モノラル変換
-        float[] mono = new float[totalSamples];
-        for (int i = 0; i < totalSamples; i++)
-        {
-            float sum = 0f;
-            for (int c = 0; c < channels; c++)
-                sum += raw[i * channels + c];
-            mono[i] = sum / channels;
-        }
+        float[] mono = MonoConversion(clip, channels, totalSamples);
+
+        int sampleRate = clip.frequency;
 
         // ウィンドウサイズ（ms → サンプル数）
         int windowSize = Mathf.CeilToInt(sampleRate * windowMs / 1000f);
@@ -139,5 +119,94 @@ public static class AudioClipUtility
             }
         }
         return 0f; // 完全な無音
+    }
+
+    public static List<float> DetectNoteTimings(AudioClip clip, float strengthThreshold = 0.03f, float minSpacing = 0.3f)
+    {
+        int channels = clip.channels;
+        int samples = clip.samples;
+
+        // モノラル変換
+        float[] mono = MonoConversion(clip, channels, samples);
+
+        // Novelty Curve生成（スペクトルフラックス）
+        int windowSize = 1024;
+        int hopSize = 512;
+
+        List<float> novelty = new List<float>();
+        List<float> times = new List<float>();
+        float[] prevMag = null;
+
+        int sampleRate = clip.frequency;
+        for (int i = 0; i < mono.Length - windowSize; i += hopSize)
+        {
+            Complex[] buf = new Complex[windowSize];
+            for (int j = 0; j < windowSize; j++)
+                buf[j] = new Complex(mono[i + j], 0);
+
+            Fourier.Forward(buf, FourierOptions.Matlab);
+            float[] mag = buf.Select(c => (float)c.Magnitude).ToArray();
+
+            if (prevMag != null)
+            {
+                float flux = 0f;
+                for (int k = 0; k < mag.Length; k++)
+                {
+                    float diff = mag[k] - prevMag[k];
+                    if (diff > 0) flux += diff;
+                }
+
+                novelty.Add(flux);
+                times.Add((float)i / sampleRate);
+            }
+
+            prevMag = mag;
+        }
+
+        // 正規化（0〜1）
+        float max = novelty.Max();
+        if (max > 0f)
+            for (int i = 0; i < novelty.Count; i++)
+                novelty[i] /= max;
+
+        // ローカルピークかつ一定強度・間隔を満たすものだけ残す
+        List<float> noteTimings = new List<float>();
+        float lastTime = -999f;
+
+        for (int i = 1; i < novelty.Count - 1; i++)
+        {
+            if (novelty[i] > strengthThreshold &&
+                novelty[i] > novelty[i - 1] &&
+                novelty[i] > novelty[i + 1])
+            {
+                float time = times[i];
+                if (time - lastTime >= minSpacing)
+                {
+                    noteTimings.Add((float)Math.Round(time, 3));
+                    lastTime = time;
+                }
+            }
+        }
+
+        return noteTimings;
+    }
+
+    private static float[] MonoConversion(AudioClip clip, int channels, int totalSamples)
+    {
+        float[] raw = new float[totalSamples * channels];
+        clip.GetData(raw, 0);
+
+        // モノラル変換
+        float[] mono = new float[totalSamples];
+        for (int i = 0; i < totalSamples; i++)
+        {
+            float sum = 0f;
+            for (int c = 0; c < channels; c++)
+            {
+                sum += raw[i * channels + c];
+            }
+            mono[i] = sum / channels;
+        }
+        return mono;
     }
 }

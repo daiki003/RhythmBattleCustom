@@ -5,6 +5,7 @@ using R3;
 using UnityEngine.UI;
 using System.Linq;
 using Cysharp.Threading.Tasks;
+using System;
 
 public class MusicParameter
 {
@@ -315,6 +316,64 @@ public class ScoreMakerView : MonoBehaviour
             _clickDuplicateButton.OnNext(default);
         }).AddTo(this);
         _controlPanel.Init(CurrentMusicParameter, BGMManager.instance.CurrentClip);
+
+        // 均等配置
+        _controlPanel.EvenlySpacedButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            bool isLeft = false;
+            for (int i = 0; i < _scoreLineList.Count; i++)
+            {
+                _scoreLineList[i].ClearLine();
+                // 4の倍数で配置
+                if (i % 4 != 0)
+                {
+                    continue;
+                }
+                CreateBall(i, isLeft, ScoreMakerBallType.Single);
+                // 左右交互に配置
+                isLeft = !isLeft;
+            }
+        });
+        // 自動生成
+        _controlPanel.AutoCreateButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            bool isLeft = false;
+            float clipLength = BGMManager.instance.Length;
+            var beatList = AudioClipUtility.DetectNoteTimings(BGMManager.instance.CurrentClip);
+            for (int i = 0; i < _scoreLineList.Count; i++)
+            {
+                _scoreLineList[i].ClearLine();
+                float currentTime = i * _singleBeatTime + CurrentStartTime;
+                float nextTime = (i + 1) * _singleBeatTime + CurrentStartTime;
+                // 4の倍数で配置
+                if (beatList.Count == 0)
+                {
+                    break;
+                }
+                float beatTime = beatList.First();
+                // 次の線がまだ次のビートより前なら、少なくともこの線はスキップ
+                if (nextTime < beatTime)
+                {
+                    continue;
+                }
+                // 次の線が次のビートを超えていても、次の線のほうが近ければスキップ
+                if (Math.Abs(nextTime - beatTime) < Math.Abs(beatTime - currentTime))
+                {
+                    continue;
+                }
+                if (Math.Abs(beatTime - currentTime) > 0.05f)
+                {
+                    // ビートが近くなければそれを排除してスキップ
+                    beatList.RemoveAll(x => x <= currentTime);
+                    beatList.Remove(beatTime);
+                    continue;
+                }
+                CreateBall(i, isLeft, ScoreMakerBallType.Single);
+                beatList.RemoveAll(x => x <= currentTime);
+                // 左右交互に配置
+                isLeft = !isLeft;
+            }
+        });
 
         _controlPanel.Bpm.Subscribe(value =>
         {

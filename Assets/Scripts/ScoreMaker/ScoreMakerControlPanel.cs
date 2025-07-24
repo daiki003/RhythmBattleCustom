@@ -20,6 +20,11 @@ public class ScoreMakerControlPanel : MonoBehaviour
     [SerializeField] private Button _deleteRangeButton; // 範囲削除ボタン
     [SerializeField] private Button _stageDuplicateButton; // ステージ複製ボタン
     // 3ページ目
+    [SerializeField] private Button _evenlySpacedButton; // 均等配置ボタン
+    public Button EvenlySpacedButton => _evenlySpacedButton;
+    [SerializeField] private Button _autoCreateButton; // 自動生成ボタン
+    public Button AutoCreateButton => _autoCreateButton;
+    // 4ページ目
     [SerializeField] private ValueAdjuster _bpmInput;
     [SerializeField] private ValueAdjuster _startTimeInput;
     [SerializeField] private ValueAdjuster _endTimeInput;
