@@ -79,7 +79,7 @@ public class ScoreMakerView : MonoBehaviour
     private const float _maxLineSpacing = 300f; // ライン間隔最大値
     private const int _maxLastPastLineCount = 20;
 
-    private int _lineNumber => (int)(CurrentBpm * 4 * (BGMManager.instance.CurrentClipLength / 60f));
+    private int _lineNumber => (int)(CurrentBpm * 4 * ((CurrentEndTime - CurrentStartTime) / 60f));
     private float _currentTime => BGMManager.instance.CurrentTime;
 
     public enum ScoreMakerBallType
@@ -378,6 +378,7 @@ public class ScoreMakerView : MonoBehaviour
         _controlPanel.Bpm.Subscribe(value =>
         {
             CurrentMusicParameter.Bpm = value;
+            AdjustmentLineNumber();
         }).AddTo(this);
         _controlPanel.StartTime.Subscribe(value =>
         {
@@ -427,22 +428,7 @@ public class ScoreMakerView : MonoBehaviour
 
     public void CreateLine(List<NoteMaster> notes)
     {
-        // すでにラインが作られていたら全て削除
-        while (_scoreLineList.Count > 0)
-        {
-            var destroyLine = _scoreLineList[0];
-            _scoreLineList.Remove(destroyLine);
-            Destroy(destroyLine.gameObject);
-        }
-
-        // ライン作成
-        for (int i = 0; i < _lineNumber; i++)
-        {
-            var scoreLine = Instantiate(_scoreLinePrefab, _scoreLineTransform);
-            scoreLine.transform.SetSiblingIndex(0);
-            scoreLine.Init(i);
-            _scoreLineList.Add(scoreLine);
-        }
+        AdjustmentLineNumber();
         _selectMask.transform.SetAsLastSibling();
         if (notes == null)
         {
@@ -458,6 +444,31 @@ public class ScoreMakerView : MonoBehaviour
             {
                 var endNoteMaster = targetNote.notes[0];
                 CreateBall(endNoteMaster.noteNumber, endNoteMaster.block < 3, endNoteMaster.type == 1 ? ScoreMakerBallType.Single : ScoreMakerBallType.Long);
+            }
+        }
+    }
+
+    private void AdjustmentLineNumber()
+    {
+        // ラインの数が多すぎる場合は削除
+        if (_scoreLineList.Count > _lineNumber)
+        {
+            for (int i = _scoreLineList.Count - 1; i >= _lineNumber; i--)
+            {
+                var destroyLine = _scoreLineList[i];
+                _scoreLineList.Remove(destroyLine);
+                Destroy(destroyLine.gameObject);
+            }
+        }
+        // ラインの数が少なすぎる場合は追加
+        else if (_scoreLineList.Count < _lineNumber)
+        {
+            for (int i = _scoreLineList.Count; i < _lineNumber; i++)
+            {
+                var scoreLine = Instantiate(_scoreLinePrefab, _scoreLineTransform);
+                scoreLine.transform.SetSiblingIndex(0);
+                scoreLine.Init(i);
+                _scoreLineList.Add(scoreLine);
             }
         }
     }
@@ -789,7 +800,7 @@ public class ScoreMakerView : MonoBehaviour
         {
             return;
         }
-        if (BGMManager.instance.IsPlaying)
+        if (!_isPause)
         {
             float currentLineNumber = GetCurrentLineNumber();
             float anchorY = _scoreAreaBottom - (_scoreAreaLayoutGroup.spacing + _scoreLineHeight) * currentLineNumber;
@@ -804,7 +815,7 @@ public class ScoreMakerView : MonoBehaviour
             {
                 // BGMが終わったら自動で止める
                 _isPause = true;
-                BGMManager.instance.Pause();
+                BGMManager.instance.FadeOut(duration: 1f);
             }
         }
 

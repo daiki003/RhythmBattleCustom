@@ -99,7 +99,7 @@ public class BattleView : MonoBehaviour
     private Vector3 _rightEndPosition;
     private float _targetDistance;
     private float _surplusDistance;
-    private float _ballSpeed => (_stageHeader?.BPM + _stageHeader?.AdditionalBallSpeed) * (MasterManager.SettingMaster.BallSpeedCoefficient + SaveDataManager.SettingData.BallSpeed) ?? 1000f;
+    private float _ballSpeed => (_stageHeader?.BPM * 4 + _stageHeader?.AdditionalBallSpeed) * (MasterManager.SettingMaster.BallSpeedCoefficient + SaveDataManager.SettingData.BallSpeed) ?? 1000f;
     // ボールが出現してからターゲットに到達するまでの時間
     private float _ballTimeOffset => _targetDistance / _ballSpeed;
     private float _currentTime
@@ -337,7 +337,7 @@ public class BattleView : MonoBehaviour
     private float CalcNoteTime(NoteMaster noteMaster)
     {
         int noteNumber = noteMaster.num * (_stageHeader.LPB / noteMaster.lpb);
-        return noteNumber * (60f / _stageHeader.BPM) + _stageHeader.StartTime + SaveDataManager.SettingData.Offset;
+        return noteNumber * (60f / (_stageHeader.BPM * 4)) + _stageHeader.StartTime + SaveDataManager.SettingData.Offset;
     }
 
     public async UniTask PrepareBattle()

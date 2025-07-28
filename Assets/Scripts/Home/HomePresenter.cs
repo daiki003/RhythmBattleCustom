@@ -17,7 +17,7 @@ public class HomePresenter : MonoBehaviour
         _model = new HomeModel();
         _model.Init();
 
-        _view.Init(_model.StageMasterList, 0);
+        _view.Init(_model.StageMasterList);
         _view.ClickPlayStageButton.Subscribe(x =>
         {
             StartBattle(x.stageKey.MusicId, x.stageKey.StageId, isPractice: x.isPractice);

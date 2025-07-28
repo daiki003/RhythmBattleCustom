@@ -59,7 +59,6 @@ public class HomeView : MonoBehaviour
     [SerializeField] private Transform _stripTransform;
     [SerializeField] private Transform _customStripTransform;
     [SerializeField] private List<MenuButton> _menuButtonList;
-    [SerializeField] private GameObject _stageStripPanel;
     [SerializeField] private GameObject _customStripPanel;
     [SerializeField] private Button _settingButton;
     [SerializeField] private Button _helpButton;
@@ -82,7 +81,7 @@ public class HomeView : MonoBehaviour
     private StageStrip _selectedStrip;
     private HomePanelType _currentPanelType;
 
-    public void Init(List<SingleStageMaster> stageList, int lastLevel)
+    public void Init(List<SingleStageMaster> stageList)
     {
         CreateStripList(stageList);
         SetButtonInteractable(false);
@@ -93,15 +92,8 @@ public class HomeView : MonoBehaviour
             {
                 SetLevelPanel(menuButton.ButtonType);
             }).AddTo(this);
-            if (i == lastLevel - 1)
-            {
-                SetLevelPanel(menuButton.ButtonType);
-            }
         }
-        if (lastLevel >= MasterManager.MinStageId)
-        {
-            SetLevelPanel(HomePanelType.Custom);
-        }
+        SetLevelPanel(HomePanelType.Custom);
         BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true, isFade: true);
         // 開始ボタン
         _playStageButton.OnClickAsObservable().Subscribe(_ =>
@@ -284,8 +276,7 @@ public class HomeView : MonoBehaviour
         // _editStageButton.gameObject.SetActive(!isStage);
         _deleteStageButton.gameObject.SetActive(!isStage);
         _newCreateButton.gameObject.SetActive(!isStage);
-        _stageStripPanel.SetActive(titlePanelType.IsStage());
-        _customStripPanel.SetActive(!titlePanelType.IsStage());
+        _customStripPanel.SetActive(true);
         UpdateStrip();
     }
 }

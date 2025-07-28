@@ -234,4 +234,17 @@ public class BGMManager : MonoBehaviour
 	{
 		return Mathf.Clamp((_bgmSource.time - offset) / _currentBgmClip.length, 0f, 1f);
 	}
+
+	public void FadeOut(float duration)
+	{
+		if (_bgmSource.isPlaying)
+		{
+			_bgmSource.DOFade(0f, duration).OnComplete(() =>
+			{
+				_bgmSource.Stop();
+				// BGMを止めたら音量を元に戻す
+				_bgmSource.volume = SaveDataManager.SettingData.BgmVolume;
+			});
+		}
+	}
 }
