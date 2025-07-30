@@ -2130,7 +2130,7 @@ MonoBehaviour:
     m_Top: 1220
     m_Bottom: 273
   m_ChildAlignment: 7
-  m_Spacing: 150
+  m_Spacing: 125
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 0
