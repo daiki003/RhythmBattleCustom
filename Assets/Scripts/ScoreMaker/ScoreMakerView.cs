@@ -182,21 +182,6 @@ public class ScoreMakerView : MonoBehaviour
             }
             GameManager.instance.OpenScene(SceneType.Home, new HomeSceneInfo()).Forget();
         }).AddTo(this);
-        _bpmInput.OnEndEditAsObservable().Subscribe(bpm =>
-        {
-            _isEdited = true;
-            CurrentMusicParameter.Bpm = float.Parse(bpm);
-        }).AddTo(this);
-        _startTimeInput.OnEndEditAsObservable().Subscribe(time =>
-        {
-            _isEdited = true;
-            CurrentMusicParameter.StartTime = float.Parse(time);
-        }).AddTo(this);
-        _endTimeInput.OnEndEditAsObservable().Subscribe(time =>
-        {
-            _isEdited = true;
-            CurrentMusicParameter.EndTime = float.Parse(time);
-        }).AddTo(this);
     }
 
 #region ダイアログ系
@@ -383,10 +368,18 @@ public class ScoreMakerView : MonoBehaviour
         _controlPanel.StartTime.Subscribe(value =>
         {
             CurrentMusicParameter.StartTime = value;
+            AdjustmentLineNumber();
         }).AddTo(this);
         _controlPanel.EndTime.Subscribe(value =>
         {
-            CurrentMusicParameter.EndTime = value;
+            // 現在の曲の長さ以上にならないようにする
+            var actualEndTime = Mathf.Min(value, BGMManager.instance.Length);
+            CurrentMusicParameter.EndTime = actualEndTime;
+            if (!Mathf.Approximately(actualEndTime, value))
+            {
+                _controlPanel.SetMusicParameter(CurrentMusicParameter);
+            }
+            AdjustmentLineNumber();
         }).AddTo(this);
     }
 

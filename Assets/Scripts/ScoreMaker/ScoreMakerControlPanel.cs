@@ -202,6 +202,13 @@ public class ScoreMakerControlPanel : MonoBehaviour
         _isExsistPastLine = isExsistPastLine;
     }
 
+    public void SetMusicParameter(MusicParameter musicParameter)
+    {
+        _bpmInput.SetValue(musicParameter.Bpm);
+        _startTimeInput.SetValue(musicParameter.StartTime);
+        _endTimeInput.SetValue(musicParameter.EndTime);
+    }
+
     void Update()
     {
         _copyButton.interactable = _isSelectedLine;
