@@ -35,9 +35,16 @@ public class ClickHandler
     public Subject<int> OnClickScoreLineNumber = new Subject<int>();
     public Subject<float> OnDragBattleBg = new();
 
+    public Subject<float> OnPinchOut = new();
+    public Subject<float> OnPinchIn = new();
+
     private Vector3 _startClickPosition;
     private Vector3? _lastPosition;
     private const float _moveDiff = 5f;
+
+#if !UNITY_EDITOR
+    private float _previousDistance;
+#endif
 
     public void Update()
     {
@@ -69,6 +76,34 @@ public class ClickHandler
         {
             var touch = Input.GetTouch(i);
             ClickAction(touch);
+        }
+        if (Input.touchCount == 2)
+        {
+            Touch touch0 = Input.GetTouch(0);
+            Touch touch1 = Input.GetTouch(1);
+            float currentDistance = Mathf.Abs(touch0.position.y - touch1.position.y);
+            if (_previousDistance == 0f)
+            {
+                _previousDistance = currentDistance;
+            }
+
+            float deltaDistance = currentDistance - _previousDistance;
+            if (deltaDistance < 0)
+            {
+                // ピンチイン（縮小）
+                OnPinchIn.OnNext(currentDistance);
+            }
+            else if (deltaDistance > 0)
+            {
+                // ピンチアウト（拡大）
+                OnPinchOut.OnNext(currentDistance);
+            }
+            // 前回の距離を更新
+            _previousDistance = currentDistance;
+        }
+        else
+        {
+            _previousDistance = 0f;
         }
 #endif
     }

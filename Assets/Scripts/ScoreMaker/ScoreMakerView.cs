@@ -116,6 +116,7 @@ public class ScoreMakerView : MonoBehaviour
 
     private void StartSubscribeMain()
     {
+        // 基本操作系
         GameManager.instance.ClickHandler.OnClickScoreLinePocket.Subscribe(x =>
         {
             if (_controlPanel.IsEditMode)
@@ -141,6 +142,15 @@ public class ScoreMakerView : MonoBehaviour
             SEManager.instance.PlaySe(SeName.Button4);
             CreateMoveButton(number);
         }).AddTo(this);
+        GameManager.instance.ClickHandler.OnPinchIn.Subscribe(value =>
+        {
+            _scoreAreaLayoutGroup.spacing += value;
+        }).AddTo(this);
+        GameManager.instance.ClickHandler.OnPinchOut.Subscribe(value =>
+        {
+            _scoreAreaLayoutGroup.spacing -= value;
+        }).AddTo(this);
+
         _playBgmButton.OnClickAsObservable().Subscribe(_ =>
         {
             ChangePause();
