@@ -75,7 +75,7 @@ public class ClickHandler
         for (var i = 0; i < touchCount; i++)
         {
             var touch = Input.GetTouch(i);
-            ClickAction(touch);
+            ClickAction(touch, touchCount > 1);
         }
         if (Input.touchCount == 2)
         {
@@ -108,7 +108,7 @@ public class ClickHandler
 #endif
     }
 
-    private void ClickAction(Touch touch = default)
+    private void ClickAction(Touch touch = default, bool isDouble = false)
     {
         var clickType = GetClickType(touch);
         // クリックしていなければ何もしない
@@ -176,7 +176,8 @@ public class ClickHandler
                     break;
             }
         }
-        else if (clickType == ClickType.Moved)
+        // 2本指のドラッグはピンチ操作なので別で検知
+        else if (clickType == ClickType.Moved && !isDouble)
         {
             if (IsOnTargetTag("BattleBg", touch))
             {
