@@ -12,6 +12,8 @@ public class PlayFabController
     public static string randomPlayFabId; //直近で取得した他の人のID
     [SerializeField] static GetPlayerCombinedInfoRequestParams InfoRequestParams;
 
+    private static bool _isLoginSuccess = false;
+
     private const string _customIdKey = "PlayFab_CustomId";
 
     // ログイン ---------------------------------------------------------------------------------------------------------------------------------------[]
@@ -26,9 +28,7 @@ public class PlayFabController
         PlayFabAuthService.OnLoginSuccess += (result) => loginResult = result;
         // PlayFabAuthService.Instance.Authenticate(Authtypes.Silent);
         SimpleLogin();
-
-        await UniTask.WaitUntil(() => loginResult != null);
-        LoginSuccess(loginResult);
+        await UniTask.WaitUntil(() => _isLoginSuccess);
     }
 
     public static void LoginSuccess(LoginResult result)
@@ -36,6 +36,7 @@ public class PlayFabController
         playFabId = result.PlayFabId;
         UpdateRandomPlayfabId();
         Debug.Log("ログイン" + playFabId);
+        _isLoginSuccess = true;
     }
 
     public static void SimpleLogin()
