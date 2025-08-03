@@ -4,12 +4,15 @@ using PlayFab.ClientModels;
 using PlayFab.Json;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using System;
 
 public class PlayFabController
 {
     private static string playFabId; //自分のID
     public static string randomPlayFabId; //直近で取得した他の人のID
     [SerializeField] static GetPlayerCombinedInfoRequestParams InfoRequestParams;
+
+    private const string _customIdKey = "PlayFab_CustomId";
 
     // ログイン ---------------------------------------------------------------------------------------------------------------------------------------[]
     public static async UniTask LoginAsync()
@@ -21,7 +24,8 @@ public class PlayFabController
         PlayFabAuthService.Instance.InfoRequestParams = InfoRequestParams;
         PlayFabAuthService.Instance.InitializeCallback();
         PlayFabAuthService.OnLoginSuccess += (result) => loginResult = result;
-        PlayFabAuthService.Instance.Authenticate(Authtypes.Silent);
+        // PlayFabAuthService.Instance.Authenticate(Authtypes.Silent);
+        SimpleLogin();
 
         await UniTask.WaitUntil(() => loginResult != null);
         LoginSuccess(loginResult);
@@ -34,8 +38,9 @@ public class PlayFabController
         Debug.Log("ログイン" + playFabId);
     }
 
-    public static void SimpleLogin(string customId)
+    public static void SimpleLogin()
     {
+        string customId = GetOrCreateCustomId();
         PlayFabClientAPI.LoginWithCustomID(new LoginWithCustomIDRequest()
         {
             TitleId = PlayFabSettings.TitleId,
@@ -51,6 +56,21 @@ public class PlayFabController
             Debug.LogError(error.GenerateErrorReport());
 
         });
+    }
+
+    private static string GetOrCreateCustomId()
+    {
+        // すでに保存されているIDがあれば使う
+        if (PlayerPrefs.HasKey(_customIdKey))
+        {
+            return PlayerPrefs.GetString(_customIdKey);
+        }
+
+        // なければ新規で作成して保存
+        string newId = Guid.NewGuid().ToString();
+        PlayerPrefs.SetString(_customIdKey, newId);
+        PlayerPrefs.Save();
+        return newId;
     }
 
     public static async UniTask InitializePrivateData()
