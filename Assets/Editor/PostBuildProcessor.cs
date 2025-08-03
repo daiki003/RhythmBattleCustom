@@ -49,5 +49,17 @@ public class PostBuildProcessor
 
         // 保存
         proj.WriteToFile(projPath);
+
+        // info.plistの設定
+        string plistPath = Path.Combine(pathToBuiltProject, "Info.plist");
+        PlistDocument plist = new PlistDocument();
+        plist.ReadFromFile(plistPath);
+
+        PlistElementDict rootDict = plist.root;
+
+        rootDict.SetString("NSAppleMusicUsageDescription", "このアプリでは、Apple Music ライブラリの楽曲を利用します。");
+        rootDict.SetString("NSMediaLibraryUsageDescription", "音楽を選択できるようにメディアライブラリにアクセスします。");
+
+        plist.WriteToFile(plistPath);
     }
 }
