@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using PlayFab.ClientModels;
 using PlayFab.Internal;
+using UnityEngine;
 
 namespace PlayFab
 {
@@ -1418,6 +1419,10 @@ namespace PlayFab
         /// </summary>
         public static void LoginWithIOSDeviceID(LoginWithIOSDeviceIDRequest request, Action<LoginResult> resultCallback, Action<PlayFabError> errorCallback, object customData = null, Dictionary<string, string> extraHeaders = null)
         {
+            Debug.Log("LoginWithIOSDeviceID: CreateAccount " + request.CreateAccount);
+            Debug.Log("LoginWithIOSDeviceID: DeviceId " + request.DeviceId);
+            Debug.Log("LoginWithIOSDeviceID: TitleId " + request.TitleId);
+            Debug.Log("LoginWithIOSDeviceID: PlayerSecret " + request.PlayerSecret);
             var context = (request == null ? null : request.AuthenticationContext) ?? PlayFabSettings.staticPlayer;
             var callSettings = PlayFabSettings.staticSettings;
             request.TitleId = request.TitleId ?? callSettings.TitleId;

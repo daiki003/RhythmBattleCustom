@@ -475,6 +475,8 @@ public class PlayFabAuthService  {
             CreateAccount = true,
             InfoRequestParameters = InfoRequestParams
         }, (result) => {
+            Debug.Log("Login Result: PlayFabId " + result.PlayFabId);
+            Debug.Log("Login Result: PlayFabId " + result.PlayFabId);
             //Store Identity and session
             _playFabId = result.PlayFabId;
             _sessionTicket = result.SessionTicket;
