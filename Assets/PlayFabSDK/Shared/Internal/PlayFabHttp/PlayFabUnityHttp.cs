@@ -208,8 +208,11 @@ namespace PlayFab.Internal
 #if PLAYFAB_REQUEST_TIMING
                 var startTime = DateTime.UtcNow;
 #endif
+                Debug.Log("OnResponse: response\n" + response);
                 var serializer = PluginManager.GetPlugin<ISerializerPlugin>(PluginContract.PlayFab_Serializer);
                 var httpResult = serializer.DeserializeObject<HttpResponseObject>(response);
+                Debug.Log("OnResponse: httpResult.code\n" + httpResult.code);
+                Debug.Log("OnResponse: httpResult.status\n" + httpResult.status);
 
                 if (httpResult.code == 200)
                 {
@@ -245,11 +248,9 @@ namespace PlayFab.Internal
                 {
                     if (reqContainer.ErrorCallback != null)
                     {
-                        Debug.Log("OnResponse1");
                         reqContainer.Error = PlayFabHttp.GeneratePlayFabError(reqContainer.ApiEndpoint, response, reqContainer.CustomData);
-                        Debug.Log("OnResponse2");
                         PlayFabHttp.SendErrorEvent(reqContainer.ApiRequest, reqContainer.Error);
-                        Debug.Log("OnResponse3");
+                        Debug.Log("ErrorCallback");
                         reqContainer.ErrorCallback(reqContainer.Error);
                     }
                 }
