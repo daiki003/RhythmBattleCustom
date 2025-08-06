@@ -50,7 +50,6 @@ public enum BattleState
 
 public class BattleView : MonoBehaviour
 {
-    [SerializeField] private Image _enemyImage;
     [SerializeField] private Transform _leftTargetPoint;
     [SerializeField] private Transform _rightTargetPoint;
     [SerializeField] private Transform _leftStartTransform;
