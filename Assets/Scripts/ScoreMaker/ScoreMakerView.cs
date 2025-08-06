@@ -149,14 +149,15 @@ public class ScoreMakerView : MonoBehaviour
             SEManager.instance.PlaySe(SeName.Button4);
             CreateMoveButton(number);
         }).AddTo(this);
-        GameManager.instance.ClickHandler.OnPinchIn.Subscribe(value =>
-        {
-            _scoreAreaLayoutGroup.spacing += value;
-        }).AddTo(this);
-        GameManager.instance.ClickHandler.OnPinchOut.Subscribe(value =>
-        {
-            _scoreAreaLayoutGroup.spacing -= value;
-        }).AddTo(this);
+        // TODO: ピンチイン・アウトでライン間隔を調整する機能を実装する
+        // GameManager.instance.ClickHandler.OnPinchIn.Subscribe(value =>
+        // {
+        //     _scoreAreaLayoutGroup.spacing += value;
+        // }).AddTo(this);
+        // GameManager.instance.ClickHandler.OnPinchOut.Subscribe(value =>
+        // {
+        //     _scoreAreaLayoutGroup.spacing -= value;
+        // }).AddTo(this);
         GameManager.instance.ClickHandler.OnClickButton.Subscribe(isLeft =>
         {
             if (!_isPlayMakeMode)
@@ -437,6 +438,13 @@ public class ScoreMakerView : MonoBehaviour
         if (_isPause)
         {
             BGMManager.instance.Pause();
+            float pitch = BGMManager.instance.CurrentPitch;
+            pitch += 0.5f;
+            if (pitch >= 2f)
+            {
+                pitch = 0.5f;
+            }
+            BGMManager.instance.SetPitch(pitch);
         }
         else
         {

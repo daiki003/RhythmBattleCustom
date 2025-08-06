@@ -36,6 +36,7 @@ public class BGMManager : MonoBehaviour
 	public float CurrentClipLength => _currentBgmClip.length;
 	public float Volume => _bgmSource.volume;
 	public bool IsPlaying => _bgmSource.isPlaying;
+	public float CurrentPitch => _bgmSource.pitch;
 
 	private CancellationTokenSource _fadeCts;
 
@@ -246,5 +247,10 @@ public class BGMManager : MonoBehaviour
 				_bgmSource.volume = SaveDataManager.SettingData.BgmVolume;
 			});
 		}
+	}
+
+	public void SetPitch(float pitch)
+	{
+		_bgmSource.pitch = pitch;
 	}
 }
