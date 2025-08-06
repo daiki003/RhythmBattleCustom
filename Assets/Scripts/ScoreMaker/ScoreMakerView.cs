@@ -438,13 +438,14 @@ public class ScoreMakerView : MonoBehaviour
         if (_isPause)
         {
             BGMManager.instance.Pause();
-            float pitch = BGMManager.instance.CurrentPitch;
-            pitch += 0.5f;
-            if (pitch >= 2f)
-            {
-                pitch = 0.5f;
-            }
-            BGMManager.instance.SetPitch(pitch);
+            // ピッチ調整は他に移植する
+            // float pitch = BGMManager.instance.CurrentPitch;
+            // pitch += 0.5f;
+            // if (pitch >= 2f)
+            // {
+            //     pitch = 0.5f;
+            // }
+            // BGMManager.instance.SetPitch(pitch);
         }
         else
         {
