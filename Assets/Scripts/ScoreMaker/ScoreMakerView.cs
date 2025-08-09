@@ -24,7 +24,6 @@ public class ScoreMakerView : MonoBehaviour
     [SerializeField] private Button _undoButton;
     [SerializeField] private Button _backButton;
 
-    [SerializeField] private InputField _bpmInput;
     [SerializeField] private InputField _startTimeInput;
     [SerializeField] private InputField _endTimeInput;
 
@@ -35,6 +34,9 @@ public class ScoreMakerView : MonoBehaviour
     [SerializeField] private MoveButton _moveButtonPrefab;
     [SerializeField] private Transform _moveButtonArea;
     [SerializeField] private Button _playBgmButton; // BGM再生ボタン
+    [SerializeField] private Button _startPlayMakeButton; // 演奏作成ボタン
+    [SerializeField] private ValueAdjuster _pitchAdjuster; // ピッチ変更
+    private float _basePitch;
 
     // コントロールパネル
     [SerializeField] private ScoreMakerControlPanel _controlPanel;
@@ -47,7 +49,11 @@ public class ScoreMakerView : MonoBehaviour
     [SerializeField] private GameObject _controlUiRoot;
     [SerializeField] private GameObject _playMakeModeUiRoot;
     [SerializeField] private Button _finishPlayMakeModeButton;
+    [SerializeField] private Button _resetPlayMakeModeButton;
     private bool _isPlayMakeMode;
+    // 演奏作成モードでの開始位置
+    private float _startPlayMakeLineNumber;
+    private List<LineState> _startPlayMakeLineList;
 
     public class LineState
     {
@@ -113,7 +119,6 @@ public class ScoreMakerView : MonoBehaviour
         _currentSelectBallType = ScoreMakerBallType.Single;
         StartSubscribeMain();
         StartSubscribeControllPanel();
-        _bpmInput.text = CurrentBpm.ToString();
         _startTimeInput.text = CurrentStartTime.ToString();
         _endTimeInput.text = CurrentEndTime.ToString();
         CreateLine(notes);
@@ -209,12 +214,37 @@ public class ScoreMakerView : MonoBehaviour
             }
             GameManager.instance.OpenScene(SceneType.Home, new HomeSceneInfo()).Forget();
         }).AddTo(this);
+        // 演奏作成
+        _startPlayMakeButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            _startPlayMakeLineNumber = GetCurrentLineNumber();
+            _startPlayMakeLineList = GetCurrentLineList();
+            _controlUiRoot.SetActive(false);
+            _playMakeModeUiRoot.SetActive(true);
+            _isPlayMakeMode = true;
+        }).AddTo(this);
         _finishPlayMakeModeButton.OnClickAsObservable().Subscribe(_ =>
         {
+            UpdatePastScoreLineList();
             _playMakeModeUiRoot.SetActive(false);
             _controlUiRoot.SetActive(true);
             _isPlayMakeMode = false;
         }).AddTo(this);
+        _resetPlayMakeModeButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            BGMManager.instance.Pause();
+            _isPause = true;
+            CreateBallFromLineState(_startPlayMakeLineList, startNumber: 0);
+            SetPositionByLineNumber(_startPlayMakeLineNumber);
+        }).AddTo(this);
+
+        
+        _basePitch = BGMManager.instance.CurrentPitch;
+        _pitchAdjuster.Init(1f, 0.1f);
+        _pitchAdjuster.CurrentValue.Subscribe(value =>
+        {
+            BGMManager.instance.SetPitch(_basePitch * value);
+        });
     }
 
 #region ダイアログ系
@@ -395,6 +425,8 @@ public class ScoreMakerView : MonoBehaviour
         // 演奏作成
         _controlPanel.PlayMakeButton.OnClickAsObservable().Subscribe(_ =>
         {
+            _startPlayMakeLineNumber = GetCurrentLineNumber();
+            _startPlayMakeLineList = GetCurrentLineList();
             _controlUiRoot.SetActive(false);
             _playMakeModeUiRoot.SetActive(true);
             _isPlayMakeMode = true;
@@ -438,14 +470,6 @@ public class ScoreMakerView : MonoBehaviour
         if (_isPause)
         {
             BGMManager.instance.Pause();
-            // ピッチ調整は他に移植する
-            // float pitch = BGMManager.instance.CurrentPitch;
-            // pitch += 0.5f;
-            // if (pitch >= 2f)
-            // {
-            //     pitch = 0.5f;
-            // }
-            // BGMManager.instance.SetPitch(pitch);
         }
         else
         {
@@ -660,6 +684,12 @@ public class ScoreMakerView : MonoBehaviour
         return (_currentTime - CurrentStartTime) / _singleBeatTime;
     }
 
+    private void SetPositionByLineNumber(float lineNumber)
+    {
+        var positionY = _scoreAreaBottom - lineNumber * (_scoreAreaLayoutGroup.spacing + _scoreLineHeight);
+        _scoreAreaRect.SetAnchoredPositionY(positionY);
+    }
+
     public List<NoteMaster> CreateNoteList()
     {
         var noteList = new List<NoteMaster>();
@@ -783,6 +813,11 @@ public class ScoreMakerView : MonoBehaviour
         {
             _pastScoreLineList.RemoveAt(0);
         }
+        _pastScoreLineList.Add(GetCurrentLineList());
+    }
+
+    private List<LineState> GetCurrentLineList()
+    {
         var lastScoreLineList = new List<LineState>();
         foreach (var line in _scoreLineList)
         {
@@ -795,7 +830,7 @@ public class ScoreMakerView : MonoBehaviour
             };
             lastScoreLineList.Add(state);
         }
-        _pastScoreLineList.Add(lastScoreLineList);
+        return lastScoreLineList;
     }
 
     private void Undo()

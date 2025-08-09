@@ -499,6 +499,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _bgmSource: {fileID: 295915817}
+  _audioMixer: {fileID: 24100000, guid: 6bf5b22cd5dce11429622d260b131b27, type: 2}
 --- !u!1 &346343777
 GameObject:
   m_ObjectHideFlags: 0

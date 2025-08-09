@@ -8,6 +8,7 @@ using UnityEngine.Profiling;
 using DG.Tweening;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine.Audio;
 
 public enum BgmName
 {
@@ -19,6 +20,8 @@ public enum BgmName
 public class BGMManager : MonoBehaviour
 {
 	[SerializeField] private AudioSource _bgmSource;
+	[SerializeField] private AudioMixer _audioMixer;
+
 	private AudioClip _currentBgmClip;
 	public AudioClip CurrentClip => _currentBgmClip;
 	private Dictionary<string, AudioClip> _chachClipDict = new();
@@ -252,5 +255,9 @@ public class BGMManager : MonoBehaviour
 	public void SetPitch(float pitch)
 	{
 		_bgmSource.pitch = pitch;
+		if (pitch > 0f)
+		{
+			_audioMixer.SetFloat("Pitch", 1.0f / pitch);
+		}
 	}
 }
