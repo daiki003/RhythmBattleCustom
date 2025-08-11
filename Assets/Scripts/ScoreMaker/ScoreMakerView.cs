@@ -106,6 +106,8 @@ public class ScoreMakerView : MonoBehaviour
     private bool _isStartMake;
     private bool _isDuringPractice;
 
+    private Dictionary<bool, int> _lastBeatLineDict = new();
+
     public void Init(StageHeader stageHeader, List<NoteMaster> notes)
     {
         CurrentMusicParameter = new MusicParameter
@@ -169,7 +171,30 @@ public class ScoreMakerView : MonoBehaviour
             {
                 return;
             }
-            CreateBall(Mathf.RoundToInt(GetCurrentLineNumber()), isLeft, ScoreMakerBallType.Single);
+            int currentLine = Mathf.RoundToInt(GetCurrentLineNumber());
+            _lastBeatLineDict[isLeft] = currentLine;
+            CreateBall(currentLine, isLeft, ScoreMakerBallType.Single);
+            SEManager.instance.PlaySe(SeName.Beat);
+        }).AddTo(this);
+        GameManager.instance.ClickHandler.OnReleaseButton.Subscribe(isLeft =>
+        {
+            if (!_isPlayMakeMode)
+            {
+                return;
+            }
+            if (!_lastBeatLineDict.TryGetValue(isLeft, out int lastLineNumber))
+            {
+                return;
+            }
+            _lastBeatLineDict.Remove(isLeft);
+            // 直前に叩いたラインが2つ以上前の場合のみロングボールに変える
+            int currentLine = Mathf.RoundToInt(GetCurrentLineNumber());
+            if (lastLineNumber > currentLine - 2)
+            {
+                return;
+            }
+            ChangeBallType(lastLineNumber, isLeft, ScoreMakerBallType.Long);
+            CreateBall(currentLine, isLeft, ScoreMakerBallType.Long);
             SEManager.instance.PlaySe(SeName.Beat);
         }).AddTo(this);
 
@@ -578,6 +603,12 @@ public class ScoreMakerView : MonoBehaviour
             }
         }
         SetGoLastButton();
+    }
+
+    private void ChangeBallType(int lineNumber, bool isLeft, ScoreMakerBallType ballType)
+    {
+        _scoreLineList[lineNumber].ClearLine(isLeft);
+        CreateBall(lineNumber, isLeft, ballType);
     }
 
     private void SetGoLastButton()
