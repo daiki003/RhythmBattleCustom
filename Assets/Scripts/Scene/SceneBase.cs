@@ -36,8 +36,6 @@ public class SceneBase : MonoBehaviour, IScene
     }
     public async UniTask DisposeAsync()
     {
-        // シーン破棄前にピッチを戻す
-        BGMManager.instance.SetPitch(1f);
         await _fadePanel.DOFade(1, _panelFadeTime).ToUniTask();
         Destroy(gameObject);
     }

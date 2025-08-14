@@ -58,7 +58,8 @@ public class HomeModel
                     LPB = 4,
                     StripStartTime = 0f,
                     StripEndTime = 20f,
-                    EndTime = 100f
+                    EndTime = 100f,
+                    BeatsNumber = 4
                 },
                 StageId = GetNextStageId(musicId),
                 Notes = new List<NoteMaster>(),

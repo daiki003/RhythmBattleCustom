@@ -24,6 +24,8 @@ public class ScoreMakerModel
         _currentMaster.StageHeader.BPM = parameter.Bpm;
         _currentMaster.StageHeader.StartTime = parameter.StartTime;
         _currentMaster.StageHeader.EndTime = parameter.EndTime;
+        _currentMaster.StageHeader.BeatsNumber = parameter.BeatsNumber;
+        _currentMaster.StageHeader.ModulationList = parameter.ModulationList.ToList();
         await MasterManager.UpdateStageMaster(_currentMaster);
     }
 

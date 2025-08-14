@@ -35,6 +35,8 @@ public class StageHeader
     public float NoteTimeOffset;
     public float StartTime;
     public float EndTime;
+    public int BeatsNumber;
+    public List<int> ModulationList = new();
     public float AdditionalBallSpeed;
 
     public StageHeader CreateCopy()
@@ -49,6 +51,8 @@ public class StageHeader
             LPB = LPB,
             StartTime = StartTime,
             EndTime = EndTime,
+            BeatsNumber = BeatsNumber,
+            ModulationList = ModulationList.ToList(),
             AdditionalBallSpeed = AdditionalBallSpeed
         };
     }

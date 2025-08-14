@@ -21,6 +21,7 @@ public class BGMManager : MonoBehaviour
 {
 	[SerializeField] private AudioSource _bgmSource;
 	[SerializeField] private AudioMixer _audioMixer;
+	private AudioMixerGroup _bgmMixerGroup;
 
 	private AudioClip _currentBgmClip;
 	public AudioClip CurrentClip => _currentBgmClip;
@@ -54,6 +55,7 @@ public class BGMManager : MonoBehaviour
 		{
 			instance = this;
 		}
+		_bgmMixerGroup = _audioMixer.FindMatchingGroups("BGM")[0];
 	}
 
 	async void Update()
@@ -148,7 +150,7 @@ public class BGMManager : MonoBehaviour
 		{
 			CancelFade();
 			_bgmSource.volume = 0f;
-			DOTween.To(() => _bgmSource.volume, (value) => _bgmSource.volume = value, SaveDataManager.SettingData.BgmVolume, _fadeDuration).ToUniTask(cancellationToken: _fadeCts.Token);
+			DOTween.To(() => _bgmSource.volume, (value) => _bgmSource.volume = value, SaveDataManager.SettingData.BgmVolume, _fadeDuration).ToUniTask(cancellationToken: _fadeCts.Token).Forget();
 		}
 	}
 
@@ -255,9 +257,17 @@ public class BGMManager : MonoBehaviour
 	public void SetPitch(float pitch)
 	{
 		_bgmSource.pitch = pitch;
-		if (pitch > 0f)
+		if (Mathf.Approximately(pitch, 1f))
 		{
 			_audioMixer.SetFloat("Pitch", 1.0f / pitch);
+			_audioMixer.SetFloat("Wet", -80f);
+			// Unity2023.1以降なら使える
+			// _audioMixer.SetEffectEnabled(_bgmMixerGroup, pitchShifterEffectName, enable);
+		}
+		else if (pitch > 0f)
+		{
+			_audioMixer.SetFloat("Pitch", 1.0f / pitch);
+			_audioMixer.SetFloat("Wet", 0f);
 		}
 	}
 }

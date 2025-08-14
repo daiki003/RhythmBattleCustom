@@ -12,6 +12,8 @@ public class MusicParameter
     public float Bpm;
     public float StartTime;
     public float EndTime;
+    public int BeatsNumber;
+    public List<int> ModulationList = new(); // 変調する位置の指定パラメータ
 }
 
 public class ScoreMakerView : MonoBehaviour
@@ -114,7 +116,9 @@ public class ScoreMakerView : MonoBehaviour
         {
             Bpm = stageHeader.BPM,
             StartTime = stageHeader.StartTime,
-            EndTime = stageHeader.EndTime
+            EndTime = stageHeader.EndTime,
+            BeatsNumber = stageHeader.BeatsNumber,
+            ModulationList = stageHeader.ModulationList.ToList()
         };
         BGMManager.instance.SetTime(CurrentStartTime);
 
@@ -269,7 +273,7 @@ public class ScoreMakerView : MonoBehaviour
         _pitchAdjuster.CurrentValue.Subscribe(value =>
         {
             BGMManager.instance.SetPitch(_basePitch * value);
-        });
+        }).AddTo(this);
     }
 
 #region ダイアログ系
@@ -486,6 +490,22 @@ public class ScoreMakerView : MonoBehaviour
             }
             AdjustmentLineNumber();
         }).AddTo(this);
+        _controlPanel.BeatsNumber.Subscribe(value =>
+        {
+            // 拍子数を更新
+            CurrentMusicParameter.BeatsNumber = value;
+            SetFirstBeatNumberText();
+        }).AddTo(this);
+        _controlPanel.OnModulation.Subscribe(x =>
+        {
+            CurrentMusicParameter.ModulationList.Add(x.measure * CurrentMusicParameter.BeatsNumber + x.beat);
+            SetFirstBeatNumberText();
+        }).AddTo(this);
+        _controlPanel.OnResetModulation.Subscribe(_ =>
+        {
+            CurrentMusicParameter.ModulationList = new List<int>();
+            SetFirstBeatNumberText();
+        }).AddTo(this);
     }
 
     private void ChangePause()
@@ -567,6 +587,30 @@ public class ScoreMakerView : MonoBehaviour
                 scoreLine.Init(i);
                 _scoreLineList.Add(scoreLine);
             }
+        }
+        SetFirstBeatNumberText();
+    }
+
+    private void SetFirstBeatNumberText()
+    {
+        int startNumber = 0;
+        int firstBeatNumber = 0;
+        for (int i = 0; i < _scoreLineList.Count; i++)
+        {
+            if (CurrentMusicParameter.ModulationList.Contains(i))
+            {
+                startNumber = i;
+                _scoreLineList[i].SetFirstBeatText(firstBeatNumber);
+                firstBeatNumber++;
+                continue;
+            }
+            if ((i - startNumber) % CurrentMusicParameter.BeatsNumber == 0)
+            {
+                _scoreLineList[i].SetFirstBeatText(firstBeatNumber);
+                firstBeatNumber++;
+                continue;
+            }
+            _scoreLineList[i].HideFirstBeatText();
         }
     }
 

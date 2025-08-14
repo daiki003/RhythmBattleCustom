@@ -33,6 +33,12 @@ public class ScoreMakerControlPanel : MonoBehaviour
     [SerializeField] private ValueAdjuster _startTimeInput;
     [SerializeField] private ValueAdjuster _endTimeInput;
     [SerializeField] private Button _estimateBpmButton;
+    // 5ページ目
+    [SerializeField] private ValueAdjuster _beatsAdjuster;
+    [SerializeField] private InputField _measureInput;
+    [SerializeField] private InputField _beatInput;
+    [SerializeField] private Button _modulationButton;
+    [SerializeField] private Button _modulationResetButton;
     // 全体
     [SerializeField] private Button _nextPageButton; // 次ページボタン
     [SerializeField] private Button _backPageButton; // 前ページボタン
@@ -68,6 +74,12 @@ public class ScoreMakerControlPanel : MonoBehaviour
     public Observable<float> StartTime => _startTime;
     private ReactiveProperty<float> _endTime = new(0f);
     public Observable<float> EndTime => _endTime;
+    private ReactiveProperty<int> _beatsNumber = new(0);
+    public Observable<int> BeatsNumber => _beatsNumber;
+    private Subject<(int measure, int beat)> _onModulation = new();
+    public Observable<(int measure, int beat)> OnModulation => _onModulation;
+    private Subject<Unit> _onResetModulation = new();
+    public Observable<Unit> OnResetModulation => _onResetModulation;
 
     public void Init(MusicParameter musicParameter, AudioClip audioClip)
     {
@@ -129,6 +141,9 @@ public class ScoreMakerControlPanel : MonoBehaviour
             ChangePage(isNext: false);
         }).AddTo(this);
 
+        _bpm = new ReactiveProperty<float>(musicParameter.Bpm);
+        _startTime = new ReactiveProperty<float>(musicParameter.StartTime);
+        _endTime = new ReactiveProperty<float>(musicParameter.EndTime);
         _bpmInput.Init(_bpm.Value, 0.1f);
         _bpmInput.CurrentValue.Subscribe(value =>
         {
@@ -157,9 +172,23 @@ public class ScoreMakerControlPanel : MonoBehaviour
             _messageMask.SetActive(false);
         }).AddTo(this);
 
-        _bpm = new ReactiveProperty<float>(musicParameter.Bpm);
-        _startTime = new ReactiveProperty<float>(musicParameter.StartTime);
-        _endTime = new ReactiveProperty<float>(musicParameter.EndTime);
+        _beatsNumber = new ReactiveProperty<int>(musicParameter.BeatsNumber);
+        _beatsAdjuster.Init(_beatsNumber.Value, 1);
+        _beatsAdjuster.CurrentValue.Subscribe(value =>
+        {
+            _beatsNumber.Value = (int)value;
+        });
+        _modulationButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            if (int.TryParse(_measureInput.text, out int measure) && int.TryParse(_beatInput.text, out int beat))
+            {
+                _onModulation.OnNext((measure, beat));
+            }
+        }).AddTo(this);
+        _modulationResetButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            _onResetModulation.OnNext(default);
+        }).AddTo(this);
     }
 
     private void SetMessageMask(string message, bool isDisplayCancelButton)

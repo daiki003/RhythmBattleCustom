@@ -20,10 +20,18 @@ public class ScoreLine : MonoBehaviour
     public void Init(int number)
     {
         LineNumber = number;
-        _numberText.gameObject.SetActive(number % 4 == 0);
-        _numberText.text = (number / 4).ToString();
         _leftPocket.SetParam(LineNumber, isLeft: true);
         _rightPocket.SetParam(LineNumber, isLeft: false);
+    }
+
+    public void SetFirstBeatText(int number)
+    {
+        _numberText.gameObject.SetActive(true);
+        _numberText.text = number.ToString();
+    }
+    public void HideFirstBeatText()
+    {
+        _numberText.gameObject.SetActive(false);
     }
 
     public void Beat()

@@ -105,6 +105,8 @@ public class GameManager : MonoBehaviour
         _isDuaringTransitionScene = true;
         BGMManager.instance.ResetHomeBgmTime();
         BGMManager.instance.Stop();
+        // シーン移動前にピッチを戻す
+        BGMManager.instance.SetPitch(1f);
         if (isPlaySe)
         {
             SEManager.instance.PlaySe(sceneType == SceneType.Battle ? SeName.BattleStart : SeName.ChangeScene);
