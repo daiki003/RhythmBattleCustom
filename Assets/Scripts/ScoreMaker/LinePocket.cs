@@ -47,4 +47,28 @@ public class LinePocket : MonoBehaviour
 
         return InstalledBall;
     }
+
+    public ScoreMakerBall Rotation()
+    {
+        var ballType = ScoreMakerView.ScoreMakerBallType.Single;
+        if (InstalledBall != null)
+        {
+            if (InstalledBall.BallType == ScoreMakerView.ScoreMakerBallType.Single)
+            {
+                // シングルならロングに
+                ballType = ScoreMakerView.ScoreMakerBallType.Long;
+            }
+            // 今あるボールは消す
+            Destroy(InstalledBall.gameObject);
+            InstalledBall = null;
+            if (ballType == ScoreMakerView.ScoreMakerBallType.Long)
+            {
+                // ロングなら消して終わり
+                return null;
+            }
+        }
+        // ボールがないならシングル
+        CreateBall(ballType);
+        return InstalledBall;
+    }
 }

@@ -42,6 +42,7 @@ public class ScoreMakerView : MonoBehaviour
 
     // コントロールパネル
     [SerializeField] private ScoreMakerControlPanel _controlPanel;
+    [SerializeField] private ControlPanelPageBall _pageBall;
 
     // コピペ関連
     [SerializeField] private GameObject _selectMask;
@@ -103,7 +104,7 @@ public class ScoreMakerView : MonoBehaviour
         Single,
         Long
     }
-    private ScoreMakerBallType _currentSelectBallType;
+    private SelectBallType _currentSelectBallType;
     private float _singleBeatTime => 60f / (CurrentBpm * 4);
     private bool _isStartMake;
     private bool _isDuringPractice;
@@ -122,7 +123,7 @@ public class ScoreMakerView : MonoBehaviour
         };
         BGMManager.instance.SetTime(CurrentStartTime);
 
-        _currentSelectBallType = ScoreMakerBallType.Single;
+        _currentSelectBallType = SelectBallType.Rotation;
         StartSubscribeMain();
         StartSubscribeControllPanel();
         _startTimeInput.text = CurrentStartTime.ToString();
@@ -145,7 +146,13 @@ public class ScoreMakerView : MonoBehaviour
             {
                 UpdatePastScoreLineList();
                 SEManager.instance.PlaySe(SeName.Button2);
-                CreateBall(x.number, x.isLeft, _currentSelectBallType);
+                var ballType = _currentSelectBallType switch
+                {
+                    SelectBallType.Single => ScoreMakerBallType.Single,
+                    SelectBallType.Long => ScoreMakerBallType.Long,
+                    _ => ScoreMakerBallType.Single
+                };
+                CreateBall(x.number, x.isLeft, ballType, isRotation: _currentSelectBallType == SelectBallType.Rotation);
             }
         }).AddTo(this);
         GameManager.instance.ClickHandler.OnClickScoreLine.Subscribe(number =>
@@ -360,152 +367,150 @@ public class ScoreMakerView : MonoBehaviour
 
     private void StartSubscribeControllPanel()
     {
-        _controlPanel.OnSelectBall.Subscribe(ballType =>
+        _controlPanel.OnRequest.Subscribe(request =>
         {
-            _currentSelectBallType = ballType;
+            RunControlPanelRequest(request);
         }).AddTo(this);
-        _controlPanel.OnPractice.Subscribe(_ =>
-        {
-            _isDuringPractice = true;
-            _clickPracticeButton.OnNext(_bgmScrollBar.value);
-        }).AddTo(this);
-        // コピー、ペーストボタン
+
         _selectMask.SetActive(false);
-        _controlPanel.OnCopy.Subscribe(_ =>
-        {
-            CopyLine();
-        }).AddTo(this);
-        _controlPanel.OnSelectCancel.Subscribe(_ =>
-        {
-            _selectedLineList.Clear();
-            _selectMask.SetActive(false);
-        }).AddTo(this);
-        _controlPanel.OnInversion.Subscribe(_ =>
-        {
-            InversionLine();
-        }).AddTo(this);
-        _controlPanel.OnDeleteRange.Subscribe(_ =>
-        {
-            ClearLine();
-        }).AddTo(this);
-        _controlPanel.OnStageDuplicate.Subscribe(_ =>
-        {
-            _clickDuplicateButton.OnNext(default);
-        }).AddTo(this);
         _controlPanel.Init(CurrentMusicParameter, BGMManager.instance.CurrentClip);
 
-        // 均等配置
-        _controlPanel.EvenlySpacedButton.OnClickAsObservable().Subscribe(_ =>
+        _pageBall.Init();
+        _pageBall.OnRequest.Subscribe(request =>
         {
-            bool isLeft = false;
-            for (int i = 0; i < _scoreLineList.Count; i++)
-            {
-                _scoreLineList[i].ClearLine();
-                // 4の倍数で配置
-                if (i % 4 != 0)
-                {
-                    continue;
-                }
-                CreateBall(i, isLeft, ScoreMakerBallType.Single);
-                // 左右交互に配置
-                isLeft = !isLeft;
-            }
-        });
-        // 自動生成
-        _controlPanel.AutoCreateButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            bool isLeft = false;
-            float clipLength = BGMManager.instance.Length;
-            var beatList = AudioClipUtility.DetectNoteTimings(BGMManager.instance.CurrentClip);
-            for (int i = 0; i < _scoreLineList.Count; i++)
-            {
-                _scoreLineList[i].ClearLine();
-                float currentTime = i * _singleBeatTime + CurrentStartTime;
-                float nextTime = (i + 1) * _singleBeatTime + CurrentStartTime;
-                // 4の倍数で配置
-                if (beatList.Count == 0)
-                {
-                    break;
-                }
-                float beatTime = beatList.First();
-                // 次の線がまだ次のビートより前なら、少なくともこの線はスキップ
-                if (nextTime < beatTime)
-                {
-                    continue;
-                }
-                // 次の線が次のビートを超えていても、次の線のほうが近ければスキップ
-                if (Math.Abs(nextTime - beatTime) < Math.Abs(beatTime - currentTime))
-                {
-                    continue;
-                }
-                if (Math.Abs(beatTime - currentTime) > 0.05f)
-                {
-                    // ビートが近くなければそれを排除してスキップ
-                    beatList.RemoveAll(x => x <= currentTime);
-                    beatList.Remove(beatTime);
-                    continue;
-                }
-                CreateBall(i, isLeft, ScoreMakerBallType.Single);
-                beatList.RemoveAll(x => x <= currentTime);
-                // 左右交互に配置
-                isLeft = !isLeft;
-            }
-        });
-        // 演奏作成
-        _controlPanel.PlayMakeButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            _startPlayMakeLineNumber = GetCurrentLineNumber();
-            _startPlayMakeLineList = GetCurrentLineList();
-            _controlUiRoot.SetActive(false);
-            _playMakeModeUiRoot.SetActive(true);
-            _isPlayMakeMode = true;
+            RunControlPanelRequest(request);
         }).AddTo(this);
-        // 全削除
-        _controlPanel.AllClearButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            for (int i = 0; i < _scoreLineList.Count; i++)
-            {
-                _scoreLineList[i].ClearLine();
-            }
-        }).AddTo(this);
+    }
 
-        _controlPanel.Bpm.Subscribe(value =>
+    private void RunControlPanelRequest(ControlPanelRequestBase request)
+    {
+        switch (request)
         {
-            CurrentMusicParameter.Bpm = value;
-            AdjustmentLineNumber();
-        }).AddTo(this);
-        _controlPanel.StartTime.Subscribe(value =>
+            case ControlPanelRequestSelectBall selectBallRequest:
+                _currentSelectBallType = selectBallRequest.BallType;
+                break;
+            case ControlPanelRequestPractice _:
+                _isDuringPractice = true;
+                _clickPracticeButton.OnNext(_bgmScrollBar.value);
+                break;
+            case ControlPanelRequestCopy _:
+                CopyLine();
+                break;
+            case ControlPanelRequestSelectCancel _:
+                _selectedLineList.Clear();
+                _selectMask.SetActive(false);
+                break;
+            case ControlPanelRequestInversion _:
+                InversionLine();
+                break;
+            case ControlPanelRequestDeleteRange _:
+                ClearLine();
+                break;
+            case ControlPanelRequestStageDuplicate _:
+                _clickDuplicateButton.OnNext(_bgmScrollBar.value);
+                break;
+            case ControlPanelRequestEvenlySpaced _:
+                bool isLeft = false;
+                for (int i = 0; i < _scoreLineList.Count; i++)
+                {
+                    _scoreLineList[i].ClearLine();
+                    // 4の倍数で配置
+                    if (i % 4 != 0)
+                    {
+                        continue;
+                    }
+                    CreateBall(i, isLeft, ScoreMakerBallType.Single);
+                    // 左右交互に配置
+                    isLeft = !isLeft;
+                }
+                break;
+            case ControlPanelRequestAutoCreate _:
+                AutoCreate();
+                break;
+            case ControlPanelRequestPlayMake _:
+                _startPlayMakeLineNumber = GetCurrentLineNumber();
+                _startPlayMakeLineList = GetCurrentLineList();
+                _controlUiRoot.SetActive(false);
+                _playMakeModeUiRoot.SetActive(true);
+                _isPlayMakeMode = true;
+                break;
+            case ControlPanelRequestAllClear _:
+                for (int i = 0; i < _scoreLineList.Count; i++)
+                {
+                    _scoreLineList[i].ClearLine();
+                }
+                break;
+            case ControlPanelRequestChangeBpm changeBpm:
+                CurrentMusicParameter.Bpm = changeBpm.Bpm;
+                AdjustmentLineNumber();
+                break;
+            case ControlPanelRequestChangeStartTime changeStartTime:
+                CurrentMusicParameter.StartTime = changeStartTime.StartTime;
+                AdjustmentLineNumber();
+                break;
+            case ControlPanelRequestChangeEndTime changeEndTime:
+                // 現在の曲の長さ以上にならないようにする
+                var actualEndTime = Mathf.Min(changeEndTime.EndTime, BGMManager.instance.Length);
+                CurrentMusicParameter.EndTime = actualEndTime;
+                if (!Mathf.Approximately(actualEndTime, changeEndTime.EndTime))
+                {
+                    _controlPanel.SetMusicParameter(CurrentMusicParameter);
+                }
+                AdjustmentLineNumber();
+                break;
+            case ControlPanelRequestBeatsNumber beatsNumber:
+                CurrentMusicParameter.BeatsNumber = beatsNumber.BeatsNumber;
+                SetFirstBeatNumberText();
+                break;
+            case ControlPanelRequestModulation modulation:
+                CurrentMusicParameter.ModulationList.Add(modulation.Measure * CurrentMusicParameter.BeatsNumber + modulation.Beat);
+                SetFirstBeatNumberText();
+                break;
+            case ControlPanelRequestResetModulation _:
+                CurrentMusicParameter.ModulationList = new List<int>();
+                SetFirstBeatNumberText();
+                break;
+        }
+    }
+
+    private void AutoCreate()
+    {
+        bool isLeft = false;
+        float clipLength = BGMManager.instance.Length;
+        var beatList = AudioClipUtility.DetectNoteTimings(BGMManager.instance.CurrentClip);
+        for (int i = 0; i < _scoreLineList.Count; i++)
         {
-            CurrentMusicParameter.StartTime = value;
-            AdjustmentLineNumber();
-        }).AddTo(this);
-        _controlPanel.EndTime.Subscribe(value =>
-        {
-            // 現在の曲の長さ以上にならないようにする
-            var actualEndTime = Mathf.Min(value, BGMManager.instance.Length);
-            CurrentMusicParameter.EndTime = actualEndTime;
-            if (!Mathf.Approximately(actualEndTime, value))
+            _scoreLineList[i].ClearLine();
+            float currentTime = i * _singleBeatTime + CurrentStartTime;
+            float nextTime = (i + 1) * _singleBeatTime + CurrentStartTime;
+            // 4の倍数で配置
+            if (beatList.Count == 0)
             {
-                _controlPanel.SetMusicParameter(CurrentMusicParameter);
+                break;
             }
-            AdjustmentLineNumber();
-        }).AddTo(this);
-        _controlPanel.BeatsNumber.Subscribe(value =>
-        {
-            // 拍子数を更新
-            CurrentMusicParameter.BeatsNumber = value;
-            SetFirstBeatNumberText();
-        }).AddTo(this);
-        _controlPanel.OnModulation.Subscribe(x =>
-        {
-            CurrentMusicParameter.ModulationList.Add(x.measure * CurrentMusicParameter.BeatsNumber + x.beat);
-            SetFirstBeatNumberText();
-        }).AddTo(this);
-        _controlPanel.OnResetModulation.Subscribe(_ =>
-        {
-            CurrentMusicParameter.ModulationList = new List<int>();
-            SetFirstBeatNumberText();
-        }).AddTo(this);
+            float beatTime = beatList.First();
+            // 次の線がまだ次のビートより前なら、少なくともこの線はスキップ
+            if (nextTime < beatTime)
+            {
+                continue;
+            }
+            // 次の線が次のビートを超えていても、次の線のほうが近ければスキップ
+            if (Math.Abs(nextTime - beatTime) < Math.Abs(beatTime - currentTime))
+            {
+                continue;
+            }
+            if (Math.Abs(beatTime - currentTime) > 0.05f)
+            {
+                // ビートが近くなければそれを排除してスキップ
+                beatList.RemoveAll(x => x <= currentTime);
+                beatList.Remove(beatTime);
+                continue;
+            }
+            CreateBall(i, isLeft, ScoreMakerBallType.Single);
+            beatList.RemoveAll(x => x <= currentTime);
+            // 左右交互に配置
+            isLeft = !isLeft;
+        }
     }
 
     private void ChangePause()
@@ -614,11 +619,19 @@ public class ScoreMakerView : MonoBehaviour
         }
     }
 
-    private void CreateBall(int lineNumber, bool isLeft, ScoreMakerBallType ballType)
+    private void CreateBall(int lineNumber, bool isLeft, ScoreMakerBallType ballType, bool isRotation = false)
     {
         _isEdited = true;
         var targetLine = _scoreLineList[lineNumber];
-        var createdBall = targetLine.CreateBall(ballType, isLeft);
+        ScoreMakerBall createdBall = null;
+        if (isRotation)
+        {
+            createdBall = targetLine.RotationBall(isLeft);
+        }
+        else
+        {
+            createdBall = targetLine.CreateBall(ballType, isLeft);
+        }
         // ロングボールなら、線で繋げられないか検索する
         if (ballType == ScoreMakerBallType.Long && createdBall != null)
         {

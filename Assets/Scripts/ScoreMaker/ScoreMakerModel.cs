@@ -20,7 +20,10 @@ public class ScoreMakerModel
     {
         // 現在のレベルの譜面を保存
         UpdateCurrentLevelNotes(notes);
-        _currentMaster.StageHeader.StageName = stageName;
+        if (!string.IsNullOrEmpty(stageName))
+        {
+            _currentMaster.StageHeader.StageName = stageName;
+        }
         _currentMaster.StageHeader.BPM = parameter.Bpm;
         _currentMaster.StageHeader.StartTime = parameter.StartTime;
         _currentMaster.StageHeader.EndTime = parameter.EndTime;
