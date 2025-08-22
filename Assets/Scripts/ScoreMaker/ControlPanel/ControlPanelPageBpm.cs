@@ -38,17 +38,17 @@ public class ControlPanelPageBpm : ControlPanelPageBase
         _bpmInput.CurrentValue.Subscribe(value =>
         {
             _bpm.Value = value;
-        });
+        }).AddTo(this);;
         _startTimeInput.Init(_startTime.Value, 0.1f);
         _startTimeInput.CurrentValue.Subscribe(value =>
         {
             _startTime.Value = value;
-        });
+        }).AddTo(this);;
         _endTimeInput.Init(_endTime.Value, 0.1f);
         _endTimeInput.CurrentValue.Subscribe(value =>
         {
             _endTime.Value = value;
-        });
+        }).AddTo(this);;
         _estimateBpmButton.OnClickAsObservable().Subscribe(async _ =>
         {
             var audioClip = BGMManager.instance.CurrentClip;
@@ -66,8 +66,8 @@ public class ControlPanelPageBpm : ControlPanelPageBase
 
     public override void SetMusicParameter(MusicParameter musicParameter)
     {
-        _bpm = new ReactiveProperty<float>(musicParameter.Bpm);
-        _startTime = new ReactiveProperty<float>(musicParameter.StartTime);
-        _endTime = new ReactiveProperty<float>(musicParameter.EndTime);
+        _bpm.Value = musicParameter.Bpm;
+        _startTime.Value = musicParameter.StartTime;
+        _endTime.Value = musicParameter.EndTime;
     }
 }

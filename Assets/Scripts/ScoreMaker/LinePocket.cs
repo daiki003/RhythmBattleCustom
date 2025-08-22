@@ -50,6 +50,7 @@ public class LinePocket : MonoBehaviour
 
     public ScoreMakerBall Rotation()
     {
+        // ボールがないならシングル
         var ballType = ScoreMakerView.ScoreMakerBallType.Single;
         if (InstalledBall != null)
         {
@@ -58,16 +59,20 @@ public class LinePocket : MonoBehaviour
                 // シングルならロングに
                 ballType = ScoreMakerView.ScoreMakerBallType.Long;
             }
+            else if (InstalledBall.BallType == ScoreMakerView.ScoreMakerBallType.Long)
+            {
+                // ロングならNoneに
+                ballType = ScoreMakerView.ScoreMakerBallType.None;
+            }
             // 今あるボールは消す
             Destroy(InstalledBall.gameObject);
             InstalledBall = null;
-            if (ballType == ScoreMakerView.ScoreMakerBallType.Long)
+            if (ballType == ScoreMakerView.ScoreMakerBallType.None)
             {
-                // ロングなら消して終わり
+                // Noneなら消して終わり
                 return null;
             }
         }
-        // ボールがないならシングル
         CreateBall(ballType);
         return InstalledBall;
     }
