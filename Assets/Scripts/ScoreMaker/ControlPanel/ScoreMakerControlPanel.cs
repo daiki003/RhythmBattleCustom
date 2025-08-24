@@ -17,7 +17,6 @@ public class ScoreMakerControlPanel : MonoBehaviour
     [SerializeField] private Button _pasteCancelButton; // ペーストキャンセルボタン
 
     private int _currentPageIndex;
-    public bool IsEditMode => _currentPageIndex == 1;
     public bool IsWaitingPaste { get; private set; }
 
     private Subject<ControlPanelRequestBase> _onRequest = new();

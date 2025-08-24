@@ -10,11 +10,11 @@ public class ControlPanelRequestBase
 // ボール選択ページ
 public class ControlPanelRequestSelectBall : ControlPanelRequestBase
 {
-    public SelectBallType BallType { get; private set; }
+    public OperationType OperationType { get; private set; }
 
-    public ControlPanelRequestSelectBall(SelectBallType ballType)
+    public ControlPanelRequestSelectBall(OperationType operationType)
     {
-        BallType = ballType;
+        OperationType = operationType;
     }
 }
 public class ControlPanelRequestBallRotation : ControlPanelRequestBase

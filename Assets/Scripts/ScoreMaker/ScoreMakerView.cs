@@ -104,7 +104,7 @@ public class ScoreMakerView : MonoBehaviour
         Single,
         Long
     }
-    private SelectBallType _currentSelectBallType;
+    private OperationType _currentOperationType;
     private float _singleBeatTime => 60f / (CurrentBpm * 4);
     private bool _isStartMake;
     private bool _isDuringPractice;
@@ -123,7 +123,7 @@ public class ScoreMakerView : MonoBehaviour
         };
         BGMManager.instance.SetTime(CurrentStartTime);
 
-        _currentSelectBallType = SelectBallType.Rotation;
+        _currentOperationType = OperationType.Rotation;
         StartSubscribeMain();
         StartSubscribeControllPanel();
         _startTimeInput.text = CurrentStartTime.ToString();
@@ -138,29 +138,16 @@ public class ScoreMakerView : MonoBehaviour
         // 基本操作系
         GameManager.instance.ClickHandler.OnClickScoreLinePocket.Subscribe(x =>
         {
-            if (_controlPanel.IsEditMode)
-            {
-                OnClickScoreLine(x.number);
-            }
-            else
-            {
-                UpdatePastScoreLineList();
-                SEManager.instance.PlaySe(SeName.Button2);
-                var ballType = _currentSelectBallType switch
-                {
-                    SelectBallType.Single => ScoreMakerBallType.Single,
-                    SelectBallType.Long => ScoreMakerBallType.Long,
-                    _ => ScoreMakerBallType.Single
-                };
-                CreateBall(x.number, x.isLeft, ballType, isRotation: _currentSelectBallType == SelectBallType.Rotation);
-            }
+            ClickLine(x.number, x.isLeft);
         }).AddTo(this);
         GameManager.instance.ClickHandler.OnClickScoreLine.Subscribe(number =>
         {
-            if (_controlPanel.IsEditMode)
+            // ライン選択時はSelectLineとInversionだけ
+            if (!(_currentOperationType is OperationType.SelectLine or OperationType.Inversion))
             {
-                OnClickScoreLine(number);
+                return;
             }
+            ClickLine(number, isLeft: false);
         }).AddTo(this);
         GameManager.instance.ClickHandler.OnClickScoreLineNumber.Subscribe(number =>
         {
@@ -187,27 +174,29 @@ public class ScoreMakerView : MonoBehaviour
             CreateBall(currentLine, isLeft, ScoreMakerBallType.Single);
             SEManager.instance.PlaySe(SeName.Beat);
         }).AddTo(this);
-        GameManager.instance.ClickHandler.OnReleaseButton.Subscribe(isLeft =>
-        {
-            if (!_isPlayMakeMode)
-            {
-                return;
-            }
-            if (!_lastBeatLineDict.TryGetValue(isLeft, out int lastLineNumber))
-            {
-                return;
-            }
-            _lastBeatLineDict.Remove(isLeft);
-            // 直前に叩いたラインが2つ以上前の場合のみロングボールに変える
-            int currentLine = Mathf.RoundToInt(GetCurrentLineNumber());
-            if (lastLineNumber > currentLine - 2)
-            {
-                return;
-            }
-            ChangeBallType(lastLineNumber, isLeft, ScoreMakerBallType.Long);
-            CreateBall(currentLine, isLeft, ScoreMakerBallType.Long);
-            SEManager.instance.PlaySe(SeName.Beat);
-        }).AddTo(this);
+
+        // 演奏作成モードのロングはいったん廃止
+        // GameManager.instance.ClickHandler.OnReleaseButton.Subscribe(isLeft =>
+        // {
+        //     if (!_isPlayMakeMode)
+        //     {
+        //         return;
+        //     }
+        //     if (!_lastBeatLineDict.TryGetValue(isLeft, out int lastLineNumber))
+        //     {
+        //         return;
+        //     }
+        //     _lastBeatLineDict.Remove(isLeft);
+        //     // 直前に叩いたラインが2つ以上前の場合のみロングボールに変える
+        //     int currentLine = Mathf.RoundToInt(GetCurrentLineNumber());
+        //     if (lastLineNumber > currentLine - 2)
+        //     {
+        //         return;
+        //     }
+        //     ChangeBallType(lastLineNumber, isLeft, ScoreMakerBallType.Long);
+        //     CreateBall(currentLine, isLeft, ScoreMakerBallType.Long);
+        //     SEManager.instance.PlaySe(SeName.Beat);
+        // }).AddTo(this);
 
         _playBgmButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -281,6 +270,38 @@ public class ScoreMakerView : MonoBehaviour
         {
             BGMManager.instance.SetPitch(_basePitch * value);
         }).AddTo(this);
+    }
+
+    private void ClickLine(int lineNumber, bool isLeft)
+    {
+        switch (_currentOperationType)
+        {
+            case OperationType.Single:
+            case OperationType.Long:
+                UpdatePastScoreLineList();
+                SEManager.instance.PlaySe(SeName.Button2);
+                var ballType = _currentOperationType switch
+                {
+                    OperationType.Single => ScoreMakerBallType.Single,
+                    OperationType.Long => ScoreMakerBallType.Long,
+                    _ => ScoreMakerBallType.Single
+                };
+                CreateBall(lineNumber, isLeft, ballType);
+                break;
+            case OperationType.Rotation:
+                UpdatePastScoreLineList();
+                SEManager.instance.PlaySe(SeName.Button2);
+                RotationBall(lineNumber, isLeft);
+                break;
+            case OperationType.SelectLine:
+                OnClickScoreLine(lineNumber);
+                break;
+            case OperationType.Inversion:
+                UpdatePastScoreLineList();
+                SEManager.instance.PlaySe(SeName.Button2);
+                InversionLine(_scoreLineList[lineNumber]);
+                break;
+        }
     }
 
 #region ダイアログ系
@@ -380,6 +401,7 @@ public class ScoreMakerView : MonoBehaviour
         {
             RunControlPanelRequest(request);
         }).AddTo(this);
+        _pageBall.SetSelectBallType(_currentOperationType);
     }
 
     private void RunControlPanelRequest(ControlPanelRequestBase request)
@@ -387,7 +409,7 @@ public class ScoreMakerView : MonoBehaviour
         switch (request)
         {
             case ControlPanelRequestSelectBall selectBallRequest:
-                _currentSelectBallType = selectBallRequest.BallType;
+                _currentOperationType = selectBallRequest.OperationType;
                 break;
             case ControlPanelRequestPractice _:
                 _isDuringPractice = true;
@@ -401,7 +423,7 @@ public class ScoreMakerView : MonoBehaviour
                 _selectMask.SetActive(false);
                 break;
             case ControlPanelRequestInversion _:
-                InversionLine();
+                InversionSelectedLine();
                 break;
             case ControlPanelRequestDeleteRange _:
                 ClearLine();
@@ -619,53 +641,52 @@ public class ScoreMakerView : MonoBehaviour
         }
     }
 
-    private void CreateBall(int lineNumber, bool isLeft, ScoreMakerBallType ballType, bool isRotation = false)
+    private void CreateBall(int lineNumber, bool isLeft, ScoreMakerBallType ballType)
     {
         _isEdited = true;
-        var targetLine = _scoreLineList[lineNumber];
-        ScoreMakerBall createdBall = null;
-        if (isRotation)
-        {
-            createdBall = targetLine.RotationBall(isLeft);
-        }
-        else
-        {
-            createdBall = targetLine.CreateBall(ballType, isLeft);
-        }
-        // ロングボールなら、線で繋げられないか検索する
-        if (ballType == ScoreMakerBallType.Long && createdBall != null)
-        {
-            // まず手前のボールを探す
-            var frontLineList = _scoreLineList.GetRange(0, lineNumber);
-            frontLineList.Reverse();
-            bool isHead = false;
-            var pairBall = SearchLonelyLongBall(frontLineList, isLeft);
-            // なければ先のボールを探す
-            if (pairBall == null)
-            {
-                isHead = true;
-                var backLineList = _scoreLineList.GetRange(lineNumber + 1, _scoreLineList.Count - lineNumber - 1);
-                pairBall = SearchLonelyLongBall(backLineList, isLeft);
-            }
-            if (pairBall != null)
-            {
-                var linePrefab = ResourceManager.LoadPrefab<ScoreMakerBallLine>("ScoreMaker/ScoreMakerBallLine");
-                var longBallLine = Instantiate(linePrefab);
-                longBallLine.Init(isHead ? createdBall : pairBall, isHead ? pairBall : createdBall, _scoreAreaLayoutGroup.spacing);
-                _longBallLineList.Add(longBallLine);
-                longBallLine.OnWhenDestroyed.Subscribe(line =>
-                {
-                    _longBallLineList.Remove(line);
-                }).AddTo(this);
-            }
-        }
+        var createdBall = _scoreLineList[lineNumber].CreateBall(ballType, isLeft);
+        ConnectLongBall(lineNumber, isLeft, createdBall);
         SetGoLastButton();
     }
 
-    private void ChangeBallType(int lineNumber, bool isLeft, ScoreMakerBallType ballType)
+    private void RotationBall(int lineNumber, bool isLeft)
     {
-        _scoreLineList[lineNumber].ClearLine(isLeft);
-        CreateBall(lineNumber, isLeft, ballType);
+        _isEdited = true;
+        var createdBall = _scoreLineList[lineNumber].RotationBall(isLeft);
+        ConnectLongBall(lineNumber, isLeft, createdBall);
+        SetGoLastButton();
+    }
+
+    // ロングボールを線で繋げる
+    private void ConnectLongBall(int lineNumber, bool isLeft, ScoreMakerBall createdBall)
+    {
+        if (createdBall == null || createdBall.BallType != ScoreMakerBallType.Long)
+        {
+            return;
+        }
+        // まず手前のボールを探す
+        var frontLineList = _scoreLineList.GetRange(0, lineNumber);
+        frontLineList.Reverse();
+        bool isHead = false;
+        var pairBall = SearchLonelyLongBall(frontLineList, isLeft);
+        // なければ先のボールを探す
+        if (pairBall == null)
+        {
+            isHead = true;
+            var backLineList = _scoreLineList.GetRange(lineNumber + 1, _scoreLineList.Count - lineNumber - 1);
+            pairBall = SearchLonelyLongBall(backLineList, isLeft);
+        }
+        if (pairBall != null)
+        {
+            var linePrefab = ResourceManager.LoadPrefab<ScoreMakerBallLine>("ScoreMaker/ScoreMakerBallLine");
+            var longBallLine = Instantiate(linePrefab);
+            longBallLine.Init(isHead ? createdBall : pairBall, isHead ? pairBall : createdBall, _scoreAreaLayoutGroup.spacing);
+            _longBallLineList.Add(longBallLine);
+            longBallLine.OnWhenDestroyed.Subscribe(line =>
+            {
+                _longBallLineList.Remove(line);
+            }).AddTo(this);
+        }
     }
 
     private void SetGoLastButton()
@@ -947,17 +968,22 @@ public class ScoreMakerView : MonoBehaviour
     }
 
     // 選択中の列を反転させる
-    private void InversionLine()
+    private void InversionSelectedLine()
     {
         UpdatePastScoreLineList();
         foreach (var line in _selectedLineList)
         {
-            var leftBall = line.GetBall(isLeft: true);
-            var rightBall = line.GetBall(isLeft: false);
-            line.ClearLine();
-            CreateBall(line.LineNumber, isLeft: false, leftBall?.BallType ?? ScoreMakerBallType.None);
-            CreateBall(line.LineNumber, isLeft: true, rightBall?.BallType ?? ScoreMakerBallType.None);
+            InversionLine(line);
         }
+    }
+
+    private void InversionLine(ScoreLine line)
+    {
+        var leftBall = line.GetBall(isLeft: true);
+        var rightBall = line.GetBall(isLeft: false);
+        line.ClearLine();
+        CreateBall(line.LineNumber, isLeft: false, leftBall?.BallType ?? ScoreMakerBallType.None);
+        CreateBall(line.LineNumber, isLeft: true, rightBall?.BallType ?? ScoreMakerBallType.None);
     }
 
     // 選択中の列のボールを削除する
