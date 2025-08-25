@@ -31,8 +31,6 @@ public class BGMManager : MonoBehaviour
 	private bool _isDuringLoopFade;
 	private float _homeBgmTime;
 
-	// 残り0.5秒くらいから終わった判定を始める
-	public bool IsSoonFinishBgm => _currentBgmClip != null && _currentBgmClip.length - 0.5f <= _bgmSource.time;
 	public bool IsFinishBgm => (_bgmSource.time == 0f && !IsPlaying) || _currentBgmClip != null && _currentBgmClip.length <= _bgmSource.time;
 	public float CurrentTime => _bgmSource.time;
 	public float Length => _currentBgmClip.length;
@@ -241,16 +239,16 @@ public class BGMManager : MonoBehaviour
 		return Mathf.Clamp((_bgmSource.time - offset) / _currentBgmClip.length, 0f, 1f);
 	}
 
-	public void FadeOut(float duration)
+	public async UniTask FadeOut(float duration)
 	{
 		if (_bgmSource.isPlaying)
 		{
-			_bgmSource.DOFade(0f, duration).OnComplete(() =>
+			await _bgmSource.DOFade(0f, duration).OnComplete(() =>
 			{
 				_bgmSource.Stop();
 				// BGMを止めたら音量を元に戻す
 				_bgmSource.volume = SaveDataManager.SettingData.BgmVolume;
-			});
+			}).ToUniTask();
 		}
 	}
 

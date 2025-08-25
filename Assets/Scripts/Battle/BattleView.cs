@@ -44,7 +44,6 @@ public enum BattleState
     None,
     StartBattle,
     DuringBgm,
-    WaitFinishBattle,
     Result
 }
 
@@ -348,8 +347,8 @@ public class BattleView : MonoBehaviour
 
     public async UniTask BattleStart()
     {
-        _leftTargetImage.color = new Color(1, 1, 1, 0.7f);
-        _rightTargetImage.color = new Color(1, 1, 1, 0.7f);
+        _leftTargetImage.color = new Color(1, 1, 1, 0.5f);
+        _rightTargetImage.color = new Color(1, 1, 1, 0.5f);
         _currentState = BattleState.StartBattle;
         _beatDiffTime = 0f;
         _beatDiffTimeList = new float[10];
@@ -361,8 +360,8 @@ public class BattleView : MonoBehaviour
         _currentState = BattleState.DuringBgm;
         _bgmStartCts.Dispose();
         _bgmStartCts = null;
-        var leftFadeTask = _leftTargetImage.DOFade(SaveDataManager.SettingData.Target, 0.5f).SetEase(Ease.Linear);
-        var rightFadeTask = _rightTargetImage.DOFade(SaveDataManager.SettingData.Target, 0.5f).SetEase(Ease.Linear);
+        // var leftFadeTask = _leftTargetImage.DOFade(SaveDataManager.SettingData.Target, 0.5f).SetEase(Ease.Linear);
+        // var rightFadeTask = _rightTargetImage.DOFade(SaveDataManager.SettingData.Target, 0.5f).SetEase(Ease.Linear);
     }
 
     public void BattleStartFromMiddle()
@@ -491,15 +490,11 @@ public class BattleView : MonoBehaviour
 
     void Update()
     {
-        if (_currentState < BattleState.StartBattle || _isPausedBgm)
+        if (_currentState < BattleState.StartBattle || _currentState == BattleState.Result || _isPausedBgm)
         {
             return;
         }
-        if (_currentState == BattleState.DuringBgm && BGMManager.instance.IsSoonFinishBgm)
-        {
-            _currentState = BattleState.WaitFinishBattle;
-        }
-        if (_currentState == BattleState.WaitFinishBattle && BGMManager.instance.IsFinishBgm)
+        if (_currentState == BattleState.DuringBgm && BGMManager.instance.CurrentTime >= _stageHeader.EndTime)
         {
             _currentState = BattleState.Result;
             if (_isPractice)
@@ -509,7 +504,11 @@ public class BattleView : MonoBehaviour
             }
             else
             {
-                OnWhenFinishBattle.OnNext(_currentScore);
+                UniTask.Void(async () =>
+                {
+                    await BGMManager.instance.FadeOut(1f);
+                    OnWhenFinishBattle.OnNext(_currentScore);
+                });
             }
             return;
         }

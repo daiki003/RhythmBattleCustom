@@ -1019,7 +1019,7 @@ public class ScoreMakerView : MonoBehaviour
             {
                 // BGMが終わったら自動で止める
                 _isPause = true;
-                BGMManager.instance.FadeOut(duration: 1f);
+                BGMManager.instance.FadeOut(duration: 1f).Forget();
             }
         }
 
