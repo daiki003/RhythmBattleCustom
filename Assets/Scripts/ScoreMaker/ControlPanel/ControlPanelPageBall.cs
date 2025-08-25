@@ -11,6 +11,8 @@ public enum OperationType
     Rotation,
     SelectLine,
     Inversion,
+    Up,
+    Down,
 }
 
 public class ControlPanelPageBall : ControlPanelPageBase
@@ -20,7 +22,8 @@ public class ControlPanelPageBall : ControlPanelPageBase
     [SerializeField] private CustomButton _rotationBallButton; // ボール選択ローテーションボタン
     [SerializeField] private CustomButton _selectLineButton; // ライン選択ボタン
     [SerializeField] private CustomButton _inversionButton; // 左右反転ボタン
-    [SerializeField] private Button _practiceButton; // 練習ボタン
+    [SerializeField] private CustomButton _upButton; // 上移動
+    [SerializeField] private CustomButton _downButton; // 下移動
 
     public override void Init()
     {
@@ -44,9 +47,13 @@ public class ControlPanelPageBall : ControlPanelPageBase
         {
             SetSelectBallType(OperationType.Inversion);
         }).AddTo(this);
-        _practiceButton?.OnClickAsObservable().Subscribe(_ =>
+        _upButton?.OnClickAsObservable().Subscribe(_ =>
         {
-            _onRequest.OnNext(new ControlPanelRequestPractice());
+            SetSelectBallType(OperationType.Up);
+        }).AddTo(this);
+        _downButton?.OnClickAsObservable().Subscribe(_ =>
+        {
+            SetSelectBallType(OperationType.Down);
         }).AddTo(this);
     }
 
@@ -58,5 +65,7 @@ public class ControlPanelPageBall : ControlPanelPageBase
         _rotationBallButton?.SetHighLight(ballType == OperationType.Rotation);
         _selectLineButton?.SetHighLight(ballType == OperationType.SelectLine);
         _inversionButton?.SetHighLight(ballType == OperationType.Inversion);
+        _upButton?.SetHighLight(ballType == OperationType.Up);
+        _downButton?.SetHighLight(ballType == OperationType.Down);
     }
 }

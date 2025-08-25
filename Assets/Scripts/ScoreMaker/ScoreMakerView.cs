@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using System;
+using System.ComponentModel;
 
 public class MusicParameter
 {
@@ -38,6 +39,7 @@ public class ScoreMakerView : MonoBehaviour
     [SerializeField] private Button _playBgmButton; // BGM再生ボタン
     [SerializeField] private Button _startPlayMakeButton; // 演奏作成ボタン
     [SerializeField] private ValueAdjuster _pitchAdjuster; // ピッチ変更
+    [SerializeField] private Button _practiceButton; // 練習ボタン
     private float _basePitch;
 
     // コントロールパネル
@@ -143,7 +145,7 @@ public class ScoreMakerView : MonoBehaviour
         GameManager.instance.ClickHandler.OnClickScoreLine.Subscribe(number =>
         {
             // ライン選択時はSelectLineとInversionだけ
-            if (!(_currentOperationType is OperationType.SelectLine or OperationType.Inversion))
+            if (!(_currentOperationType is OperationType.SelectLine or OperationType.Inversion or OperationType.Up or OperationType.Down))
             {
                 return;
             }
@@ -242,11 +244,11 @@ public class ScoreMakerView : MonoBehaviour
         // 演奏作成
         _startPlayMakeButton.OnClickAsObservable().Subscribe(_ =>
         {
-            _startPlayMakeLineNumber = GetCurrentLineNumber();
-            _startPlayMakeLineList = GetCurrentLineList();
-            _controlUiRoot.SetActive(false);
-            _playMakeModeUiRoot.SetActive(true);
-            _isPlayMakeMode = true;
+            RunControlPanelRequest(new ControlPanelRequestPlayMake());
+        }).AddTo(this);
+        _practiceButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            RunControlPanelRequest(new ControlPanelRequestPractice());
         }).AddTo(this);
         _finishPlayMakeModeButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -274,12 +276,15 @@ public class ScoreMakerView : MonoBehaviour
 
     private void ClickLine(int lineNumber, bool isLeft)
     {
+        if (_currentOperationType != OperationType.SelectLine)
+        {
+            UpdatePastScoreLineList();
+            SEManager.instance.PlaySe(SeName.Button2);
+        }
         switch (_currentOperationType)
         {
             case OperationType.Single:
             case OperationType.Long:
-                UpdatePastScoreLineList();
-                SEManager.instance.PlaySe(SeName.Button2);
                 var ballType = _currentOperationType switch
                 {
                     OperationType.Single => ScoreMakerBallType.Single,
@@ -289,17 +294,17 @@ public class ScoreMakerView : MonoBehaviour
                 CreateBall(lineNumber, isLeft, ballType);
                 break;
             case OperationType.Rotation:
-                UpdatePastScoreLineList();
-                SEManager.instance.PlaySe(SeName.Button2);
                 RotationBall(lineNumber, isLeft);
                 break;
             case OperationType.SelectLine:
                 OnClickScoreLine(lineNumber);
                 break;
             case OperationType.Inversion:
-                UpdatePastScoreLineList();
-                SEManager.instance.PlaySe(SeName.Button2);
                 InversionLine(_scoreLineList[lineNumber]);
+                break;
+            case OperationType.Up:
+            case OperationType.Down:
+                MoveLine(_scoreLineList[lineNumber], isUp: _currentOperationType == OperationType.Up);
                 break;
         }
     }
@@ -984,6 +989,16 @@ public class ScoreMakerView : MonoBehaviour
         line.ClearLine();
         CreateBall(line.LineNumber, isLeft: false, leftBall?.BallType ?? ScoreMakerBallType.None);
         CreateBall(line.LineNumber, isLeft: true, rightBall?.BallType ?? ScoreMakerBallType.None);
+    }
+
+    private void MoveLine(ScoreLine line, bool isUp)
+    {
+        var leftBall = line.GetBall(isLeft: true);
+        var rightBall = line.GetBall(isLeft: false);
+        line.ClearLine();
+        int targetLineNumber = isUp ? line.LineNumber + 1 : line.LineNumber - 1;
+        CreateBall(targetLineNumber, isLeft: true, leftBall?.BallType ?? ScoreMakerBallType.None);
+        CreateBall(targetLineNumber, isLeft: false, rightBall?.BallType ?? ScoreMakerBallType.None);
     }
 
     // 選択中の列のボールを削除する
