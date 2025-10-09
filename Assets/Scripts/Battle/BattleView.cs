@@ -91,6 +91,8 @@ public class BattleView : MonoBehaviour
     private float _beatDiffTime;
     private float[] _beatDiffTimeList = new float[10];
 
+    private float _stageLength => _stageHeader.EndTime - _stageHeader.StartTime;
+
     private Vector3 _startToTargetVectorLeft => _leftTargetPoint.localPosition - _leftStartTransform.localPosition;
     private Vector3 _startToTargetVectorRight => _rightTargetPoint.localPosition - _rightStartTransform.localPosition;
     private Vector3 _leftEndPosition;
@@ -104,11 +106,11 @@ public class BattleView : MonoBehaviour
     {
         get
         {
-            if (_currentState >= BattleState.DuringBgm)
+            if (_currentState < BattleState.DuringBgm)
             {
-                return BGMManager.instance.IsPlaying ? BGMManager.instance.CurrentTime : BGMManager.instance.Length * _practiceUi.SliderValue;
+                return Time.time - _startBgmTime;
             }
-            return Time.time - _startBgmTime;
+            return BGMManager.instance.CurrentTime;
         }
     }
 
@@ -227,7 +229,7 @@ public class BattleView : MonoBehaviour
             }).AddTo(this);
             _practiceUi.OnSliderValueChange.Subscribe(x =>
             {
-                float time = BGMManager.instance.Length * x;
+                float time = _stageHeader.StartTime + _stageLength * x;
                 BGMManager.instance.SetTime(time);
                 RefreshBalls(time);
             }).AddTo(this);
@@ -268,7 +270,7 @@ public class BattleView : MonoBehaviour
             BGMManager.instance.Pause();
             // 曲を止める場合はボールの動きを止める
             StopLaunchedBall();
-            _practiceUi.SetSlider(BGMManager.instance.CurrentTimeLate);
+            _practiceUi.SetSlider(BGMManager.instance.CurrentTime / _stageLength);
         }
         else
         {

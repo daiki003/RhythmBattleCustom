@@ -636,7 +636,7 @@ public class ScoreMakerView : MonoBehaviour
                 firstBeatNumber++;
                 continue;
             }
-            if ((i - startNumber) % CurrentMusicParameter.BeatsNumber == 0)
+            if (CurrentMusicParameter.BeatsNumber != 0 && (i - startNumber) % CurrentMusicParameter.BeatsNumber == 0)
             {
                 _scoreLineList[i].SetFirstBeatText(firstBeatNumber);
                 firstBeatNumber++;
