@@ -10,9 +10,7 @@ public enum OperationType
     Long,
     Rotation,
     SelectLine,
-    Inversion,
-    Up,
-    Down,
+    Paste,
 }
 
 public class ControlPanelPageBall : ControlPanelPageBase
@@ -21,9 +19,7 @@ public class ControlPanelPageBall : ControlPanelPageBase
     [SerializeField] private CustomButton _selectLongBallButton; // ロングボール選択ボタン
     [SerializeField] private CustomButton _rotationBallButton; // ボール選択ローテーションボタン
     [SerializeField] private CustomButton _selectLineButton; // ライン選択ボタン
-    [SerializeField] private CustomButton _inversionButton; // 左右反転ボタン
-    [SerializeField] private CustomButton _upButton; // 上移動
-    [SerializeField] private CustomButton _downButton; // 下移動
+    [SerializeField] private CustomButton _pasteButton; // ペーストボタン
 
     public override void Init()
     {
@@ -43,17 +39,9 @@ public class ControlPanelPageBall : ControlPanelPageBase
         {
             SetSelectBallType(OperationType.SelectLine);
         }).AddTo(this);
-        _inversionButton?.OnClickAsObservable().Subscribe(_ =>
+        _pasteButton.OnClickAsObservable().Subscribe(_ =>
         {
-            SetSelectBallType(OperationType.Inversion);
-        }).AddTo(this);
-        _upButton?.OnClickAsObservable().Subscribe(_ =>
-        {
-            SetSelectBallType(OperationType.Up);
-        }).AddTo(this);
-        _downButton?.OnClickAsObservable().Subscribe(_ =>
-        {
-            SetSelectBallType(OperationType.Down);
+            SetSelectBallType(OperationType.Paste);
         }).AddTo(this);
     }
 
@@ -64,8 +52,11 @@ public class ControlPanelPageBall : ControlPanelPageBase
         _selectLongBallButton.SetHighLight(ballType == OperationType.Long);
         _rotationBallButton?.SetHighLight(ballType == OperationType.Rotation);
         _selectLineButton?.SetHighLight(ballType == OperationType.SelectLine);
-        _inversionButton?.SetHighLight(ballType == OperationType.Inversion);
-        _upButton?.SetHighLight(ballType == OperationType.Up);
-        _downButton?.SetHighLight(ballType == OperationType.Down);
+        _pasteButton.SetHighLight(ballType == OperationType.Paste);
+
+        bool isEditMode = ballType == OperationType.SelectLine || ballType == OperationType.Paste;
+        _selectLongBallButton.gameObject.SetActive(!isEditMode);
+        _rotationBallButton.gameObject.SetActive(!isEditMode);
+        _pasteButton.gameObject.SetActive(isEditMode);
     }
 }

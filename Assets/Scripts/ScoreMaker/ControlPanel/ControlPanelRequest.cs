@@ -26,11 +26,26 @@ public class ControlPanelRequestPractice : ControlPanelRequestBase
     public ControlPanelRequestPractice() {}
 }
 
-// 編集ページ
+// マスク操作ページ
+public class ControlPanelRequestUp : ControlPanelRequestBase
+{
+    public ControlPanelRequestUp() { }
+}
+public class ControlPanelRequestDown : ControlPanelRequestBase
+{
+    public ControlPanelRequestDown() { }
+}
+public class ControlPanelRequestCloseMask : ControlPanelRequestBase
+{
+    public ControlPanelRequestCloseMask() { }
+}
 public class ControlPanelRequestCopy : ControlPanelRequestBase
 {
-    public ControlPanelRequestCopy() {}
+    public ControlPanelRequestCopy() { }
 }
+
+
+// 編集ページ
 public class ControlPanelRequestStartPaste : ControlPanelRequestBase
 {
     public ControlPanelRequestStartPaste() {}

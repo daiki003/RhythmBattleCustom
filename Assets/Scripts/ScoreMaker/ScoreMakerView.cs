@@ -45,6 +45,7 @@ public class ScoreMakerView : MonoBehaviour
     // コントロールパネル
     [SerializeField] private ScoreMakerControlPanel _controlPanel;
     [SerializeField] private ControlPanelPageBall _pageBall;
+    [SerializeField] private ControlPanelPageMask _maskControl;
 
     // コピペ関連
     [SerializeField] private GameObject _selectMask;
@@ -144,8 +145,8 @@ public class ScoreMakerView : MonoBehaviour
         }).AddTo(this);
         GameManager.instance.ClickHandler.OnClickScoreLine.Subscribe(number =>
         {
-            // ライン選択時はSelectLineとInversionだけ
-            if (!(_currentOperationType is OperationType.SelectLine or OperationType.Inversion or OperationType.Up or OperationType.Down))
+            // ライン選択時はSelectLineとPasteだけ
+            if (!(_currentOperationType is OperationType.SelectLine or OperationType.Paste))
             {
                 return;
             }
@@ -279,8 +280,8 @@ public class ScoreMakerView : MonoBehaviour
         if (_currentOperationType != OperationType.SelectLine)
         {
             UpdatePastScoreLineList();
-            SEManager.instance.PlaySe(SeName.Button2);
         }
+        SEManager.instance.PlaySe(SeName.Button2);
         switch (_currentOperationType)
         {
             case OperationType.Single:
@@ -297,14 +298,10 @@ public class ScoreMakerView : MonoBehaviour
                 RotationBall(lineNumber, isLeft);
                 break;
             case OperationType.SelectLine:
-                OnClickScoreLine(lineNumber);
+                SelectLine(lineNumber);
                 break;
-            case OperationType.Inversion:
-                InversionLine(_scoreLineList[lineNumber]);
-                break;
-            case OperationType.Up:
-            case OperationType.Down:
-                MoveLine(_scoreLineList[lineNumber], isUp: _currentOperationType == OperationType.Up);
+            case OperationType.Paste:
+                PasteLine(lineNumber);
                 break;
         }
     }
@@ -389,7 +386,7 @@ public class ScoreMakerView : MonoBehaviour
             CreateLine(duplicateResult.DuplicateNotes);
         }).AddTo(this);
     }
-#endregion
+    #endregion
 
     private void StartSubscribeControllPanel()
     {
@@ -407,6 +404,12 @@ public class ScoreMakerView : MonoBehaviour
             RunControlPanelRequest(request);
         }).AddTo(this);
         _pageBall.SetSelectBallType(_currentOperationType);
+
+        _maskControl.Init();
+        _maskControl.OnRequest.Subscribe(request =>
+        {
+            RunControlPanelRequest(request);
+        }).AddTo(this);
     }
 
     private void RunControlPanelRequest(ControlPanelRequestBase request)
@@ -427,8 +430,18 @@ public class ScoreMakerView : MonoBehaviour
                 _selectedLineList.Clear();
                 _selectMask.SetActive(false);
                 break;
+            case ControlPanelRequestCloseMask _:
+                _selectedLineList.Clear();
+                _selectMask.SetActive(false);
+                break;
             case ControlPanelRequestInversion _:
                 InversionSelectedLine();
+                break;
+            case ControlPanelRequestUp _:
+                MoveSelectedLine(isUp: true);
+                break;
+            case ControlPanelRequestDown _:
+                MoveSelectedLine(isUp: false);
                 break;
             case ControlPanelRequestDeleteRange _:
                 ClearLine();
@@ -561,20 +574,6 @@ public class ScoreMakerView : MonoBehaviour
         }
     }
 
-    // Editモードでのライン選択
-    private void OnClickScoreLine(int number)
-    {
-        SEManager.instance.PlaySe(SeName.Button2);
-        if (_controlPanel.IsWaitingPaste)
-        {
-            PasteLine(number);
-        }
-        else
-        {
-            SelectLine(number);
-        }
-    }
-
     public void CreateLine(List<NoteMaster> notes)
     {
         AdjustmentLineNumber();
@@ -648,6 +647,10 @@ public class ScoreMakerView : MonoBehaviour
 
     private void CreateBall(int lineNumber, bool isLeft, ScoreMakerBallType ballType)
     {
+        if (lineNumber < 0 || lineNumber >= _scoreLineList.Count)
+        {
+            return;
+        }
         _isEdited = true;
         var createdBall = _scoreLineList[lineNumber].CreateBall(ballType, isLeft);
         ConnectLongBall(lineNumber, isLeft, createdBall);
@@ -855,13 +858,9 @@ public class ScoreMakerView : MonoBehaviour
                 var oppositLine = GetOppositeLine(line);
 
                 // 選択した行を全て選択リストに追加
-                _selectedLineList.Clear();
                 int start = Mathf.Min(line.LineNumber, oppositLine.LineNumber);
                 int end = Mathf.Max(line.LineNumber, oppositLine.LineNumber);
-                for (int i = start; i <= end; i++)
-                {
-                    _selectedLineList.Add(_scoreLineList[i]);
-                }
+                SetSelectedLine(start, end);
             }
         }
         SetSelectMask();
@@ -878,6 +877,15 @@ public class ScoreMakerView : MonoBehaviour
             return _selectedLineList.FirstOrDefault();
         }
         return null;
+    }
+
+    private void SetSelectedLine(int startLine, int endLine)
+    {
+        _selectedLineList.Clear();
+        for (int i = startLine; i <= endLine; i++)
+        {
+            _selectedLineList.Add(_scoreLineList[i]);
+        }
     }
 
     private void SetSelectMask()
@@ -989,6 +997,32 @@ public class ScoreMakerView : MonoBehaviour
         line.ClearLine();
         CreateBall(line.LineNumber, isLeft: false, leftBall?.BallType ?? ScoreMakerBallType.None);
         CreateBall(line.LineNumber, isLeft: true, rightBall?.BallType ?? ScoreMakerBallType.None);
+    }
+
+    // 選択中の列を上下に移動させる
+    private void MoveSelectedLine(bool isUp)
+    {
+        UpdatePastScoreLineList();
+        if (isUp)
+        {
+            for (int i = _selectedLineList.Count - 1; i >= 0; i--)
+            {
+                MoveLine(_selectedLineList[i], isUp);
+            }
+            // 選択中の列の番号を更新
+            SetSelectedLine(_selectedLineList.Min(l => l.LineNumber) + 1, _selectedLineList.Max(l => l.LineNumber) + 1);
+            SetSelectMask();
+        }
+        else
+        {
+            for (int i = 0; i < _selectedLineList.Count; i++)
+            {
+                MoveLine(_selectedLineList[i], isUp);
+            }
+            // 選択中の列の番号を更新
+            SetSelectedLine(_selectedLineList.Min(l => l.LineNumber) - 1, _selectedLineList.Max(l => l.LineNumber) - 1);
+            SetSelectMask();
+        }
     }
 
     private void MoveLine(ScoreLine line, bool isUp)
