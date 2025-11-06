@@ -439,9 +439,15 @@ public class ScoreMakerView : MonoBehaviour
                 break;
             case ControlPanelRequestUp _:
                 MoveSelectedLine(isUp: true);
+                // 上下後はマスクを閉じる
+                _selectedLineList.Clear();
+                _selectMask.SetActive(false);
                 break;
             case ControlPanelRequestDown _:
                 MoveSelectedLine(isUp: false);
+                // 上下後はマスクを閉じる
+                _selectedLineList.Clear();
+                _selectMask.SetActive(false);
                 break;
             case ControlPanelRequestDeleteRange _:
                 ClearLine();
