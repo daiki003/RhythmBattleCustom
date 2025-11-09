@@ -38,6 +38,21 @@ public class ScoreMakerBallLine : MonoBehaviour
         GetComponent<RectTransform>().sizeDelta = sd;
     }
 
+    public void DestroyLine()
+    {
+        if (_headBall != null)
+        {
+            _headBall.ChangeBallType(ScoreMakerView.ScoreMakerBallType.Single);
+            _headBall.ResetPair();
+        }
+        if (_lastBall != null)
+        {
+            _lastBall.ChangeBallType(ScoreMakerView.ScoreMakerBallType.Single);
+            _lastBall.ResetPair();
+        }
+        Destroy(gameObject);
+    }
+
     void OnDestroy()
     {
         OnWhenDestroyed.OnNext(this);

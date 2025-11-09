@@ -50,6 +50,7 @@ public class ScoreMakerView : MonoBehaviour
     // コピペ関連
     [SerializeField] private GameObject _selectMask;
     private List<ScoreLine> _selectedLineList = new();
+    private LinePocket _selectedBallPocket = new();
 
     // 演奏作成モード切替関連
     [SerializeField] private GameObject _controlUiRoot;
@@ -139,9 +140,13 @@ public class ScoreMakerView : MonoBehaviour
     private void StartSubscribeMain()
     {
         // 基本操作系
+        GameManager.instance.ClickHandler.OnClickScoreMakerBall.Subscribe(x =>
+        {
+            ClickBall(x.number, x.isLeft);
+        }).AddTo(this);
         GameManager.instance.ClickHandler.OnClickScoreLinePocket.Subscribe(x =>
         {
-            ClickLine(x.number, x.isLeft);
+            ClickLinePocket(x.number, x.isLeft);
         }).AddTo(this);
         GameManager.instance.ClickHandler.OnClickScoreLine.Subscribe(number =>
         {
@@ -150,7 +155,7 @@ public class ScoreMakerView : MonoBehaviour
             {
                 return;
             }
-            ClickLine(number, isLeft: false);
+            ClickLine(number);
         }).AddTo(this);
         GameManager.instance.ClickHandler.OnClickScoreLineNumber.Subscribe(number =>
         {
@@ -266,7 +271,7 @@ public class ScoreMakerView : MonoBehaviour
             SetPositionByLineNumber(_startPlayMakeLineNumber);
         }).AddTo(this);
 
-        
+
         _basePitch = BGMManager.instance.CurrentPitch;
         _pitchAdjuster.Init(1f, 0.1f);
         _pitchAdjuster.CurrentValue.Subscribe(value =>
@@ -275,7 +280,68 @@ public class ScoreMakerView : MonoBehaviour
         }).AddTo(this);
     }
 
-    private void ClickLine(int lineNumber, bool isLeft)
+    private void ClickBall(int lineNumber, bool isLeft)
+    {
+        if (_currentOperationType != OperationType.SelectLine)
+        {
+            // 選択モード以外ではポケットをクリックしたときと同じ挙動
+            ClickLinePocket(lineNumber, isLeft);
+            return;
+        }
+        SEManager.instance.PlaySe(SeName.Button2);
+        var targetLine = _scoreLineList[lineNumber];
+        if (_selectedBallPocket != null)
+        {
+            // 同じラインのボールが選択されている場合
+            if (lineNumber == _selectedBallPocket.Number)
+            {
+                if (isLeft == _selectedBallPocket.IsLeft)
+                {
+                    // 同じポケットが選択された場合は選択解除
+                    _selectedBallPocket.SelectBall(false);
+                    _selectedBallPocket = null;
+                }
+                else
+                {
+                    // 隣のポケットなら選択入れ替え
+                    _selectedBallPocket.SelectBall(false);
+                    _selectedBallPocket = isLeft ? targetLine.LeftPocket : targetLine.RightPocket;
+                    _selectedBallPocket.SelectBall(true);
+                }
+                return;
+            }
+            UpdatePastScoreLineList();
+            // 他のラインの選択されているボールがある場合、これとくっつける
+            // 左右逆だった場合、今回選択したボールを逆サイドに移動
+            if (isLeft != _selectedBallPocket.IsLeft)
+            {
+                InversionLine(targetLine);
+            }
+            var targetBall = targetLine.GetBall(_selectedBallPocket.IsLeft);
+            // いったんペア解消してから、くっついていなければくっつける
+            // 既にくっついているペアなら解消する
+            if (_selectedBallPocket.InstalledBall.PairBall != null && _selectedBallPocket.InstalledBall.PairBall == targetBall)
+            {
+                _selectedBallPocket.InstalledBall.DestroyLine();
+            }
+            else
+            {
+                _selectedBallPocket.InstalledBall.DestroyLine();
+                _selectedBallPocket.RecreateBall(ScoreMakerBallType.Long);
+                targetLine.RecreateBall(ScoreMakerBallType.Long, _selectedBallPocket.IsLeft);
+                ConnectBall(_selectedBallPocket.InstalledBall, targetBall);
+            }
+            _selectedBallPocket.SelectBall(false);
+            _selectedBallPocket = null;
+        }
+        else
+        {
+            _selectedBallPocket = isLeft ? targetLine.LeftPocket : targetLine.RightPocket;
+            _selectedBallPocket.SelectBall(true);
+        }
+    }
+    
+    private void ClickLinePocket(int lineNumber, bool isLeft)
     {
         if (_currentOperationType != OperationType.SelectLine)
         {
@@ -297,6 +363,33 @@ public class ScoreMakerView : MonoBehaviour
             case OperationType.Rotation:
                 RotationBall(lineNumber, isLeft);
                 break;
+            case OperationType.SelectLine:
+                if (_selectedBallPocket != null)
+                {
+                    // ボール選択中なら、そのボールをここに移動する
+                    UpdatePastScoreLineList();
+                    _selectedBallPocket.Clicked(ScoreMakerBallType.None);
+                    CreateBall(lineNumber, isLeft, ScoreMakerBallType.Single);
+                    _selectedBallPocket.SelectBall(false);
+                    _selectedBallPocket = null;
+                }
+                else
+                {
+                    // ライン選択
+                    SelectLine(lineNumber);
+                }
+                break;
+            case OperationType.Paste:
+                PasteLine(lineNumber);
+                break;
+        }
+    }
+
+    private void ClickLine(int lineNumber)
+    {
+        SEManager.instance.PlaySe(SeName.Button2);
+        switch (_currentOperationType)
+        {
             case OperationType.SelectLine:
                 SelectLine(lineNumber);
                 break;
@@ -681,26 +774,32 @@ public class ScoreMakerView : MonoBehaviour
         // まず手前のボールを探す
         var frontLineList = _scoreLineList.GetRange(0, lineNumber);
         frontLineList.Reverse();
-        bool isHead = false;
         var pairBall = SearchLonelyLongBall(frontLineList, isLeft);
         // なければ先のボールを探す
         if (pairBall == null)
         {
-            isHead = true;
             var backLineList = _scoreLineList.GetRange(lineNumber + 1, _scoreLineList.Count - lineNumber - 1);
             pairBall = SearchLonelyLongBall(backLineList, isLeft);
         }
         if (pairBall != null)
         {
-            var linePrefab = ResourceManager.LoadPrefab<ScoreMakerBallLine>("ScoreMaker/ScoreMakerBallLine");
-            var longBallLine = Instantiate(linePrefab);
-            longBallLine.Init(isHead ? createdBall : pairBall, isHead ? pairBall : createdBall, _scoreAreaLayoutGroup.spacing);
-            _longBallLineList.Add(longBallLine);
-            longBallLine.OnWhenDestroyed.Subscribe(line =>
-            {
-                _longBallLineList.Remove(line);
-            }).AddTo(this);
+            ConnectBall(createdBall, pairBall);
         }
+    }
+
+    // 2つのボールを線で繋げる
+    private void ConnectBall(ScoreMakerBall ball1, ScoreMakerBall ball2)
+    {
+        var linePrefab = ResourceManager.LoadPrefab<ScoreMakerBallLine>("ScoreMaker/ScoreMakerBallLine");
+        var longBallLine = Instantiate(linePrefab);
+        var firstBall = ball1.LineNumber <= ball2.LineNumber ? ball1 : ball2;
+        var endBall = ball1.LineNumber > ball2.LineNumber ? ball1 : ball2;
+        longBallLine.Init(firstBall, endBall, _scoreAreaLayoutGroup.spacing);
+        _longBallLineList.Add(longBallLine);
+        longBallLine.OnWhenDestroyed.Subscribe(line =>
+        {
+            _longBallLineList.Remove(line);
+        }).AddTo(this);
     }
 
     private void SetGoLastButton()

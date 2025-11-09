@@ -18,9 +18,15 @@ public class ScoreMakerBall : MonoBehaviour
 
     public void Init(ScoreMakerView.ScoreMakerBallType ballType, int lineNumber, bool isLeft)
     {
-        BallType = ballType;
         LineNumber = lineNumber;
         IsLeft = isLeft;
+        ChangeBallType(ballType);
+    }
+
+    public void ChangeBallType(ScoreMakerView.ScoreMakerBallType ballType)
+    {
+        if (BallType == ballType) return;
+        BallType = ballType;
         bool isSingle = ballType == ScoreMakerView.ScoreMakerBallType.Single;
         string ballSpritePath = isSingle ? "Ball/Single" : "Ball/Long";
         _ballImage.sprite = Resources.Load<Sprite>(ballSpritePath);
@@ -32,6 +38,14 @@ public class ScoreMakerBall : MonoBehaviour
         AttachedLine = scoreMakerBallLine;
         PairBall = pairBall;
         IsLongLast = isLast;
+    }
+
+    public void DestroyLine()
+    {
+        if (AttachedLine != null)
+        {
+            AttachedLine.DestroyLine();
+        }
     }
 
     public void ResetPair()
@@ -69,7 +83,7 @@ public class ScoreMakerBall : MonoBehaviour
     {
         if (AttachedLine != null)
         {
-            Destroy(AttachedLine.gameObject);
+            AttachedLine.DestroyLine();
         }
         if (PairBall != null)
         {

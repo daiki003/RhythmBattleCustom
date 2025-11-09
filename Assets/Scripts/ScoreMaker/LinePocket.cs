@@ -7,6 +7,7 @@ using UnityEngine;
 public class LinePocket : MonoBehaviour
 {
     [SerializeField] private Transform _ballTransform;
+    [SerializeField] private GameObject _selectedPanel;
 
     public ScoreMakerBall InstalledBall;
 
@@ -26,10 +27,14 @@ public class LinePocket : MonoBehaviour
         InstalledBall = ball;
         InstalledBall.Init(ballType, Number, IsLeft);
     }
-    public void SetBall(ScoreMakerBall ball)
+    public void RecreateBall(ScoreMakerView.ScoreMakerBallType ballType)
     {
-        ball.transform.SetParent(_ballTransform);
-        ball.transform.localPosition = Vector3.zero;
+        if (InstalledBall == null)
+        {
+            CreateBall(ballType);
+            return;
+        }
+        InstalledBall.ChangeBallType(ballType);
     }
 
     public ScoreMakerBall Clicked(ScoreMakerView.ScoreMakerBallType ballType)
@@ -46,6 +51,11 @@ public class LinePocket : MonoBehaviour
         }
 
         return InstalledBall;
+    }
+
+    public void SelectBall(bool isSelected)
+    {
+        _selectedPanel.SetActive(isSelected);
     }
 
     public ScoreMakerBall Rotation()

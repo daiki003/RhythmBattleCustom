@@ -40,9 +40,9 @@ public class StageStrip : MonoBehaviour
         }).AddTo(this);
     }
 
-    public void UpdateScore(int level)
+    public void UpdateScore(int stageId)
     {
-        var clearState = SaveDataManager.GetClearState(MusicIdId, level);
+        var clearState = SaveDataManager.GetClearState(MusicIdId, stageId);
         if (clearState == null)
         {
             return;

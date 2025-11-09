@@ -48,6 +48,12 @@ public class ScoreLine : MonoBehaviour
         return targetPocket.Clicked(ballType);
     }
 
+    public void RecreateBall(ScoreMakerView.ScoreMakerBallType ballType, bool isLeft)
+    {
+        var targetPocket = isLeft ? _leftPocket : _rightPocket;
+        targetPocket.RecreateBall(ballType);
+    }
+
     public ScoreMakerBall RotationBall(bool isLeft)
     {
         var targetPocket = isLeft ? _leftPocket : _rightPocket;

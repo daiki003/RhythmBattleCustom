@@ -16,6 +16,7 @@ public enum PositionType
     LinePocket,
     Line,
     LineNumber,
+    ScoreMakerBall
 }
 
 public enum ClickType
@@ -30,6 +31,7 @@ public class ClickHandler
 {
     public Subject<bool> OnClickButton = new Subject<bool>();
     public Subject<bool> OnReleaseButton = new Subject<bool>();
+    public Subject<(int number, bool isLeft)> OnClickScoreMakerBall = new Subject<(int number, bool isLeft)>();
     public Subject<(int number, bool isLeft)> OnClickScoreLinePocket = new Subject<(int number, bool isLeft)>();
     public Subject<int> OnClickScoreLine = new Subject<int>();
     public Subject<int> OnClickScoreLineNumber = new Subject<int>();
@@ -136,6 +138,7 @@ public class ClickHandler
                 case PositionType.LinePocket:
                 case PositionType.Line:
                 case PositionType.LineNumber:
+                case PositionType.ScoreMakerBall:
                     break;
             }
         }
@@ -151,6 +154,14 @@ public class ClickHandler
                 // 演奏中右ボタン
                 case PositionType.RightButton:
                     OnReleaseButton.OnNext(false);
+                    break;
+                // 作成中ボール
+                case PositionType.ScoreMakerBall:
+                    if (!IsMovePosition(position))
+                    {
+                        var pocket = GetTargetComponent<ScoreMakerBall>(touch);
+                        OnClickScoreMakerBall.OnNext((pocket.LineNumber, pocket.IsLeft));
+                    }
                     break;
                 // 作成中ポケット
                 case PositionType.LinePocket:
@@ -198,6 +209,10 @@ public class ClickHandler
         {
             return PositionType.RightButton;
         }
+        if (IsOnTargetTag("ScoreMakerBall", touch))
+        {
+            return PositionType.ScoreMakerBall;
+        }
         if (IsOnTargetTag("LinePocket", touch))
         {
             return PositionType.LinePocket;
@@ -237,9 +252,9 @@ public class ClickHandler
                 return ClickType.Click;
             case TouchPhase.Ended:
                 return ClickType.Release;
-            // 以下未使用
             case TouchPhase.Moved:
                 return ClickType.Moved;
+            // 以下未使用
             case TouchPhase.Stationary:
                 // 指が画面に触れているが動いてはいない時に行いたい処理をここに書く
             case TouchPhase.Canceled:

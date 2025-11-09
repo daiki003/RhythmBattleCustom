@@ -143,7 +143,7 @@ public class HomeView : MonoBehaviour
     {
         foreach (var strip in _stageStripList)
         {
-            strip.UpdateScore(_currentPanelType.GetLevel());
+            strip.UpdateScore(strip.StageId);
         }
     }
 
