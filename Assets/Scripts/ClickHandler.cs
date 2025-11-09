@@ -147,7 +147,8 @@ public class ClickHandler
         else if (clickType == ClickType.Release)
         {
             _lastPosition = null;
-            if (clickPosition != _startClickPositionType)
+            if (clickPosition is PositionType.Line or PositionType.LinePocket or PositionType.NarrowPocket &&
+                clickPosition != _startClickPositionType)
             {
                 return;
             }
