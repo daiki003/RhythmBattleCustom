@@ -20,8 +20,8 @@ public class ScoreLine : MonoBehaviour
     public void Init(int number)
     {
         LineNumber = number;
-        _leftPocket.SetParam(LineNumber, isLeft: true);
-        _rightPocket.SetParam(LineNumber, isLeft: false);
+        _leftPocket.Init(LineNumber, isLeft: true);
+        _rightPocket.Init(LineNumber, isLeft: false);
     }
 
     public void SetFirstBeatText(int number)

@@ -12,6 +12,7 @@ TagManager:
   - LineNumber
   - BattleBg
   - ScoreMakerBall
+  - NarrowPocket
   layers:
   - Default
   - TransparentFX

@@ -14,9 +14,9 @@ public enum PositionType
     LeftButton,
     RightButton,
     LinePocket,
+    NarrowPocket,
     Line,
     LineNumber,
-    ScoreMakerBall
 }
 
 public enum ClickType
@@ -31,7 +31,7 @@ public class ClickHandler
 {
     public Subject<bool> OnClickButton = new Subject<bool>();
     public Subject<bool> OnReleaseButton = new Subject<bool>();
-    public Subject<(int number, bool isLeft)> OnClickScoreMakerBall = new Subject<(int number, bool isLeft)>();
+    public Subject<(int number, bool isLeft)> OnClickScoreMakerNarrowPocket = new Subject<(int number, bool isLeft)>();
     public Subject<(int number, bool isLeft)> OnClickScoreLinePocket = new Subject<(int number, bool isLeft)>();
     public Subject<int> OnClickScoreLine = new Subject<int>();
     public Subject<int> OnClickScoreLineNumber = new Subject<int>();
@@ -40,6 +40,7 @@ public class ClickHandler
     public Subject<float> OnPinchOut = new();
     public Subject<float> OnPinchIn = new();
 
+    private PositionType _startClickPositionType;
     private Vector3 _startClickPosition;
     private Vector3? _lastPosition;
     private const float _moveDiff = 5f;
@@ -124,6 +125,7 @@ public class ClickHandler
         if (clickType == ClickType.Click)
         {
             _startClickPosition = Input.mousePosition;
+            _startClickPositionType = clickPosition;
             switch (clickPosition)
             {
                 // 演奏中左ボタン
@@ -136,15 +138,19 @@ public class ClickHandler
                     break;
                 // 作成中ポケット
                 case PositionType.LinePocket:
+                case PositionType.NarrowPocket:
                 case PositionType.Line:
                 case PositionType.LineNumber:
-                case PositionType.ScoreMakerBall:
                     break;
             }
         }
         else if (clickType == ClickType.Release)
         {
             _lastPosition = null;
+            if (clickPosition != _startClickPositionType)
+            {
+                return;
+            }
             switch (clickPosition)
             {
                 // 演奏中左ボタン
@@ -155,12 +161,12 @@ public class ClickHandler
                 case PositionType.RightButton:
                     OnReleaseButton.OnNext(false);
                     break;
-                // 作成中ボール
-                case PositionType.ScoreMakerBall:
+                // 作成中ポケット（狭い判定）
+                case PositionType.NarrowPocket:
                     if (!IsMovePosition(position))
                     {
-                        var pocket = GetTargetComponent<ScoreMakerBall>(touch);
-                        OnClickScoreMakerBall.OnNext((pocket.LineNumber, pocket.IsLeft));
+                        var pocket = GetTargetComponent<LinePocket>(touch);
+                        OnClickScoreMakerNarrowPocket.OnNext((pocket.Number, pocket.IsLeft));
                     }
                     break;
                 // 作成中ポケット
@@ -201,6 +207,11 @@ public class ClickHandler
     // クリック位置の取得
     private PositionType GetClickPositionType(Touch touch = default)
     {
+        if (GetTargetComponent<Button>(touch) != null)
+        {
+            // Buttonコンポーネントがあればそちらを優先
+            return PositionType.None;
+        }
         if (IsOnTargetTag("LeftButton", touch))
         {
             return PositionType.LeftButton;
@@ -209,9 +220,9 @@ public class ClickHandler
         {
             return PositionType.RightButton;
         }
-        if (IsOnTargetTag("ScoreMakerBall", touch))
+        if (IsOnTargetTag("NarrowPocket", touch))
         {
-            return PositionType.ScoreMakerBall;
+            return PositionType.NarrowPocket;
         }
         if (IsOnTargetTag("LinePocket", touch))
         {

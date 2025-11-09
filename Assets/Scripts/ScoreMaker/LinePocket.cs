@@ -1,23 +1,38 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using R3;
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class LinePocket : MonoBehaviour
 {
     [SerializeField] private Transform _ballTransform;
     [SerializeField] private GameObject _selectedPanel;
+    [SerializeField] private Button _deleteButton;
+
+    private Subject<Unit> _onClickDeleteButton = new();
+    public Observable<Unit> OnClickDeleteButton => _onClickDeleteButton;
 
     public ScoreMakerBall InstalledBall;
 
     public int Number { get; private set; }
     public bool IsLeft { get; private set; }
 
-    public void SetParam(int number, bool isLeft)
+    public void Init(int number, bool isLeft)
     {
         Number = number;
         IsLeft = isLeft;
+        _deleteButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            if (InstalledBall != null)
+            {
+                Destroy(InstalledBall.gameObject);
+                InstalledBall = null;
+            }
+            _selectedPanel.SetActive(false);
+            _onClickDeleteButton.OnNext(default);
+        }).AddTo(this);
     }
 
     public void CreateBall(ScoreMakerView.ScoreMakerBallType ballType)

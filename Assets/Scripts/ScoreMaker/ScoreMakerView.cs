@@ -140,13 +140,22 @@ public class ScoreMakerView : MonoBehaviour
     private void StartSubscribeMain()
     {
         // 基本操作系
-        GameManager.instance.ClickHandler.OnClickScoreMakerBall.Subscribe(x =>
+        GameManager.instance.ClickHandler.OnClickScoreMakerNarrowPocket.Subscribe(x =>
         {
-            ClickBall(x.number, x.isLeft);
+            ClickLinePocket(x.number, x.isLeft);
         }).AddTo(this);
         GameManager.instance.ClickHandler.OnClickScoreLinePocket.Subscribe(x =>
         {
-            ClickLinePocket(x.number, x.isLeft);
+            if (_currentOperationType == OperationType.SelectLine)
+            {
+                // 選択モードでは線をクリックした判定
+                ClickLine(x.number);
+            }
+            else
+            {
+                // それ以外ではポケットをクリックした判定
+                ClickLinePocket(x.number, x.isLeft);
+            }
         }).AddTo(this);
         GameManager.instance.ClickHandler.OnClickScoreLine.Subscribe(number =>
         {
@@ -282,13 +291,6 @@ public class ScoreMakerView : MonoBehaviour
 
     private void ClickBall(int lineNumber, bool isLeft)
     {
-        if (_currentOperationType != OperationType.SelectLine)
-        {
-            // 選択モード以外ではポケットをクリックしたときと同じ挙動
-            ClickLinePocket(lineNumber, isLeft);
-            return;
-        }
-        SEManager.instance.PlaySe(SeName.Button2);
         var targetLine = _scoreLineList[lineNumber];
         if (_selectedBallPocket != null)
         {
@@ -364,7 +366,13 @@ public class ScoreMakerView : MonoBehaviour
                 RotationBall(lineNumber, isLeft);
                 break;
             case OperationType.SelectLine:
-                if (_selectedBallPocket != null)
+                var ball = _scoreLineList[lineNumber].GetBall(isLeft);
+                if (ball != null)
+                {
+                    // ボールがあるところならボール選択
+                    ClickBall(lineNumber, isLeft);
+                }
+                else if (_selectedBallPocket != null)
                 {
                     // ボール選択中なら、そのボールをここに移動する
                     UpdatePastScoreLineList();
@@ -375,8 +383,8 @@ public class ScoreMakerView : MonoBehaviour
                 }
                 else
                 {
-                    // ライン選択
-                    SelectLine(lineNumber);
+                    // ボール作成
+                    CreateBall(lineNumber, isLeft, ScoreMakerBallType.Single);
                 }
                 break;
             case OperationType.Paste:
@@ -532,15 +540,9 @@ public class ScoreMakerView : MonoBehaviour
                 break;
             case ControlPanelRequestUp _:
                 MoveSelectedLine(isUp: true);
-                // 上下後はマスクを閉じる
-                _selectedLineList.Clear();
-                _selectMask.SetActive(false);
                 break;
             case ControlPanelRequestDown _:
                 MoveSelectedLine(isUp: false);
-                // 上下後はマスクを閉じる
-                _selectedLineList.Clear();
-                _selectMask.SetActive(false);
                 break;
             case ControlPanelRequestDeleteRange _:
                 ClearLine();
@@ -716,6 +718,20 @@ public class ScoreMakerView : MonoBehaviour
                 scoreLine.transform.SetSiblingIndex(0);
                 scoreLine.Init(i);
                 _scoreLineList.Add(scoreLine);
+                scoreLine.LeftPocket.OnClickDeleteButton.Subscribe(_ =>
+                {
+                    if (_selectedBallPocket == scoreLine.LeftPocket)
+                    {
+                        _selectedBallPocket = null;
+                    }
+                }).AddTo(this);
+                scoreLine.RightPocket.OnClickDeleteButton.Subscribe(_ =>
+                {
+                    if (_selectedBallPocket == scoreLine.RightPocket)
+                    {
+                        _selectedBallPocket = null;
+                    }
+                }).AddTo(this);
             }
         }
         SetFirstBeatNumberText();
