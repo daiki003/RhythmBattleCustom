@@ -104,13 +104,13 @@ public class PlayFabController
     public static async UniTask InitializePublicData()
     {
         var clearStates = new List<ClearState>();
-        for (int i = 0; i < MasterManager.StageMasterList.Count; i++)
+        for (int i = 0; i < MasterManager.SampleStageHeaderList.Count; i++)
         {
             for (int j = 0; j < 4; j++)
             {
                 var clearState = new ClearState()
                 {
-                    MusicId = MasterManager.StageMasterList[i].MusicId,
+                    MusicId = MasterManager.SampleStageHeaderList[i].MusicId,
                     StageId = j,
                 };
                 clearStates.Add(clearState);
@@ -165,14 +165,9 @@ public class PlayFabController
             if (result.Data.ContainsKey("ClearStates") && result.Data.ContainsKey("SettingData"))
             {
                 var clearStateList = PlayFabSimpleJson.DeserializeObject<List<ClearState>>(result.Data["ClearStates"].Value);
-                var overrideMasterList = new List<StageMaster>();
                 var customStageList = new List<SingleStageMaster>();
                 foreach (var item in result.Data)
                 {
-                    if (item.Key.Contains("Override"))
-                    {
-                        overrideMasterList.Add(PlayFabSimpleJson.DeserializeObject<StageMaster>(item.Value.Value));
-                    }
                     if (item.Key == "CustomStageList")
                     {
                         customStageList.AddRange(PlayFabSimpleJson.DeserializeObject<List<SingleStageMaster>>(item.Value.Value));
@@ -181,7 +176,6 @@ public class PlayFabController
                 return new PlayerDataResult
                 {
                     ClearStateList = clearStateList,
-                    OverrideStageMasterList = overrideMasterList,
                     CustomStageList = customStageList
                 };
             }
@@ -242,34 +236,6 @@ public class PlayFabController
         {
             isSuccess = true;
             Debug.Log("UpdateUserData: Success!");
-        }
-
-        void OnError(PlayFabError error)
-        {
-            Debug.Log("UpdateUserData: Fail...");
-            Debug.Log(error.GenerateErrorReport());
-        }
-    }
-
-    public static async UniTask UpdateOverrideScore(StageMaster stageMaster)
-    {
-        string keyName = stageMaster.MusicId + "Override";
-        var request = new UpdateUserDataRequest()
-        {
-            Data = new Dictionary<string, string>
-            {
-                { keyName, PlayFabSimpleJson.SerializeObject(stageMaster) }
-            }
-        };
-
-        bool isSuccess = false;
-        PlayFabClientAPI.UpdateUserData(request, OnSuccess, OnError);
-        await UniTask.WaitUntil(() => isSuccess);
-
-        void OnSuccess(UpdateUserDataResult result)
-        {
-            isSuccess = true;
-            Debug.Log("UpdateStageOverride:" + keyName);
         }
 
         void OnError(PlayFabError error)

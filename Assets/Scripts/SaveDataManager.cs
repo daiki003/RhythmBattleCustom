@@ -62,45 +62,6 @@ public static class SaveDataManager
         return clearState;
     }
 
-    private static float GetCurrentTotalScore()
-    {
-        float totalScore = 0f;
-        for (int i = 0; i < ClearStateList.Count; i++)
-        {
-            totalScore += ClearStateList[i].Score;
-        }
-        return totalScore;
-    }
-
-    private static float GetMaxTotalScore()
-    {
-        return MasterManager.StageMasterList.Count * 300f;
-    }
-
-    private static int GetTotalStar()
-    {
-        int totalStar = 0;
-        var normalStageScoreList = ClearStateList.Where(c => c.StageId <= MasterManager.MaxDefaultLevelId).ToList();
-        for (int i = 0; i < normalStageScoreList.Count; i++)
-        {
-            totalStar += GetStarState(normalStageScoreList[i]);
-        }
-        return totalStar;
-    }
-
-    private static int GetMaxStar()
-    {
-        return MasterManager.StageMasterList.Count * 9;
-    }
-
-    // 達成率を計算する
-    public static float CalculateAchievementRate()
-    {
-        float maxAchievementPoint = GetMaxTotalScore() + GetMaxStar() * 10f;
-        float currentAchievementPoint = GetCurrentTotalScore() + GetTotalStar() * 10f;
-        return currentAchievementPoint / maxAchievementPoint * 100f;
-    }
-
     private static int GetStarState(ClearState clearState)
     {
         // スコアが100であれば3つ星

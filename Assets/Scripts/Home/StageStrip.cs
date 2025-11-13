@@ -10,7 +10,6 @@ public class StageStrip : MonoBehaviour
 {
     [SerializeField] private Button _stripButton;
     [SerializeField] private Image _selectedPanel;
-    [SerializeField] private Image _enemyImage;
     [SerializeField] private Text _titleText;
     [SerializeField] private Text _scoreText;
     [SerializeField] private Text _criticalText;
@@ -23,6 +22,7 @@ public class StageStrip : MonoBehaviour
     public string MusicIdId => _stageHeader.MusicId;
     public float StartTime => _stageHeader.StripStartTime;
     public float EndTime => _stageHeader.StripEndTime;
+    public HomePanelType PanelType => (HomePanelType)_stageHeader.PanelType;
 
     public Subject<Unit> OnClickedStrip { get; private set; } = new();
 
@@ -31,13 +31,13 @@ public class StageStrip : MonoBehaviour
         _stageHeader = stageHeader;
         StageId = stageId;
         _titleText.text = _stageHeader.StageName;
-        var enemySprite = ResourceManager.LoadSpriteWithDummyEnemy("Enemy/" + MusicIdId);
-        _enemyImage.sprite = enemySprite;
         _selectedPanel.gameObject.SetActive(false);
         _stripButton.OnClickAsObservable().Subscribe(_ =>
         {
             OnClickedStrip.OnNext(default);
         }).AddTo(this);
+
+        UpdateScore(stageId);
     }
 
     public void UpdateScore(int stageId)

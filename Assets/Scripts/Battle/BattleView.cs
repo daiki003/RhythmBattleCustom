@@ -90,8 +90,9 @@ public class BattleView : MonoBehaviour
     // これが大きいと全体的に叩くのが遅い
     private float _beatDiffTime;
     private float[] _beatDiffTimeList = new float[10];
+    private float _endTime => _stageHeader.EndTime > 0 ? _stageHeader.EndTime : BGMManager.instance.Length;
 
-    private float _stageLength => _stageHeader.EndTime - _stageHeader.StartTime;
+    private float _stageLength => _endTime - _stageHeader.StartTime;
 
     private Vector3 _startToTargetVectorLeft => _leftTargetPoint.localPosition - _leftStartTransform.localPosition;
     private Vector3 _startToTargetVectorRight => _rightTargetPoint.localPosition - _rightStartTransform.localPosition;
@@ -343,7 +344,7 @@ public class BattleView : MonoBehaviour
     public async UniTask PrepareBattle()
     {
         Reset();
-        await BGMManager.instance.SetClipFromLibrary(_stageHeader.MusicId, immediatePlay: false);
+        await BGMManager.instance.SetStageClip(_stageHeader.MusicId, immediatePlay: false);
         CreateBalls(_notes);
     }
 
@@ -496,7 +497,7 @@ public class BattleView : MonoBehaviour
         {
             return;
         }
-        if (_currentState == BattleState.DuringBgm && BGMManager.instance.CurrentTime >= _stageHeader.EndTime)
+        if (_currentState == BattleState.DuringBgm && BGMManager.instance.CurrentTime >= _endTime)
         {
             _currentState = BattleState.Result;
             if (_isPractice)

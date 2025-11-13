@@ -92,6 +92,7 @@ public class GameManager : MonoBehaviour
     {
         await PlayFabController.LoginAsync();
         await MasterManager.GetAllMasterData();
+        BGMManager.instance.PreloadStageBgm();
         _loadPlayfabTask.TrySetResult();
     }
 

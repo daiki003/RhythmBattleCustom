@@ -78,7 +78,7 @@ public class ScoreMakerView : MonoBehaviour
     public MusicParameter CurrentMusicParameter;
     public float CurrentBpm => CurrentMusicParameter.Bpm;
     public float CurrentStartTime => CurrentMusicParameter.StartTime;
-    public float CurrentEndTime => CurrentMusicParameter.EndTime;
+    public float CurrentEndTime => CurrentMusicParameter.EndTime > 0 ? CurrentMusicParameter.EndTime : BGMManager.instance.Length;
 
     // 編集された状態がセーブされていないかどうか
     private bool _isEdited;

@@ -23,17 +23,17 @@ public class NewCreateListDialog : DialogBase
     public override void Init(DialogOptionBase dialogOption)
     {
         base.Init(dialogOption);
-        foreach (var master in MasterManager.StageMasterList)
+        foreach (var header in MasterManager.SampleStageHeaderList)
         {
             var prefab = ResourceManager.LoadPrefab<NewCreateStrip>("NewCreateStrip");
             var strip = Instantiate(prefab, _stripTransform);
-            strip.Init(master.StageHeader);
+            strip.Init(header);
             strip.OnClickedStrip.Subscribe(async _ =>
             {
                 _selectedStrip?.SetSelected(false);
                 _selectedStrip = strip;
                 strip.SetSelected(true);
-                await BGMManager.instance.SetClipFromLibrary(strip.MusicId, isFade: true, startTime: strip.StartTime, endTime: strip.EndTime);
+                await BGMManager.instance.SetStageClip(strip.MusicId, isFade: true, startTime: strip.StartTime, endTime: strip.EndTime);
             }).AddTo(this);
         }
     }

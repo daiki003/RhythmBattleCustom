@@ -26,6 +26,7 @@ public class BGMManager : MonoBehaviour
 	private AudioClip _currentBgmClip;
 	public AudioClip CurrentClip => _currentBgmClip;
 	private Dictionary<string, AudioClip> _chachClipDict = new();
+	private Dictionary<string, AudioClip> _sampleStageClipDict = new();
 	private float _startTime;
 	private float _endTime;
 	private bool _isDuringLoopFade;
@@ -77,9 +78,13 @@ public class BGMManager : MonoBehaviour
 		{
 			LoadClip(name);
 		}
-		foreach (string name in MasterManager.StageMasterList.Select(m => m.MusicId))
+	}
+
+	public void PreloadStageBgm()
+	{
+		foreach (string name in MasterManager.SampleStageHeaderList.Select(m => m.MusicId))
 		{
-			LoadClip(name);
+			LoadClip(name, isSampleStage: true);
 		}
 	}
 
@@ -93,33 +98,43 @@ public class BGMManager : MonoBehaviour
 		return LoadClip(clipName);
 	}
 
-	private AudioClip LoadClip(string clipName)
+	private async UniTask<AudioClip> GetStageMusicClip(string musicId)
+	{
+		if (_sampleStageClipDict.TryGetValue(musicId, out var clip))
+		{
+			return clip;
+		}
+		return await MediaController.instance.GetAudioClipAsync(musicId);
+    }
+
+	private AudioClip LoadClip(string clipName, bool isSampleStage = false)
 	{
 		var newClip = Resources.Load<AudioClip>(string.Format("BGM/{0}", clipName));
-		_chachClipDict.Add(clipName, newClip);
+		if (isSampleStage)
+		{
+			_sampleStageClipDict.Add(clipName, newClip);
+		}
+		else
+        {
+            _chachClipDict.Add(clipName, newClip);
+        }
 		return newClip;
 	}
 
 	public void SetClip(BgmName bgmName, bool isLoop = false, bool immediatePlay = true, bool isFade = false)
 	{
-		SetClip(bgmName.ToString(), isLoop, immediatePlay, isFade);
+		var newClip = GetClip(bgmName.ToString());
+		SetClip(newClip, isLoop, immediatePlay, isFade);
 	}
 
-	public void SetClip(string clipName, bool isLoop = false, bool immediatePlay = true, bool isFade = false, float startTime = 0f, float endTime = 0f)
-	{
-		var newClip = GetClip(clipName);
-		SetClip(newClip, isLoop, immediatePlay, isFade, startTime, endTime);
-	}
-
-	public async Task SetClipFromLibrary(string musicId, bool isLoop = false, bool immediatePlay = true, bool isFade = false, float startTime = 0f, float endTime = 0f)
-	{
-		var clip = await MediaController.instance.GetAudioClipAsync(musicId);
-		if (clip == null)
-		{
-			return;
-		}
-		SetClip(clip, isLoop, immediatePlay, isFade, startTime, endTime);
-	}
+	public async UniTask SetStageClip(string musicId, bool isLoop = false, bool immediatePlay = true, bool isFade = false, float startTime = 0f, float endTime = 0f)
+    {
+		var clip = await GetStageMusicClip(musicId);
+		if (clip != null)
+        {
+            SetClip(clip, isLoop, immediatePlay, isFade, startTime, endTime);
+        }
+    }
 
 	public void SetClip(AudioClip audioClip, bool isLoop = false, bool immediatePlay = true, bool isFade = false, float startTime = 0f, float endTime = 0f)
 	{

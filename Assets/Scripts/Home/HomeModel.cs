@@ -31,7 +31,7 @@ public class HomeModel
 
     private void CreateStageList()
     {
-        _stageMasterList = MasterManager.CustomStageList;
+        _stageMasterList = MasterManager.StageMasterList;
     }
 
     private LevelInfo CreateLevelInfo(SingleStageMaster singleStageMaster)

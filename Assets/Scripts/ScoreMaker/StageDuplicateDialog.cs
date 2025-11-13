@@ -32,7 +32,7 @@ public class StageDuplicateDialog : DialogBase
         _stageMaster = option.StageInfo;
         var stageHeader = _stageMaster.StageHeader;
         _customStageTitle.SetActive(false);
-        var allMasterList = MasterManager.CustomStageList;
+        var allMasterList = MasterManager.StageMasterList;
         foreach (var master in allMasterList)
         {
             var prefab = ResourceManager.LoadPrefab<NewCreateStrip>("NewCreateStrip");

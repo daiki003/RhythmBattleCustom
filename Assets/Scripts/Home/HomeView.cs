@@ -9,10 +9,10 @@ using UnityEngine.UI;
 
 public enum HomePanelType
 {
-    Level1,
-    Level2,
-    Level3,
-    Custom,
+    Custom = 0,
+    Level1 = 1,
+    Level2 = 2,
+    Level3 = 3,
 }
 
 public static class HomePanelTypeExtension
@@ -28,7 +28,7 @@ public static class HomePanelTypeExtension
         };
     }
 
-    public static bool IsStage(this HomePanelType panelType)
+    public static bool IsSample(this HomePanelType panelType)
     {
         return panelType switch
         {
@@ -54,20 +54,10 @@ public class GetStageKey
 
 public class HomeView : MonoBehaviour
 {
-    [SerializeField] private Text _achievementRateText;
     [SerializeField] private StageStrip _stageStripPrefab;
-    [SerializeField] private Transform _stripTransform;
     [SerializeField] private Transform _customStripTransform;
-    [SerializeField] private List<MenuButton> _menuButtonList;
-    [SerializeField] private GameObject _customStripPanel;
-    [SerializeField] private Button _settingButton;
-    [SerializeField] private Button _helpButton;
 
-    [SerializeField] private Button _playStageButton;
-    [SerializeField] private Toggle _practiceModeToggle;
-    [SerializeField] private Button _editStageButton;
-    [SerializeField] private Button _deleteStageButton;
-    [SerializeField] private Button _newCreateButton;
+    [SerializeField] private HomeViewInput _homeViewInput;
 
     private List<StageStrip> _stageStripList = new List<StageStrip>();
 
@@ -84,67 +74,35 @@ public class HomeView : MonoBehaviour
     public void Init(List<SingleStageMaster> stageList)
     {
         CreateStripList(stageList);
-        SetButtonInteractable(false);
-        for (int i = 0; i < _menuButtonList.Count; i++)
-        {
-            var menuButton = _menuButtonList[i];
-            menuButton.OnWhenClicked.Subscribe(_ =>
-            {
-                SetLevelPanel(menuButton.ButtonType);
-            }).AddTo(this);
-        }
-        SetLevelPanel(HomePanelType.Custom);
         BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true, isFade: true);
-        // 開始ボタン
-        _playStageButton.OnClickAsObservable().Subscribe(_ =>
+        _homeViewInput.Init();
+        _homeViewInput.OnClickButton.Subscribe(args =>
         {
-            _clickPlayStageButton.OnNext((new GetStageKey(_selectedStrip.MusicIdId, _selectedStrip.StageId), _practiceModeToggle.isOn));
-        }).AddTo(this);
-        // 練習モード切替
-        bool enableToggleSe = false;
-        _practiceModeToggle.isOn = false;
-        _practiceModeToggle.OnValueChangedAsObservable().Subscribe(isOn =>
-        {
-            // 初回は音を鳴らさない
-            if (enableToggleSe)
+            switch (args)
             {
-                SEManager.instance.PlaySe(isOn ? SeName.Button2 : SeName.Cancel);
+                case MenuButtonArgs menuArgs:
+                    ChangePanelType(menuArgs.PanelType);
+                    break;
+                case PlayStageButtonArgs playStageArgs:
+                    _clickPlayStageButton.OnNext((new GetStageKey(_selectedStrip.MusicIdId, _selectedStrip.StageId), playStageArgs.IsPracticeMode));
+                    break;
+                case EditStageButtonArgs editStageArgs:
+                    _clickEditStageButton.OnNext(new GetStageKey(_selectedStrip.MusicIdId, _selectedStrip.StageId));
+                    break;
+                case DeleteStageButtonArgs deleteStageArgs:
+                    DeleteStage();
+                    break;
+                case NewCreateButtonArgs newCreateArgs:
+                    CreateStage().Forget();
+                    break;
+                case SettingButtonArgs settingArgs:
+                    DialogManager.instance.OpenSettingDialog();
+                    break;
+                case HelpButtonArgs helpArgs:
+                    DialogManager.instance.OpenHelpDialog(_currentPanelType.IsSample() ? HelpDialogPageType.Home : HelpDialogPageType.Home2);
+                    break;
             }
-            enableToggleSe = true;
         }).AddTo(this);
-        // 編集ボタン
-        _editStageButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            _clickEditStageButton.OnNext(new GetStageKey(_selectedStrip.MusicIdId, _selectedStrip.StageId));
-        }).AddTo(this);
-        // 削除ボタン
-        _deleteStageButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            DeleteStage();
-        }).AddTo(this);
-        // 新規ステージ作成ボタン
-        _newCreateButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            CreateStage().Forget();
-        }).AddTo(this);
-
-        // 設定ボタン
-        _settingButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            DialogManager.instance.OpenSettingDialog();
-        }).AddTo(this);
-        _helpButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            DialogManager.instance.OpenHelpDialog(_currentPanelType.IsStage() ? HelpDialogPageType.Home : HelpDialogPageType.Home2);
-        }).AddTo(this);
-    }
-
-    public void UpdateStrip()
-    {
-        foreach (var strip in _stageStripList)
-        {
-            strip.UpdateScore(strip.StageId);
-        }
     }
 
     // ステージの短冊を全て作成
@@ -155,8 +113,6 @@ public class HomeView : MonoBehaviour
         {
             CreateStageStrip(stageInfo.StageHeader, stageInfo.StageId, _customStripTransform);
         }
-        float achievementRate = SaveDataManager.CalculateAchievementRate().RoundDown(1);
-        _achievementRateText.text = (achievementRate >= 100f ? achievementRate.ToString() : achievementRate.ToString("F1")) + "%" ;
     }
 
     // ステージの短冊1枚を作成
@@ -172,14 +128,15 @@ public class HomeView : MonoBehaviour
                 _selectedStrip?.SetSelected(false);
                 _selectedStrip = strip;
                 strip.SetSelected(true);
-                await BGMManager.instance.SetClipFromLibrary(strip.MusicIdId, isFade: true, startTime: strip.StartTime, endTime: strip.EndTime);
-                SetButtonInteractable(true);
+                await BGMManager.instance.SetStageClip(strip.MusicIdId, isFade: true, startTime: strip.StartTime, endTime: strip.EndTime);
+                _homeViewInput.SetButtonInteractable(true);
             }
             else
             {
                 CancelSelectStrip();
             }
         }).AddTo(strip);
+        strip.gameObject.SetActive(stageHeader.PanelType == (int)_currentPanelType);
         return strip;
     }
 
@@ -190,7 +147,7 @@ public class HomeView : MonoBehaviour
             _selectedStrip.SetSelected(false);
             _selectedStrip = null;
             BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true, isFade: true);
-            SetButtonInteractable(false);
+            _homeViewInput.SetButtonInteractable(false);
         }
     }
 
@@ -254,29 +211,20 @@ public class HomeView : MonoBehaviour
         _clickNewCreateStageButton.OnNext(musicId);
     }
 
-    private void SetButtonInteractable(bool isActive)
+    private void ChangePanelType(HomePanelType panelType)
     {
-        _playStageButton.interactable = isActive;
-        _editStageButton.interactable = isActive;
-        _deleteStageButton.interactable = isActive;
-    }
-
-    private void SetLevelPanel(HomePanelType titlePanelType)
-    {
-        foreach (var button in _menuButtonList)
+        if (_currentPanelType == panelType)
         {
-            button.SetLight(button.ButtonType == titlePanelType);
+            return;
         }
-        if (_currentPanelType.IsStage() != titlePanelType.IsStage())
+        CancelSelectStrip();
+        _currentPanelType = panelType;
+        bool isStage = panelType.IsSample();
+        _homeViewInput.ChangeButtonByCustomMode(!isStage);
+        // 短冊の表示切替
+        foreach (var strip in _stageStripList)
         {
-            CancelSelectStrip();
+            strip.gameObject.SetActive(strip.PanelType == panelType);
         }
-        _currentPanelType = titlePanelType;
-        bool isStage = titlePanelType.IsStage();
-        // _editStageButton.gameObject.SetActive(!isStage);
-        _deleteStageButton.gameObject.SetActive(!isStage);
-        _newCreateButton.gameObject.SetActive(!isStage);
-        _customStripPanel.SetActive(true);
-        UpdateStrip();
     }
 }
