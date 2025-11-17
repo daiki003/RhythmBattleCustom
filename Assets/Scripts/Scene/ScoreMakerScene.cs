@@ -24,12 +24,12 @@ public class ScoreMakerScene : SceneBase
     public override async UniTask StartSceneAsync()
     {
         await base.StartSceneAsync();
-        _scoreMaker.StartMake(isRestart: false);
+        _scoreMaker.StartMake();
     }
 
     public override async UniTask Restart()
     {
         await base.Restart();
-        _scoreMaker.StartMake(isRestart: true);
+        _scoreMaker.StartMake();
     }
 }

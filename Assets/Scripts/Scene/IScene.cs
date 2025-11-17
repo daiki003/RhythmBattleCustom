@@ -41,7 +41,6 @@ public class HomeSceneInfo : SceneInfoBase
 public class ScoreMakerSceneInfo : SceneInfoBase
 {
     public override SceneType SceneType => SceneType.ScoreMaker;
-    public StageInfo StageInfo;
     public SingleStageMaster StageMaster;
     public int TargetLevel;
     public bool IsNewCreate;

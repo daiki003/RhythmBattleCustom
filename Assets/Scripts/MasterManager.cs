@@ -105,16 +105,13 @@ public class PlayerDataResult
 {
     public List<ClearState> ClearStateList = new();
     public SettingData SettingData = new();
-    public List<SingleStageMaster> CustomStageList= new();
 }
 
 public static class MasterManager
 {
     public static SettingMaster SettingMaster;
-    public static List<StageHeader> SampleStageHeaderList = new List<StageHeader>();
-    public static List<SingleStageMaster> StageMasterList = new List<SingleStageMaster>(); // カスタムステージを入れておくリスト
-    // デフォルトステージの最大レベル
-    public const int MaxDefaultLevelId = 3;
+    public static List<SingleStageMaster> SampleStageList = new List<SingleStageMaster>();
+    public static List<SingleStageMaster> CustomStageList = new List<SingleStageMaster>();
     // 最小ステージID
     public const int MinStageId = 1;
 
@@ -122,14 +119,19 @@ public static class MasterManager
 	{
         var getTitleDataTask = PlayFabController.GetTitleData();
         var getPlayerDataTask = PlayFabController.GetPlayerData();
-        var result = await UniTask.WhenAll(getTitleDataTask, getPlayerDataTask);
+        var getCustomStageTask = PlayFabController.LoadCustomStageListAsync<List<SingleStageMaster>>();
+        var result = await UniTask.WhenAll(getTitleDataTask, getPlayerDataTask, getCustomStageTask);
         if (result.Item1 != null)
         {
             SetMasterData(result.Item1.SettingeMaster, result.Item1.StageMasterList);
         }
         if (result.Item2 != null)
         {
-            SetPlayerData(result.Item2.ClearStateList, result.Item2.CustomStageList);
+            SetPlayerData(result.Item2.ClearStateList);
+        }
+        if (result.Item3 != null)
+        {
+            CustomStageList.AddRange(result.Item3);
         }
 	}
     public static void SetMasterData(SettingMaster settingMaster, List<StageMaster> stageMasterList)
@@ -138,7 +140,6 @@ public static class MasterManager
         foreach (var stage in stageMasterList)
         {
             var header = stage.StageHeader.CreateCopy();
-            SampleStageHeaderList.Add(header);
             for (int i = 0; i < stage.notes.Count; i++)
             {
                 var levelNotes = stage.notes[i];
@@ -150,32 +151,31 @@ public static class MasterManager
                 };
                 singleMaster.StageHeader.PanelType = i + 1;
                 singleMaster.Notes = levelNotes;
-                StageMasterList.Add(singleMaster);
+                SampleStageList.Add(singleMaster);
             }
         }
 	}
-    public static void SetPlayerData(List<ClearState> clearStateList, List<SingleStageMaster> customStageList)
+    public static void SetPlayerData(List<ClearState> clearStateList)
     {
         SaveDataManager.ClearStateList = clearStateList;
-        StageMasterList.AddRange(customStageList);
     }
     public static async UniTask UpdateStageMaster(SingleStageMaster stageMaster)
     {
-        int index = StageMasterList.FindIndex(s => s.MusicId == stageMaster.StageHeader.MusicId && s.StageId == stageMaster.StageId);
+        int index = CustomStageList.FindIndex(s => s.MusicId == stageMaster.StageHeader.MusicId && s.StageId == stageMaster.StageId);
         if (index >= 0)
         {
-            StageMasterList[index] = stageMaster;
+            CustomStageList[index] = stageMaster;
         }
         else
         {
-            StageMasterList.Add(stageMaster);
+            CustomStageList.Add(stageMaster);
         }
-        await PlayFabController.UpdateCustomStageList(StageMasterList);
+        await PlayFabController.UpdateCustomStageList(CustomStageList);
         SaveDataManager.DeleteClearState(stageMaster.StageHeader.MusicId, stageMaster.StageId);
     }
     public static int GetNextStageId(string musicId)
     {
-        var customStageList = StageMasterList.Where(s => s.MusicId == musicId).ToList();
+        var customStageList = CustomStageList.Where(s => s.MusicId == musicId).ToList();
         if (customStageList.Count == 0)
         {
             return MinStageId;
@@ -184,8 +184,8 @@ public static class MasterManager
     }
     public static async UniTask DeleteCustomStage(string stageId, int level)
     {
-        StageMasterList.RemoveAll(s => s.MusicId == stageId && s.StageId == level);
-        await PlayFabController.UpdateCustomStageList(StageMasterList);
+        CustomStageList.RemoveAll(s => s.MusicId == stageId && s.StageId == level);
+        await PlayFabController.UpdateCustomStageList(CustomStageList);
         SaveDataManager.DeleteClearState(stageId, level);
     }
 }

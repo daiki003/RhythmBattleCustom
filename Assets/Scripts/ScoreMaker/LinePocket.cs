@@ -11,7 +11,7 @@ public class LinePocket : MonoBehaviour
     [SerializeField] private GameObject _selectedPanel;
     [SerializeField] private Button _deleteButton;
 
-    private Subject<Unit> _onClickDeleteButton = new();
+    private Subject<Unit> _onClickDeleteButton = new Subject<Unit>();
     public Observable<Unit> OnClickDeleteButton => _onClickDeleteButton;
 
     public ScoreMakerBall InstalledBall;

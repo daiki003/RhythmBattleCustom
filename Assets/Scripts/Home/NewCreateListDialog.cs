@@ -23,11 +23,11 @@ public class NewCreateListDialog : DialogBase
     public override void Init(DialogOptionBase dialogOption)
     {
         base.Init(dialogOption);
-        foreach (var header in MasterManager.SampleStageHeaderList)
+        foreach (var stage in MasterManager.SampleStageList)
         {
             var prefab = ResourceManager.LoadPrefab<NewCreateStrip>("NewCreateStrip");
             var strip = Instantiate(prefab, _stripTransform);
-            strip.Init(header);
+            strip.Init(stage.StageHeader);
             strip.OnClickedStrip.Subscribe(async _ =>
             {
                 _selectedStrip?.SetSelected(false);

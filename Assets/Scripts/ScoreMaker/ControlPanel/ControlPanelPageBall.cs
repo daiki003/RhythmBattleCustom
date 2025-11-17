@@ -17,7 +17,6 @@ public class ControlPanelPageBall : ControlPanelPageBase
 {
     [SerializeField] private CustomButton _selectSingleBallButton; // シングルボール選択ボタン
     [SerializeField] private CustomButton _selectLongBallButton; // ロングボール選択ボタン
-    [SerializeField] private CustomButton _rotationBallButton; // ボール選択ローテーションボタン
     [SerializeField] private CustomButton _selectLineButton; // ライン選択ボタン
     [SerializeField] private CustomButton _pasteButton; // ペーストボタン
 
@@ -30,10 +29,6 @@ public class ControlPanelPageBall : ControlPanelPageBase
         _selectLongBallButton.OnClickAsObservable().Subscribe(_ =>
         {
             SetSelectBallType(OperationType.Long);
-        }).AddTo(this);
-        _rotationBallButton?.OnClickAsObservable().Subscribe(_ =>
-        {
-            SetSelectBallType(OperationType.Rotation);
         }).AddTo(this);
         _selectLineButton?.OnClickAsObservable().Subscribe(_ =>
         {
@@ -50,13 +45,11 @@ public class ControlPanelPageBall : ControlPanelPageBase
         _onRequest.OnNext(new ControlPanelRequestSelectBall(ballType));
         _selectSingleBallButton.SetHighLight(ballType == OperationType.Single);
         _selectLongBallButton.SetHighLight(ballType == OperationType.Long);
-        _rotationBallButton?.SetHighLight(ballType == OperationType.Rotation);
         _selectLineButton?.SetHighLight(ballType == OperationType.SelectLine);
         _pasteButton.SetHighLight(ballType == OperationType.Paste);
 
-        bool isEditMode = ballType == OperationType.SelectLine || ballType == OperationType.Paste;
-        _selectLongBallButton.gameObject.SetActive(!isEditMode);
-        _rotationBallButton.gameObject.SetActive(!isEditMode);
-        _pasteButton.gameObject.SetActive(isEditMode);
+        // bool isEditMode = ballType == OperationType.SelectLine || ballType == OperationType.Paste;
+        // _selectLongBallButton.gameObject.SetActive(!isEditMode);
+        // _pasteButton.gameObject.SetActive(isEditMode);
     }
 }

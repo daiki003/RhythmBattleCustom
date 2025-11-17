@@ -54,15 +54,8 @@ public class ScoreMakerPresenter : MonoBehaviour
         _view.DisplaySaveFinishDialog();
     }
 
-    public void StartMake(bool isRestart)
+    public void StartMake()
     {
-        if (isRestart)
-        {
-            _view.RestartMake();
-        }
-        else
-        {
-            _view.StartMake();
-        }        
+        _view.StartMake();
     }
 }

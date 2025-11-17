@@ -50,7 +50,7 @@ public class ScoreMakerView : MonoBehaviour
     // コピペ関連
     [SerializeField] private GameObject _selectMask;
     private List<ScoreLine> _selectedLineList = new();
-    private LinePocket _selectedBallPocket = new();
+    private LinePocket _selectedBallPocket;
 
     // 演奏作成モード切替関連
     [SerializeField] private GameObject _controlUiRoot;
@@ -82,7 +82,7 @@ public class ScoreMakerView : MonoBehaviour
 
     // 編集された状態がセーブされていないかどうか
     private bool _isEdited;
-    private bool _isPause;
+    private bool _isPause = true;
 
     private Subject<float> _clickPracticeButton = new();
     public Observable<float> ClickPracticeButton => _clickPracticeButton;
@@ -111,7 +111,6 @@ public class ScoreMakerView : MonoBehaviour
     private OperationType _currentOperationType;
     private float _singleBeatTime => 60f / (CurrentBpm * 4);
     private bool _isStartMake;
-    private bool _isDuringPractice;
 
     private Dictionary<bool, int> _lastBeatLineDict = new();
 
@@ -127,7 +126,7 @@ public class ScoreMakerView : MonoBehaviour
         };
         BGMManager.instance.SetTime(CurrentStartTime);
 
-        _currentOperationType = OperationType.Rotation;
+        _currentOperationType = OperationType.SelectLine;
         StartSubscribeMain();
         StartSubscribeControllPanel();
         _startTimeInput.text = CurrentStartTime.ToString();
@@ -521,7 +520,7 @@ public class ScoreMakerView : MonoBehaviour
                 _currentOperationType = selectBallRequest.OperationType;
                 break;
             case ControlPanelRequestPractice _:
-                _isDuringPractice = true;
+                _isStartMake = false;
                 _clickPracticeButton.OnNext(_bgmScrollBar.value);
                 break;
             case ControlPanelRequestCopy _:
@@ -886,14 +885,6 @@ public class ScoreMakerView : MonoBehaviour
     public void StartMake()
     {
         _isStartMake = true;
-        BGMManager.instance.Play();
-    }
-
-    // 練習モードから戻ってきたとき
-    public void RestartMake()
-    {
-        _isDuringPractice = false;
-        gameObject.SetActive(true);
     }
 
     private List<LineState> CreateCurrentLineState()
@@ -1167,7 +1158,7 @@ public class ScoreMakerView : MonoBehaviour
 
     void Update()
     {
-        if (!_isStartMake || _isDuringPractice)
+        if (!_isStartMake)
         {
             return;
         }

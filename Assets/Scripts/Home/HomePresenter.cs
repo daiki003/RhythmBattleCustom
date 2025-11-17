@@ -20,11 +20,11 @@ public class HomePresenter : MonoBehaviour
         _view.Init(_model.StageMasterList);
         _view.ClickPlayStageButton.Subscribe(x =>
         {
-            StartBattle(x.stageKey.MusicId, x.stageKey.StageId, isPractice: x.isPractice);
+            StartBattle(x.stageKey, isPractice: x.isPractice);
         }).AddTo(this);
         _view.ClickEditStageButton.Subscribe(x =>
         {
-            StartScoreMaker(x.MusicId, x.StageId, isNewCreate: false);
+            StartScoreMaker(x.stageKey.MusicId, x.stageKey.StageId, isNewCreate: x.isNewCreate);
         }).AddTo(this);
         _view.ClickNewCreateStageButton.Subscribe(musicId =>
         {
@@ -32,9 +32,9 @@ public class HomePresenter : MonoBehaviour
         }).AddTo(this);
     }
 
-    private void StartBattle(string musicId, int stageId, bool isPractice)
+    private void StartBattle(GetStageKey getStageKey, bool isPractice)
     {
-        var stageMaster = _model.GetStageInfo(musicId, stageId);
+        var stageMaster = _model.GetStageInfo(getStageKey.MusicId, getStageKey.StageId, getStageKey.PanelType);
         var sceneInfo = new BattleSceneInfo
         {
             StageMaster = stageMaster,
@@ -47,7 +47,7 @@ public class HomePresenter : MonoBehaviour
     {
         var sceneInfo = new ScoreMakerSceneInfo
         {
-            StageMaster = _model.GetStageInfo(musicId, stageId),
+            StageMaster = _model.GetStageInfo(musicId, stageId, HomePanelType.Custom),
             TargetLevel = stageId,
             IsNewCreate = isNewCreate,
         };

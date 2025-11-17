@@ -17,17 +17,6 @@ public enum HomePanelType
 
 public static class HomePanelTypeExtension
 {
-    public static int GetLevel(this HomePanelType panelType)
-    {
-        return panelType switch
-        {
-            HomePanelType.Level1 => 1,
-            HomePanelType.Level2 => 2,
-            HomePanelType.Level3 => 3,
-            _ => MasterManager.MinStageId
-        };
-    }
-
     public static bool IsSample(this HomePanelType panelType)
     {
         return panelType switch
@@ -45,10 +34,12 @@ public class GetStageKey
 {
     public string MusicId;
     public int StageId;
-    public GetStageKey(string musicId, int stageId)
+    public HomePanelType PanelType;
+    public GetStageKey(string musicId, int stageId, HomePanelType panelType)
     {
         MusicId = musicId;
         StageId = stageId;
+        PanelType = panelType;
     }
 }
 
@@ -63,12 +54,13 @@ public class HomeView : MonoBehaviour
 
     private Subject<(GetStageKey stageKey, bool isPractice)> _clickPlayStageButton = new();
     public Observable<(GetStageKey stageKey, bool isPractice)> ClickPlayStageButton => _clickPlayStageButton;
-    private Subject<GetStageKey> _clickEditStageButton = new();
-    public Observable<GetStageKey> ClickEditStageButton => _clickEditStageButton;
+    private Subject<(GetStageKey stageKey, bool isNewCreate)> _clickEditStageButton = new();
+    public Observable<(GetStageKey stageKey, bool isNewCreate)> ClickEditStageButton => _clickEditStageButton;
     private Subject<string> _clickNewCreateStageButton = new();
     public Observable<string> ClickNewCreateStageButton => _clickNewCreateStageButton;
 
     private StageStrip _selectedStrip;
+    private GetStageKey _currentStageKey;
     private HomePanelType _currentPanelType;
 
     public void Init(List<SingleStageMaster> stageList)
@@ -84,10 +76,10 @@ public class HomeView : MonoBehaviour
                     ChangePanelType(menuArgs.PanelType);
                     break;
                 case PlayStageButtonArgs playStageArgs:
-                    _clickPlayStageButton.OnNext((new GetStageKey(_selectedStrip.MusicIdId, _selectedStrip.StageId), playStageArgs.IsPracticeMode));
+                    _clickPlayStageButton.OnNext((_currentStageKey, playStageArgs.IsPracticeMode));
                     break;
                 case EditStageButtonArgs editStageArgs:
-                    _clickEditStageButton.OnNext(new GetStageKey(_selectedStrip.MusicIdId, _selectedStrip.StageId));
+                    _clickEditStageButton.OnNext((_currentStageKey, _currentPanelType.IsSample()));
                     break;
                 case DeleteStageButtonArgs deleteStageArgs:
                     DeleteStage();
@@ -127,6 +119,7 @@ public class HomeView : MonoBehaviour
             {
                 _selectedStrip?.SetSelected(false);
                 _selectedStrip = strip;
+                _currentStageKey = new GetStageKey(strip.MusicIdId, strip.StageId, strip.PanelType);
                 strip.SetSelected(true);
                 await BGMManager.instance.SetStageClip(strip.MusicIdId, isFade: true, startTime: strip.StartTime, endTime: strip.EndTime);
                 _homeViewInput.SetButtonInteractable(true);

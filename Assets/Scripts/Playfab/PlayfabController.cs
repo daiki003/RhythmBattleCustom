@@ -5,6 +5,9 @@ using PlayFab.Json;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using System;
+using System.Text;
+using PlayFab.DataModels;
+using UnityEngine.Networking;
 
 public class PlayFabController
 {
@@ -104,13 +107,13 @@ public class PlayFabController
     public static async UniTask InitializePublicData()
     {
         var clearStates = new List<ClearState>();
-        for (int i = 0; i < MasterManager.SampleStageHeaderList.Count; i++)
+        for (int i = 0; i < MasterManager.SampleStageList.Count; i++)
         {
             for (int j = 0; j < 4; j++)
             {
                 var clearState = new ClearState()
                 {
-                    MusicId = MasterManager.SampleStageHeaderList[i].MusicId,
+                    MusicId = MasterManager.SampleStageList[i].MusicId,
                     StageId = j,
                 };
                 clearStates.Add(clearState);
@@ -147,7 +150,7 @@ public class PlayFabController
         }
     }
 
-#region プレイヤーデータ取得
+    #region プレイヤーデータ取得
     // 自身の全てのデータを取得してSaveDataを更新
     public static async UniTask<PlayerDataResult> GetPlayerData()
     {
@@ -166,17 +169,9 @@ public class PlayFabController
             {
                 var clearStateList = PlayFabSimpleJson.DeserializeObject<List<ClearState>>(result.Data["ClearStates"].Value);
                 var customStageList = new List<SingleStageMaster>();
-                foreach (var item in result.Data)
-                {
-                    if (item.Key == "CustomStageList")
-                    {
-                        customStageList.AddRange(PlayFabSimpleJson.DeserializeObject<List<SingleStageMaster>>(item.Value.Value));
-                    }
-                }
                 return new PlayerDataResult
                 {
                     ClearStateList = clearStateList,
-                    CustomStageList = customStageList
                 };
             }
             else
@@ -193,26 +188,67 @@ public class PlayFabController
         }
         return null;
     }
-    public static StageMaster GetOverrideStageMaster(string stageId)
+    
+    public static async UniTask<T> LoadCustomStageListAsync<T>()
     {
-        var request = new GetUserDataRequest();
-        StageMaster stageMaster = null;
-        PlayFabClientAPI.GetUserData(request, OnSuccess, OnError);
-        return stageMaster;
-
-        void OnSuccess(GetUserDataResult result)
+        // ① ファイル一覧を取得
+        var fileInfo = await GetFileInfoAsync("CustomStageList.json");
+        if (fileInfo == null)
         {
-            string overrideKey = stageId + "Override";
-            if (result.Data.ContainsKey(overrideKey))
-            {
-                stageMaster = PlayFabSimpleJson.DeserializeObject<StageMaster>(result.Data["ClearStates"].Value);
-            }
+            return default;
         }
 
-        void OnError(PlayFabError error)
+        // ③ URL から中身をGETダウンロード
+        var json = await DownloadTextAsync(fileInfo.DownloadUrl);
+
+        // ③ JSON → オブジェクトに復元
+        return PlayFabSimpleJson.DeserializeObject<T>(json);
+    }
+
+    // -----------------------------
+    // ① GetFiles
+    // -----------------------------
+    private static async UniTask<GetFileMetadata> GetFileInfoAsync(string fileName)
+    {
+        var tcs = new UniTaskCompletionSource<GetFileMetadata>();
+
+        var request = new GetFilesRequest
         {
-            Debug.Log("GetUserData: Fail...");
-            Debug.Log(error.GenerateErrorReport());
+            Entity = new PlayFab.DataModels.EntityKey
+            {
+                Id = PlayFabSettings.staticPlayer.EntityId,
+                Type = PlayFabSettings.staticPlayer.EntityType
+            }
+        };
+
+        PlayFabDataAPI.GetFiles(request,
+            result =>
+            {
+                if (result.Metadata.TryGetValue(fileName, out var fileMeta))
+                    tcs.TrySetResult(fileMeta);
+                else
+                    tcs.TrySetResult(null);
+            },
+            error => tcs.TrySetException(new Exception(error.GenerateErrorReport()))
+        );
+
+        return await tcs.Task;
+    }
+
+    // -----------------------------
+    // ② InitiateFileDownloads
+    // -----------------------------
+    private static async UniTask<string> DownloadTextAsync(string url)
+    {
+        using (UnityWebRequest www = UnityWebRequest.Get(url))
+        {
+            www.SetRequestHeader("Connection", "keep-alive");
+            www.useHttpContinue = false;
+            await www.SendWebRequest();
+            if (www.result != UnityWebRequest.Result.Success)
+                throw new Exception("Download failed: " + www.error);
+
+            return www.downloadHandler.text;
         }
     }
 #endregion
@@ -247,29 +283,69 @@ public class PlayFabController
 
     public static async UniTask UpdateCustomStageList(List<SingleStageMaster> customStageList)
     {
-        var request = new UpdateUserDataRequest()
+        string json = PlayFabSimpleJson.SerializeObject(customStageList);
+        byte[] data = Encoding.UTF8.GetBytes(json);
+
+        var uploadInfo = await InitiateUploadAsync("CustomStageList.json");
+        await PutFileAsync(uploadInfo.UploadUrl, data);
+        await FinalizeUploadAsync(uploadInfo.FileName);
+    }
+
+    // アップロード開始
+    private static UniTask<InitiateFileUploadMetadata> InitiateUploadAsync(string fileName)
+    {
+        var tcs = new UniTaskCompletionSource<InitiateFileUploadMetadata>();
+
+        var request = new InitiateFileUploadsRequest
         {
-            Data = new Dictionary<string, string>
+            Entity = new PlayFab.DataModels.EntityKey
             {
-                // 現在のCustomStageListの状態をサーバーに保存
-                { "CustomStageList", PlayFabSimpleJson.SerializeObject(customStageList) }
-            }
+                Id = PlayFabSettings.staticPlayer.EntityId,
+                Type = PlayFabSettings.staticPlayer.EntityType
+            },
+            FileNames = new List<string> { fileName }
         };
 
-        bool isSuccess = false;
-        PlayFabClientAPI.UpdateUserData(request, OnSuccess, OnError);
-        await UniTask.WaitUntil(() => isSuccess);
+        PlayFabDataAPI.InitiateFileUploads(request,
+            result => tcs.TrySetResult(result.UploadDetails[0]),
+            error => tcs.TrySetException(new Exception(error.GenerateErrorReport()))
+        );
+        return tcs.Task;
+    }
 
-        void OnSuccess(UpdateUserDataResult result)
+    // URL へ PUT でファイル送信
+    private static async UniTask PutFileAsync(string url, byte[] data)
+    {
+        using (UnityWebRequest www = UnityWebRequest.Put(url, data))
         {
-            isSuccess = true;
-        }
+            var op = www.SendWebRequest();
+            await UniTask.WaitUntil(() => op.isDone);
 
-        void OnError(PlayFabError error)
-        {
-            Debug.Log("UpdateUserData: Fail...");
-            Debug.Log(error.GenerateErrorReport());
+            if (www.result != UnityWebRequest.Result.Success)
+                throw new Exception("File upload failed: " + www.error);
         }
+    }
+
+    // 完了通知
+    private static async UniTask FinalizeUploadAsync(string fileName)
+    {
+        var tcs = new UniTaskCompletionSource();
+
+        var request = new FinalizeFileUploadsRequest
+        {
+            Entity = new PlayFab.DataModels.EntityKey
+            {
+                Id = PlayFabSettings.staticPlayer.EntityId,
+                Type = PlayFabSettings.staticPlayer.EntityType
+            },
+            FileNames = new List<string> { fileName }
+        };
+
+        PlayFabDataAPI.FinalizeFileUploads(request,
+            result => tcs.TrySetResult(),
+            error => tcs.TrySetException(new Exception(error.GenerateErrorReport()))
+        );
+        await tcs.Task;
     }
 #endregion
 

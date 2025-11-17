@@ -82,7 +82,7 @@ public class BGMManager : MonoBehaviour
 
 	public void PreloadStageBgm()
 	{
-		foreach (string name in MasterManager.SampleStageHeaderList.Select(m => m.MusicId))
+		foreach (string name in MasterManager.SampleStageList.Select(m => m.MusicId).Distinct())
 		{
 			LoadClip(name, isSampleStage: true);
 		}
@@ -148,6 +148,8 @@ public class BGMManager : MonoBehaviour
 		SaveHomeBgmTime();
 		_currentBgmClip = audioClip;
 		SetHomeBgmTime();
+		_bgmSource.clip = _currentBgmClip;
+		_bgmSource.time = _startTime;
 		if (immediatePlay)
 		{
 			Play(isFade);
@@ -156,8 +158,6 @@ public class BGMManager : MonoBehaviour
 
 	public void Play(bool isFade = false)
 	{
-		_bgmSource.clip = _currentBgmClip;
-		_bgmSource.time = _startTime;
 		_bgmSource.Play();
 		if (isFade)
 		{

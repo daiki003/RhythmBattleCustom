@@ -5,20 +5,10 @@ using System.Threading;
 using Unity.Burst.CompilerServices;
 using UnityEngine;
 
-public class LevelInfo
-{
-    public int Level;
-    public List<NoteMaster> Notes = new();
-}
-
-public class StageInfo
-{
-    public StageHeader StageHeader;
-    public List<LevelInfo> LevelList = new();
-}
-
 public class HomeModel
 {
+    private List<SingleStageMaster> _customStageList = new();
+    private List<SingleStageMaster> _sampleStageList = new();
     private List<SingleStageMaster> _stageMasterList = new();
     public List<SingleStageMaster> StageMasterList => _stageMasterList;
 
@@ -31,21 +21,14 @@ public class HomeModel
 
     private void CreateStageList()
     {
-        _stageMasterList = MasterManager.StageMasterList;
+        _customStageList = MasterManager.CustomStageList;
+        _sampleStageList = MasterManager.SampleStageList;
+        _stageMasterList = MasterManager.CustomStageList.Concat(MasterManager.SampleStageList).ToList();
     }
 
-    private LevelInfo CreateLevelInfo(SingleStageMaster singleStageMaster)
+    public SingleStageMaster GetStageInfo(string musicId, int stageId, HomePanelType panelType)
     {
-        return new LevelInfo
-        {
-            Level = singleStageMaster.StageId,
-            Notes = new List<NoteMaster>(singleStageMaster.Notes),
-        };
-    }
-
-    public SingleStageMaster GetStageInfo(string musicId, int stageId)
-    {
-        var stageMaster = _stageMasterList.FirstOrDefault(s => s.MusicId == musicId && s.StageId == stageId);
+        var stageMaster = _stageMasterList.FirstOrDefault(s => s.MusicId == musicId && s.StageId == stageId && s.StageHeader.PanelType == (int)panelType);
         if (stageMaster == null)
         {
             stageMaster = new SingleStageMaster
@@ -54,27 +37,18 @@ public class HomeModel
                 {
                     MusicId = musicId,
                     StageName = "",
+                    PanelType = (int)panelType,
                     BPM = 100,
                     LPB = 4,
                     StripStartTime = 0f,
                     StripEndTime = 20f,
                     EndTime = 100f,
-                    BeatsNumber = 4
+                    BeatsNumber = 4,
                 },
-                StageId = GetNextStageId(musicId),
+                StageId = stageId,
                 Notes = new List<NoteMaster>(),
             };
         }
         return stageMaster;
-    }
-
-    private int GetNextStageId(string musicId)
-    {
-        var stageList = _stageMasterList.Where(s => s.MusicId == musicId);
-        if (stageList.Count() == 0)
-        {
-            return _minStageId;
-        }
-        return stageList.Max(s => s.StageId) + 1;
     }
 }
