@@ -43,6 +43,10 @@ public class ControlPanelRequestCopy : ControlPanelRequestBase
 {
     public ControlPanelRequestCopy() { }
 }
+public class ControlPanelRequestDeleteRange : ControlPanelRequestBase
+{
+    public ControlPanelRequestDeleteRange() {}
+}
 
 
 // 編集ページ
@@ -57,10 +61,6 @@ public class ControlPanelRequestSelectCancel : ControlPanelRequestBase
 public class ControlPanelRequestInversion : ControlPanelRequestBase
 {
     public ControlPanelRequestInversion() {}
-}
-public class ControlPanelRequestDeleteRange : ControlPanelRequestBase
-{
-    public ControlPanelRequestDeleteRange() {}
 }
 public class ControlPanelRequestStageDuplicate : ControlPanelRequestBase
 {

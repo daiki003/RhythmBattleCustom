@@ -109,6 +109,27 @@ public class ScoreMakerView : MonoBehaviour
         Long
     }
     private OperationType _currentOperationType;
+    // 実質的な操作モードを取得
+    private OperationType GetPracticallyOperationType()
+    {
+        // ハイブリッド以外はそのまま返す
+        if (_currentOperationType != OperationType.Hybrid)
+        {
+            return _currentOperationType;
+        }
+        // 選択中の線があればライン選択モードとして扱う
+        if (_selectedLineList.Count > 0)
+        {
+            return OperationType.SelectLine;
+        }
+        // 選択中のポケットがあればボール選択モードとして扱う
+        if (_selectedBallPocket != null)
+        {
+            return OperationType.Ball;
+        }
+        return OperationType.Hybrid;
+    }
+
     private float _singleBeatTime => 60f / (CurrentBpm * 4);
     private bool _isStartMake;
 
@@ -141,29 +162,15 @@ public class ScoreMakerView : MonoBehaviour
         // 基本操作系
         GameManager.instance.ClickHandler.OnClickScoreMakerNarrowPocket.Subscribe(x =>
         {
-            ClickLinePocket(x.number, x.isLeft);
+            OnClickLine(ClickLineType.NorrowPocket, x.number, x.isLeft);
         }).AddTo(this);
         GameManager.instance.ClickHandler.OnClickScoreLinePocket.Subscribe(x =>
         {
-            if (_currentOperationType == OperationType.SelectLine)
-            {
-                // 選択モードでは線をクリックした判定
-                ClickLine(x.number);
-            }
-            else
-            {
-                // それ以外ではポケットをクリックした判定
-                ClickLinePocket(x.number, x.isLeft);
-            }
+            OnClickLine(ClickLineType.Pocket, x.number, x.isLeft);
         }).AddTo(this);
         GameManager.instance.ClickHandler.OnClickScoreLine.Subscribe(number =>
         {
-            // ライン選択時はSelectLineとPasteだけ
-            if (!(_currentOperationType is OperationType.SelectLine or OperationType.Paste))
-            {
-                return;
-            }
-            ClickLine(number);
+            OnClickLine(ClickLineType.Line, number);
         }).AddTo(this);
         GameManager.instance.ClickHandler.OnClickScoreLineNumber.Subscribe(number =>
         {
@@ -288,6 +295,65 @@ public class ScoreMakerView : MonoBehaviour
         }).AddTo(this);
     }
 
+    private void OnClickLine(ClickLineType clickType, int lineNumber, bool isLeft = false)
+    {
+        var operationType = GetPracticallyOperationType();
+        switch (operationType)
+        {
+            case OperationType.SelectLine:
+            case OperationType.Paste:
+                // SelectLineとPasteはラインクリック固定
+                ClickLine(lineNumber);
+                break;
+            case OperationType.Ball:
+                if (clickType != ClickLineType.Line)
+                {
+                    // BallはLineクリック以外のみポケットとして拾う
+                    ClickLinePocket(lineNumber, isLeft);
+                }
+                break;
+            case OperationType.Hybrid:
+                if (clickType == ClickLineType.NorrowPocket)
+                {
+                    // HybridはNorrowPocketのみポケットクリックとして扱う
+                    ClickLinePocket(lineNumber, isLeft);
+                }
+                else
+                {
+                    // それ以外はラインクリックとして扱う
+                    ClickLine(lineNumber);
+                }
+                break;
+            default:
+                return;
+        }
+    }
+
+    private void ClickLinePocket(int lineNumber, bool isLeft)
+    {
+        SEManager.instance.PlaySe(SeName.Button2);
+        var ball = _scoreLineList[lineNumber].GetBall(isLeft);
+        if (ball != null)
+        {
+            // ボールがあるところならボール選択
+            ClickBall(lineNumber, isLeft);
+        }
+        else if (_selectedBallPocket != null)
+        {
+            // ボール選択中なら、そのボールをここに移動する
+            UpdatePastScoreLineList();
+            _selectedBallPocket.Clicked(ScoreMakerBallType.None);
+            CreateBall(lineNumber, isLeft, ScoreMakerBallType.Single);
+            _selectedBallPocket.SelectBall(false);
+            _selectedBallPocket = null;
+        }
+        else
+        {
+            // ボール作成
+            CreateBall(lineNumber, isLeft, ScoreMakerBallType.Single);
+        }
+    }
+    
     private void ClickBall(int lineNumber, bool isLeft)
     {
         var targetLine = _scoreLineList[lineNumber];
@@ -341,68 +407,17 @@ public class ScoreMakerView : MonoBehaviour
             _selectedBallPocket.SelectBall(true);
         }
     }
-    
-    private void ClickLinePocket(int lineNumber, bool isLeft)
-    {
-        if (_currentOperationType != OperationType.SelectLine)
-        {
-            UpdatePastScoreLineList();
-        }
-        SEManager.instance.PlaySe(SeName.Button2);
-        switch (_currentOperationType)
-        {
-            case OperationType.Single:
-            case OperationType.Long:
-                var ballType = _currentOperationType switch
-                {
-                    OperationType.Single => ScoreMakerBallType.Single,
-                    OperationType.Long => ScoreMakerBallType.Long,
-                    _ => ScoreMakerBallType.Single
-                };
-                CreateBall(lineNumber, isLeft, ballType);
-                break;
-            case OperationType.Rotation:
-                RotationBall(lineNumber, isLeft);
-                break;
-            case OperationType.SelectLine:
-                var ball = _scoreLineList[lineNumber].GetBall(isLeft);
-                if (ball != null)
-                {
-                    // ボールがあるところならボール選択
-                    ClickBall(lineNumber, isLeft);
-                }
-                else if (_selectedBallPocket != null)
-                {
-                    // ボール選択中なら、そのボールをここに移動する
-                    UpdatePastScoreLineList();
-                    _selectedBallPocket.Clicked(ScoreMakerBallType.None);
-                    CreateBall(lineNumber, isLeft, ScoreMakerBallType.Single);
-                    _selectedBallPocket.SelectBall(false);
-                    _selectedBallPocket = null;
-                }
-                else
-                {
-                    // ボール作成
-                    CreateBall(lineNumber, isLeft, ScoreMakerBallType.Single);
-                }
-                break;
-            case OperationType.Paste:
-                PasteLine(lineNumber);
-                break;
-        }
-    }
 
     private void ClickLine(int lineNumber)
     {
         SEManager.instance.PlaySe(SeName.Button2);
-        switch (_currentOperationType)
+        if (_currentOperationType == OperationType.Paste)
         {
-            case OperationType.SelectLine:
-                SelectLine(lineNumber);
-                break;
-            case OperationType.Paste:
-                PasteLine(lineNumber);
-                break;
+            PasteLine(lineNumber);
+        }
+        else
+        {
+            SelectLine(lineNumber);
         }
     }
 
@@ -767,14 +782,6 @@ public class ScoreMakerView : MonoBehaviour
         }
         _isEdited = true;
         var createdBall = _scoreLineList[lineNumber].CreateBall(ballType, isLeft);
-        ConnectLongBall(lineNumber, isLeft, createdBall);
-        SetGoLastButton();
-    }
-
-    private void RotationBall(int lineNumber, bool isLeft)
-    {
-        _isEdited = true;
-        var createdBall = _scoreLineList[lineNumber].RotationBall(isLeft);
         ConnectLongBall(lineNumber, isLeft, createdBall);
         SetGoLastButton();
     }

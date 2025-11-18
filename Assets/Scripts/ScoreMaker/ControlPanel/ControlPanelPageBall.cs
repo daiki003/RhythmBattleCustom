@@ -6,17 +6,22 @@ using UnityEngine.UI;
 
 public enum OperationType
 {
-    Single,
-    Long,
-    Rotation,
+    Ball,
     SelectLine,
+    Hybrid,
     Paste,
+}
+
+public enum ClickLineType
+{
+    NorrowPocket,
+    Pocket,
+    Line
 }
 
 public class ControlPanelPageBall : ControlPanelPageBase
 {
     [SerializeField] private CustomButton _selectSingleBallButton; // シングルボール選択ボタン
-    [SerializeField] private CustomButton _selectLongBallButton; // ロングボール選択ボタン
     [SerializeField] private CustomButton _selectLineButton; // ライン選択ボタン
     [SerializeField] private CustomButton _pasteButton; // ペーストボタン
 
@@ -24,11 +29,7 @@ public class ControlPanelPageBall : ControlPanelPageBase
     {
         _selectSingleBallButton.OnClickAsObservable().Subscribe(_ =>
         {
-            SetSelectBallType(OperationType.Single);
-        }).AddTo(this);
-        _selectLongBallButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            SetSelectBallType(OperationType.Long);
+            SetSelectBallType(OperationType.Ball);
         }).AddTo(this);
         _selectLineButton?.OnClickAsObservable().Subscribe(_ =>
         {
@@ -43,13 +44,8 @@ public class ControlPanelPageBall : ControlPanelPageBase
     public void SetSelectBallType(OperationType ballType)
     {
         _onRequest.OnNext(new ControlPanelRequestSelectBall(ballType));
-        _selectSingleBallButton.SetHighLight(ballType == OperationType.Single);
-        _selectLongBallButton.SetHighLight(ballType == OperationType.Long);
+        _selectSingleBallButton.SetHighLight(ballType == OperationType.Ball);
         _selectLineButton?.SetHighLight(ballType == OperationType.SelectLine);
         _pasteButton.SetHighLight(ballType == OperationType.Paste);
-
-        // bool isEditMode = ballType == OperationType.SelectLine || ballType == OperationType.Paste;
-        // _selectLongBallButton.gameObject.SetActive(!isEditMode);
-        // _pasteButton.gameObject.SetActive(isEditMode);
     }
 }
