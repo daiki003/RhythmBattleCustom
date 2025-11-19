@@ -47,7 +47,6 @@ public class ScoreMakerView : MonoBehaviour
     [SerializeField] private ControlPanelPageBall _pageBall;
     [SerializeField] private ControlPanelPageMask _maskControl;
 
-    // コピペ関連
     [SerializeField] private GameObject _selectMask;
     private List<ScoreLine> _selectedLineList = new();
     private LinePocket _selectedBallPocket;
@@ -67,6 +66,8 @@ public class ScoreMakerView : MonoBehaviour
         public ScoreMakerBallType LeftBallType;
         public ScoreMakerBallType RightBallType;
     }
+
+    // コピペ関連
     private List<LineState> _copiedLineState = new();
 
     private List<ScoreLine> _scoreLineList = new();
@@ -147,7 +148,7 @@ public class ScoreMakerView : MonoBehaviour
         };
         BGMManager.instance.SetTime(CurrentStartTime);
 
-        _currentOperationType = OperationType.SelectLine;
+        _currentOperationType = OperationType.Hybrid;
         StartSubscribeMain();
         StartSubscribeControllPanel();
         _startTimeInput.text = CurrentStartTime.ToString();
@@ -297,11 +298,17 @@ public class ScoreMakerView : MonoBehaviour
 
     private void OnClickLine(ClickLineType clickType, int lineNumber, bool isLeft = false)
     {
+        // ペーストモードならペーストして終了
+        if (_maskControl.IsPasteMode)
+        {
+            SEManager.instance.PlaySe(SeName.Button2);
+            PasteLine(lineNumber);
+            return;
+        }
         var operationType = GetPracticallyOperationType();
         switch (operationType)
         {
             case OperationType.SelectLine:
-            case OperationType.Paste:
                 // SelectLineとPasteはラインクリック固定
                 ClickLine(lineNumber);
                 break;
@@ -411,14 +418,7 @@ public class ScoreMakerView : MonoBehaviour
     private void ClickLine(int lineNumber)
     {
         SEManager.instance.PlaySe(SeName.Button2);
-        if (_currentOperationType == OperationType.Paste)
-        {
-            PasteLine(lineNumber);
-        }
-        else
-        {
-            SelectLine(lineNumber);
-        }
+        SelectLine(lineNumber);
     }
 
 #region ダイアログ系
@@ -548,6 +548,7 @@ public class ScoreMakerView : MonoBehaviour
             case ControlPanelRequestCloseMask _:
                 _selectedLineList.Clear();
                 _selectMask.SetActive(false);
+                _maskControl.FinishPaste();
                 break;
             case ControlPanelRequestInversion _:
                 InversionSelectedLine();
@@ -1045,6 +1046,7 @@ public class ScoreMakerView : MonoBehaviour
         UpdatePastScoreLineList();
         CreateBallFromLineState(_copiedLineState, startLineNumber);
         _controlPanel.FinishPaste();
+        _maskControl.FinishPaste();
     }
 
     private void UpdatePastScoreLineList()

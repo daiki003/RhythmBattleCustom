@@ -21,13 +21,18 @@ public enum ClickLineType
 
 public class ControlPanelPageBall : ControlPanelPageBase
 {
-    [SerializeField] private CustomButton _selectSingleBallButton; // シングルボール選択ボタン
+    [SerializeField] private CustomButton _hybridButton; // ハイブリッドボタン
+    [SerializeField] private CustomButton _selectBallButton; // シングルボール選択ボタン
     [SerializeField] private CustomButton _selectLineButton; // ライン選択ボタン
     [SerializeField] private CustomButton _pasteButton; // ペーストボタン
 
     public override void Init()
     {
-        _selectSingleBallButton.OnClickAsObservable().Subscribe(_ =>
+        _hybridButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            SetSelectBallType(OperationType.Hybrid);
+        }).AddTo(this);
+        _selectBallButton.OnClickAsObservable().Subscribe(_ =>
         {
             SetSelectBallType(OperationType.Ball);
         }).AddTo(this);
@@ -44,7 +49,8 @@ public class ControlPanelPageBall : ControlPanelPageBase
     public void SetSelectBallType(OperationType ballType)
     {
         _onRequest.OnNext(new ControlPanelRequestSelectBall(ballType));
-        _selectSingleBallButton.SetHighLight(ballType == OperationType.Ball);
+        _hybridButton.SetHighLight(ballType == OperationType.Hybrid);
+        _selectBallButton.SetHighLight(ballType == OperationType.Ball);
         _selectLineButton?.SetHighLight(ballType == OperationType.SelectLine);
         _pasteButton.SetHighLight(ballType == OperationType.Paste);
     }

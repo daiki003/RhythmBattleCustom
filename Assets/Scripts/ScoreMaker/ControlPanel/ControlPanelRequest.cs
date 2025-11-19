@@ -43,6 +43,11 @@ public class ControlPanelRequestCopy : ControlPanelRequestBase
 {
     public ControlPanelRequestCopy() { }
 }
+public class ControlPanelRequestStartPaste : ControlPanelRequestBase
+{
+    public bool IsStart { get; private set; }
+    public ControlPanelRequestStartPaste(bool isStart) { IsStart = isStart; }
+}
 public class ControlPanelRequestDeleteRange : ControlPanelRequestBase
 {
     public ControlPanelRequestDeleteRange() {}
@@ -50,10 +55,6 @@ public class ControlPanelRequestDeleteRange : ControlPanelRequestBase
 
 
 // 編集ページ
-public class ControlPanelRequestStartPaste : ControlPanelRequestBase
-{
-    public ControlPanelRequestStartPaste() {}
-}
 public class ControlPanelRequestSelectCancel : ControlPanelRequestBase
 {
     public ControlPanelRequestSelectCancel() {}

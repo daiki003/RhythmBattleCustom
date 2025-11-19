@@ -23,10 +23,6 @@ public class ControlPanelPageEdit : ControlPanelPageBase
         {
             _onRequest.OnNext(new ControlPanelRequestCopy());
         }).AddTo(this);
-        _pasteButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            _onRequest.OnNext(new ControlPanelRequestStartPaste());
-        }).AddTo(this);
         _selectCancelButton.OnClickAsObservable().Subscribe(_ =>
         {
             _onRequest.OnNext(new ControlPanelRequestSelectCancel());
