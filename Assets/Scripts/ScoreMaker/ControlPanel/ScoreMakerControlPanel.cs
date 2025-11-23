@@ -7,40 +7,65 @@ using UnityEngine.UI;
 
 public class ScoreMakerControlPanel : MonoBehaviour
 {
-    [SerializeField] private List<ControlPanelPageBase> _pageList;
+    [SerializeField] private List<ControlPanelPageBase> _menuPageList;
+    [SerializeField] private ControlPanelPageMask _maskParts;
+    [SerializeField] private ControlPanelPageBall _ballParts;
+    [SerializeField] private Button _undoButton;
 
-    // 全体
+    // 下部メニュー
+    [SerializeField] private TabGroup _tabGroup;
     [SerializeField] private Button _nextPageButton; // 次ページボタン
     [SerializeField] private Button _backPageButton; // 前ページボタン
     [SerializeField] private GameObject _messageMask;
     [SerializeField] private Text _messageText;
-    [SerializeField] private Button _pasteCancelButton; // ペーストキャンセルボタン
 
     private int _currentPageIndex;
     public bool IsWaitingPaste { get; private set; }
+    public bool IsPasteMode => _maskParts.IsPasteMode;
 
     private Subject<ControlPanelRequestBase> _onRequest = new();
     public Observable<ControlPanelRequestBase> OnRequest => _onRequest;
 
-    public void Init(MusicParameter musicParameter, AudioClip audioClip)
+    public void Init(MusicParameter musicParameter)
     {
         SetPage(0);
         _messageMask.SetActive(false);
 
-        foreach (var page in _pageList)
+        _ballParts.Init();
+        _ballParts.OnRequest.Subscribe(request =>
         {
+            _onRequest.OnNext(request);
+        }).AddTo(this);
+        _ballParts.SetSelectBallType(OperationType.Hybrid);
+
+        _maskParts.Init();
+        _maskParts.OnRequest.Subscribe(request =>
+        {
+            _onRequest.OnNext(request);
+        }).AddTo(this);
+
+        _undoButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            _onRequest.OnNext(new ControlPanelRequestUndo());
+        }).AddTo(this);
+
+        _tabGroup.Init();
+        _tabGroup.OnTabSelected.Subscribe(index =>
+        {
+            SetPage(index);
+        }).AddTo(this);
+        for (int i = 0; i < _menuPageList.Count; i++)
+        {
+            var page = _menuPageList[i];
+            _tabGroup.SetTabText(i, page.PageName);
             page.Init();
             page.SetMusicParameter(musicParameter);
             page.OnRequest.Subscribe(request =>
             {
                 switch (request)
                 {
-                    case ControlPanelRequestStartPaste _:
-                        SetMessageMask("貼り付け先の最初の列を選択してください", isDisplayCancelButton: true);
-                        IsWaitingPaste = true;
-                        break;
                     case ControlPanelRequestStartEstimate _:
-                        SetMessageMask("計測中...", isDisplayCancelButton: false);
+                        SetMessageMask("計測中...");
                         break;
                     case ControlPanelRequestFinishEstimate _:
                         _messageMask.SetActive(false);
@@ -49,11 +74,6 @@ public class ScoreMakerControlPanel : MonoBehaviour
                 _onRequest.OnNext(request);
             }).AddTo(this);
         }
-
-        _pasteCancelButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            FinishPaste();
-        }).AddTo(this);
 
         _nextPageButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -65,48 +85,50 @@ public class ScoreMakerControlPanel : MonoBehaviour
         }).AddTo(this);
     }
 
-    private void SetMessageMask(string message, bool isDisplayCancelButton)
+    private void SetMessageMask(string message)
     {
         _messageMask.SetActive(true);
         _messageText.text = message;
-        _pasteCancelButton.gameObject.SetActive(isDisplayCancelButton);
     }
 
     private void ChangePage(bool isNext)
     {
         int nextPageIndex = _currentPageIndex + (isNext ? 1 : -1);
-        _currentPageIndex = Mathf.Clamp(nextPageIndex, 0, _pageList.Count - 1);
+        _currentPageIndex = Mathf.Clamp(nextPageIndex, 0, _menuPageList.Count - 1);
         SetPage(_currentPageIndex);
     }
 
     private void SetPage(int pageIndex)
     {
-        _onRequest.OnNext(new ControlPanelRequestSelectCancel());
-        for (int i = 0; i < _pageList.Count; i++)
+        for (int i = 0; i < _menuPageList.Count; i++)
         {
-            _pageList[i].gameObject.SetActive(i == pageIndex);
+            _menuPageList[i].gameObject.SetActive(i == pageIndex);
         }
         _backPageButton.gameObject.SetActive(pageIndex > 0);
-        _nextPageButton.gameObject.SetActive(pageIndex < _pageList.Count - 1);
+        _nextPageButton.gameObject.SetActive(pageIndex < _menuPageList.Count - 1);
     }
 
     public void FinishPaste()
     {
+        _maskParts.FinishPaste();
         _messageMask.gameObject.SetActive(false);
         IsWaitingPaste = false;
     }
 
     public void SetButtonState(bool isSelectedLine, bool isCopiedLine, bool isExsistPastLine)
     {
-        foreach (var page in _pageList)
+        foreach (var page in _menuPageList)
         {
-            page.SetButtonState(isSelectedLine, isCopiedLine, isExsistPastLine);
+            page.SetButtonState(isSelectedLine, isCopiedLine);
         }
+        _maskParts.SetButtonState(isSelectedLine, isCopiedLine);
+        _ballParts.SetButtonState(isSelectedLine, isCopiedLine);
+        _undoButton.interactable = isExsistPastLine;
     }
 
     public void SetMusicParameter(MusicParameter musicParameter)
     {
-        foreach (var page in _pageList)
+        foreach (var page in _menuPageList)
         {
             page.SetMusicParameter(musicParameter);
         }

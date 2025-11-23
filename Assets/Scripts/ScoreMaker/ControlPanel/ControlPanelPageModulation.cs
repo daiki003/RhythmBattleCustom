@@ -13,6 +13,8 @@ public class ControlPanelPageModulation : ControlPanelPageBase
     [SerializeField] private Button _modulationButton;
     [SerializeField] private Button _modulationResetButton;
 
+    public override string PageName => "拍子";
+
     private ReactiveProperty<int> _beatsNumber = new(0);
 
     public override void Init()

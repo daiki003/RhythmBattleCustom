@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using R3;
+using Unity.VisualScripting;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -24,9 +26,13 @@ public class CustomButton : Button
     [SerializeField] public Text _text;
     [SerializeField] public GameObject _highLight;
     [SerializeField] public ButtonSeType _seType;
+    [SerializeField] public List<Image> _imageList;
+
+    private bool _prevInteractable;
 
     protected override void Awake()
     {
+        _prevInteractable = interactable;
         this.OnClickAsObservable().Subscribe(_ =>
         {
             switch (_seType)
@@ -67,6 +73,23 @@ public class CustomButton : Button
     {
         _seType = seType;
     }
+
+    private void UpdateImageAlpha()
+    {
+        foreach (var targetImage in _imageList)
+        {
+            targetImage.color = interactable ? colors.normalColor : colors.disabledColor;
+        }
+    }
+
+    private void Update()
+    {
+        if (_imageList != null && _prevInteractable != interactable)
+        {
+            _prevInteractable = interactable;
+            UpdateImageAlpha();
+        }
+    }
 }
 
 #if UNITY_EDITOR
@@ -82,6 +105,7 @@ public class CustomButtonEditor : UnityEditor.UI.ButtonEditor
         PropertyField(nameof(component._text), "Text");
         PropertyField(nameof(component._highLight), "HighLight");
         PropertyField(nameof(component._seType), "SeType");
+        PropertyField(nameof(component._imageList), "ImageList");
 
         serializedObject.ApplyModifiedProperties();
     }

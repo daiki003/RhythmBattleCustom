@@ -16,6 +16,8 @@ public class ControlPanelPageBpm : ControlPanelPageBase
     private ReactiveProperty<float> _startTime = new(0f);
     private ReactiveProperty<float> _endTime = new(0f);
 
+    public override string PageName => "テンポ";
+
     public override void Init()
     {
         _bpm.Subscribe(value =>

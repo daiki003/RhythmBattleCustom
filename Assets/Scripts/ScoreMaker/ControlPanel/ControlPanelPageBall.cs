@@ -6,10 +6,10 @@ using UnityEngine.UI;
 
 public enum OperationType
 {
-    Ball,
-    SelectLine,
-    Hybrid,
-    Paste,
+    Hybrid = 0,
+    Ball = 1,
+    SelectLine = 2,
+    MAX = 3,
 }
 
 public enum ClickLineType
@@ -21,37 +21,32 @@ public enum ClickLineType
 
 public class ControlPanelPageBall : ControlPanelPageBase
 {
-    [SerializeField] private CustomButton _hybridButton; // ハイブリッドボタン
-    [SerializeField] private CustomButton _selectBallButton; // シングルボール選択ボタン
-    [SerializeField] private CustomButton _selectLineButton; // ライン選択ボタン
-    [SerializeField] private CustomButton _pasteButton; // ペーストボタン
+    [SerializeField] private GameObject _hybridImage; // ハイブリッド画像
+    [SerializeField] private GameObject _selectBallImage; // シングルボール選択画像
+    [SerializeField] private GameObject _selectLineImage; // ライン選択画像
+    [SerializeField] private CustomButton _changeButton; // 切替ボタン
+
+    private OperationType _currentOperationType;
 
     public override void Init()
     {
-        _hybridButton.OnClickAsObservable().Subscribe(_ =>
+        _changeButton.OnClickAsObservable().Subscribe(_ =>
         {
-            SetSelectBallType(OperationType.Hybrid);
-        }).AddTo(this);
-        _selectBallButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            SetSelectBallType(OperationType.Ball);
-        }).AddTo(this);
-        _selectLineButton?.OnClickAsObservable().Subscribe(_ =>
-        {
-            SetSelectBallType(OperationType.SelectLine);
-        }).AddTo(this);
-        _pasteButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            SetSelectBallType(OperationType.Paste);
+            _currentOperationType++;
+            if (_currentOperationType >= OperationType.MAX)
+            {
+                _currentOperationType = 0;
+            }
+            SetSelectBallType(_currentOperationType);
         }).AddTo(this);
     }
 
     public void SetSelectBallType(OperationType ballType)
     {
+        _currentOperationType = ballType;
         _onRequest.OnNext(new ControlPanelRequestSelectBall(ballType));
-        _hybridButton.SetHighLight(ballType == OperationType.Hybrid);
-        _selectBallButton.SetHighLight(ballType == OperationType.Ball);
-        _selectLineButton?.SetHighLight(ballType == OperationType.SelectLine);
-        _pasteButton.SetHighLight(ballType == OperationType.Paste);
+        _hybridImage.SetActive(ballType == OperationType.Hybrid);
+        _selectBallImage.SetActive(ballType == OperationType.Ball);
+        _selectLineImage?.SetActive(ballType == OperationType.SelectLine);
     }
 }

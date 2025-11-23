@@ -55,4 +55,10 @@ public class ControlPanelPageMask : ControlPanelPageBase
         IsPasteMode = false;
         _pasteButton.SetHighLight(false);
     }
+
+    public override void SetButtonState(bool isSelectedLine, bool isCopiedLine)
+    {
+        _copyButton.interactable = isSelectedLine;
+        _pasteButton.interactable = isCopiedLine;
+    }
 }

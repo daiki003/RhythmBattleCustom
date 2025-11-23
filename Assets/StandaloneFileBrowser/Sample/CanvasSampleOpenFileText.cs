@@ -38,16 +38,10 @@ public class CanvasSampleOpenFileText : MonoBehaviour, IPointerDownHandler {
     }
 
     private void OnClick() {
-        var paths = StandaloneFileBrowser.OpenFilePanel("Title", "", "txt", false);
-        if (paths.Length > 0) {
-            StartCoroutine(OutputRoutine(new System.Uri(paths[0]).AbsoluteUri));
-        }
+        // var paths = StandaloneFileBrowser.OpenFilePanel("Title", "", "txt", false);
+        // if (paths.Length > 0) {
+        //     StartCoroutine(OutputRoutine(new System.Uri(paths[0]).AbsoluteUri));
+        // }
     }
 #endif
-
-    private IEnumerator OutputRoutine(string url) {
-        var loader = new WWW(url);
-        yield return loader;
-        output.text = loader.text;
-    }
 }

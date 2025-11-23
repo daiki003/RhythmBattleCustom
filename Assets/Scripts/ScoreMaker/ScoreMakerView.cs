@@ -24,7 +24,6 @@ public class ScoreMakerView : MonoBehaviour
     [SerializeField] private ScrollRect _scoreScrollRect;
     [SerializeField] private Button _saveButton;
     [SerializeField] private Button _helpButton;
-    [SerializeField] private Button _undoButton;
     [SerializeField] private Button _backButton;
 
     [SerializeField] private InputField _startTimeInput;
@@ -37,9 +36,7 @@ public class ScoreMakerView : MonoBehaviour
     [SerializeField] private MoveButton _moveButtonPrefab;
     [SerializeField] private Transform _moveButtonArea;
     [SerializeField] private Button _playBgmButton; // BGM再生ボタン
-    [SerializeField] private Button _startPlayMakeButton; // 演奏作成ボタン
     [SerializeField] private ValueAdjuster _pitchAdjuster; // ピッチ変更
-    [SerializeField] private Button _practiceButton; // 練習ボタン
     private float _basePitch;
 
     // コントロールパネル
@@ -234,10 +231,6 @@ public class ScoreMakerView : MonoBehaviour
         {
             DialogManager.instance.OpenHelpDialog(HelpDialogPageType.ScoreMaker);
         }).AddTo(this);
-        _undoButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            Undo();
-        }).AddTo(this);
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {
             _isPause = false;
@@ -262,15 +255,6 @@ public class ScoreMakerView : MonoBehaviour
                 return;
             }
             GameManager.instance.OpenScene(SceneType.Home, new HomeSceneInfo()).Forget();
-        }).AddTo(this);
-        // 演奏作成
-        _startPlayMakeButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            RunControlPanelRequest(new ControlPanelRequestPlayMake());
-        }).AddTo(this);
-        _practiceButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            RunControlPanelRequest(new ControlPanelRequestPractice());
         }).AddTo(this);
         _finishPlayMakeModeButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -299,7 +283,7 @@ public class ScoreMakerView : MonoBehaviour
     private void OnClickLine(ClickLineType clickType, int lineNumber, bool isLeft = false)
     {
         // ペーストモードならペーストして終了
-        if (_maskControl.IsPasteMode)
+        if (_controlPanel.IsPasteMode)
         {
             SEManager.instance.PlaySe(SeName.Button2);
             PasteLine(lineNumber);
@@ -347,8 +331,8 @@ public class ScoreMakerView : MonoBehaviour
         }
         else if (_selectedBallPocket != null)
         {
-            // ボール選択中なら、そのボールをここに移動する
             UpdatePastScoreLineList();
+            // ボール選択中なら、そのボールをここに移動する
             _selectedBallPocket.Clicked(ScoreMakerBallType.None);
             CreateBall(lineNumber, isLeft, ScoreMakerBallType.Single);
             _selectedBallPocket.SelectBall(false);
@@ -356,6 +340,7 @@ public class ScoreMakerView : MonoBehaviour
         }
         else
         {
+            UpdatePastScoreLineList();
             // ボール作成
             CreateBall(lineNumber, isLeft, ScoreMakerBallType.Single);
         }
@@ -511,20 +496,7 @@ public class ScoreMakerView : MonoBehaviour
         }).AddTo(this);
 
         _selectMask.SetActive(false);
-        _controlPanel.Init(CurrentMusicParameter, BGMManager.instance.CurrentClip);
-
-        _pageBall.Init();
-        _pageBall.OnRequest.Subscribe(request =>
-        {
-            RunControlPanelRequest(request);
-        }).AddTo(this);
-        _pageBall.SetSelectBallType(_currentOperationType);
-
-        _maskControl.Init();
-        _maskControl.OnRequest.Subscribe(request =>
-        {
-            RunControlPanelRequest(request);
-        }).AddTo(this);
+        _controlPanel.Init(CurrentMusicParameter);
     }
 
     private void RunControlPanelRequest(ControlPanelRequestBase request)
@@ -534,21 +506,13 @@ public class ScoreMakerView : MonoBehaviour
             case ControlPanelRequestSelectBall selectBallRequest:
                 _currentOperationType = selectBallRequest.OperationType;
                 break;
-            case ControlPanelRequestPractice _:
-                _isStartMake = false;
-                _clickPracticeButton.OnNext(_bgmScrollBar.value);
-                break;
             case ControlPanelRequestCopy _:
                 CopyLine();
-                break;
-            case ControlPanelRequestSelectCancel _:
-                _selectedLineList.Clear();
-                _selectMask.SetActive(false);
                 break;
             case ControlPanelRequestCloseMask _:
                 _selectedLineList.Clear();
                 _selectMask.SetActive(false);
-                _maskControl.FinishPaste();
+                _controlPanel.FinishPaste();
                 break;
             case ControlPanelRequestInversion _:
                 InversionSelectedLine();
@@ -565,6 +529,7 @@ public class ScoreMakerView : MonoBehaviour
             case ControlPanelRequestStageDuplicate _:
                 _clickDuplicateButton.OnNext(_bgmScrollBar.value);
                 break;
+            // オプションページ
             case ControlPanelRequestEvenlySpaced _:
                 bool isLeft = false;
                 for (int i = 0; i < _scoreLineList.Count; i++)
@@ -580,15 +545,19 @@ public class ScoreMakerView : MonoBehaviour
                     isLeft = !isLeft;
                 }
                 break;
-            case ControlPanelRequestAutoCreate _:
-                AutoCreate();
-                break;
             case ControlPanelRequestPlayMake _:
                 _startPlayMakeLineNumber = GetCurrentLineNumber();
                 _startPlayMakeLineList = GetCurrentLineList();
                 _controlUiRoot.SetActive(false);
                 _playMakeModeUiRoot.SetActive(true);
                 _isPlayMakeMode = true;
+                break;
+            case ControlPanelRequestPractice _:
+                _isStartMake = false;
+                _clickPracticeButton.OnNext(_bgmScrollBar.value);
+                break;
+            case ControlPanelRequestSave _:
+                _clickSaveButton.OnNext(default);
                 break;
             case ControlPanelRequestAllClear _:
                 for (int i = 0; i < _scoreLineList.Count; i++)
@@ -625,6 +594,9 @@ public class ScoreMakerView : MonoBehaviour
             case ControlPanelRequestResetModulation _:
                 CurrentMusicParameter.ModulationList = new List<int>();
                 SetFirstBeatNumberText();
+                break;
+            case ControlPanelRequestUndo _:
+                Undo();
                 break;
         }
     }
@@ -1046,7 +1018,6 @@ public class ScoreMakerView : MonoBehaviour
         UpdatePastScoreLineList();
         CreateBallFromLineState(_copiedLineState, startLineNumber);
         _controlPanel.FinishPaste();
-        _maskControl.FinishPaste();
     }
 
     private void UpdatePastScoreLineList()
@@ -1198,6 +1169,5 @@ public class ScoreMakerView : MonoBehaviour
         bool isCopiedLine = _copiedLineState.Count > 0;
         bool isExsistPastLine = _pastScoreLineList.Count > 0;
         _controlPanel.SetButtonState(isSelectedLine, isCopiedLine, isExsistPastLine);
-        _undoButton.interactable = isExsistPastLine;
     }
 }

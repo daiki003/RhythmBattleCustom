@@ -17,14 +17,6 @@ public class ControlPanelRequestSelectBall : ControlPanelRequestBase
         OperationType = operationType;
     }
 }
-public class ControlPanelRequestBallRotation : ControlPanelRequestBase
-{
-    public ControlPanelRequestBallRotation() {}
-}
-public class ControlPanelRequestPractice : ControlPanelRequestBase
-{
-    public ControlPanelRequestPractice() {}
-}
 
 // マスク操作ページ
 public class ControlPanelRequestUp : ControlPanelRequestBase
@@ -55,10 +47,6 @@ public class ControlPanelRequestDeleteRange : ControlPanelRequestBase
 
 
 // 編集ページ
-public class ControlPanelRequestSelectCancel : ControlPanelRequestBase
-{
-    public ControlPanelRequestSelectCancel() {}
-}
 public class ControlPanelRequestInversion : ControlPanelRequestBase
 {
     public ControlPanelRequestInversion() {}
@@ -73,13 +61,17 @@ public class ControlPanelRequestEvenlySpaced : ControlPanelRequestBase
 {
     public ControlPanelRequestEvenlySpaced() {}
 }
-public class ControlPanelRequestAutoCreate : ControlPanelRequestBase
-{
-    public ControlPanelRequestAutoCreate() {}
-}
 public class ControlPanelRequestPlayMake : ControlPanelRequestBase
 {
-    public ControlPanelRequestPlayMake() {}
+    public ControlPanelRequestPlayMake() { }
+}
+public class ControlPanelRequestPractice : ControlPanelRequestBase
+{
+    public ControlPanelRequestPractice() { }
+}
+public class ControlPanelRequestSave : ControlPanelRequestBase
+{
+    public ControlPanelRequestSave() {}
 }
 public class ControlPanelRequestAllClear : ControlPanelRequestBase
 {
@@ -141,5 +133,10 @@ public class ControlPanelRequestModulation : ControlPanelRequestBase
 }
 public class ControlPanelRequestResetModulation : ControlPanelRequestBase
 {
-    public ControlPanelRequestResetModulation() {}
+    public ControlPanelRequestResetModulation() { }
+}
+
+public class ControlPanelRequestUndo : ControlPanelRequestBase
+{
+    public ControlPanelRequestUndo() { }
 }
