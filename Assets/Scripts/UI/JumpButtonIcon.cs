@@ -14,4 +14,16 @@ public class JumpButtonIcon : MonoBehaviour
         _number = number;
         _iconImage.sprite = Resources.Load<Sprite>(string.Format(_iconSpritePath, number));
     }
+
+    public void SetPosX(float timeRate, float width)
+    {
+        var rect = transform as RectTransform;
+        rect.SetAnchoredPositionX(width * timeRate);
+    }
+
+    public void Destroy()
+    {
+        _iconImage.sprite = null;
+        Destroy(gameObject);
+    }
 }

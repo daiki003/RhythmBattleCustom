@@ -71,7 +71,7 @@ public class ValueAdjuster : MonoBehaviour
     {
         _currentValue.Value = value;
         int decimalPlaces = _changeValueUnit.GetPrecision();
-        string valueString = string.Format("{0:F" + decimalPlaces + "}", _currentValue);
+        string valueString = _currentValue.Value.ToString("F" + decimalPlaces);
         if (_inputField != null)
         {
             _inputField.text = valueString;

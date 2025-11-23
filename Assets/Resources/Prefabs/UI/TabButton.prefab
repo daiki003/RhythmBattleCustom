@@ -170,7 +170,7 @@ MonoBehaviour:
       m_Calls: []
   _text: {fileID: 517977859689367529}
   _highLight: {fileID: 0}
-  _seType: 1
+  _seType: 6
   _imageList: []
 --- !u!114 &480772080932884705
 MonoBehaviour:

@@ -33,8 +33,8 @@ public class ScoreMakerView : MonoBehaviour
     [SerializeField] private VerticalLayoutGroup _scoreAreaLayoutGroup;
     [SerializeField] private Scrollbar _bgmScrollBar;
 
-    [SerializeField] private MoveButton _moveButtonPrefab;
-    [SerializeField] private Transform _moveButtonArea;
+    [SerializeField] private JumpButtonIcon _jumpIconPrefab;
+    [SerializeField] private RectTransform _moveButtonArea;
     [SerializeField] private Button _playBgmButton; // BGM再生ボタン
     [SerializeField] private ValueAdjuster _pitchAdjuster; // ピッチ変更
     private float _basePitch;
@@ -48,11 +48,6 @@ public class ScoreMakerView : MonoBehaviour
     private List<ScoreLine> _selectedLineList = new();
     private LinePocket _selectedBallPocket;
 
-    // 演奏作成モード切替関連
-    [SerializeField] private GameObject _controlUiRoot;
-    [SerializeField] private GameObject _playMakeModeUiRoot;
-    [SerializeField] private Button _finishPlayMakeModeButton;
-    [SerializeField] private Button _resetPlayMakeModeButton;
     private bool _isPlayMakeMode;
     // 演奏作成モードでの開始位置
     private float _startPlayMakeLineNumber;
@@ -70,8 +65,7 @@ public class ScoreMakerView : MonoBehaviour
     private List<ScoreLine> _scoreLineList = new();
     private List<List<LineState>> _pastScoreLineList = new(); // 過去のスコアラインの状態を保持したのリスト（Undo用）
     private List<ScoreMakerBallLine> _longBallLineList = new(); // 作ったロングボール間の線のリスト
-    private List<MoveButton> _moveButtonList = new(); // 特定のラインに飛ぶボタン
-    private MoveButton _goLastButton; // 最後のボール位置に飛ぶボタン
+    private Dictionary<int, JumpButtonIcon> _timeStampList = new(); // タイムジャンプの位置スタンプ
 
     public MusicParameter CurrentMusicParameter;
     public float CurrentBpm => CurrentMusicParameter.Bpm;
@@ -170,11 +164,6 @@ public class ScoreMakerView : MonoBehaviour
         {
             OnClickLine(ClickLineType.Line, number);
         }).AddTo(this);
-        GameManager.instance.ClickHandler.OnClickScoreLineNumber.Subscribe(number =>
-        {
-            SEManager.instance.PlaySe(SeName.Button4);
-            CreateMoveButton(number);
-        }).AddTo(this);
         // TODO: ピンチイン・アウトでライン間隔を調整する機能を実装する
         // GameManager.instance.ClickHandler.OnPinchIn.Subscribe(value =>
         // {
@@ -195,29 +184,6 @@ public class ScoreMakerView : MonoBehaviour
             CreateBall(currentLine, isLeft, ScoreMakerBallType.Single);
             SEManager.instance.PlaySe(SeName.Beat);
         }).AddTo(this);
-
-        // 演奏作成モードのロングはいったん廃止
-        // GameManager.instance.ClickHandler.OnReleaseButton.Subscribe(isLeft =>
-        // {
-        //     if (!_isPlayMakeMode)
-        //     {
-        //         return;
-        //     }
-        //     if (!_lastBeatLineDict.TryGetValue(isLeft, out int lastLineNumber))
-        //     {
-        //         return;
-        //     }
-        //     _lastBeatLineDict.Remove(isLeft);
-        //     // 直前に叩いたラインが2つ以上前の場合のみロングボールに変える
-        //     int currentLine = Mathf.RoundToInt(GetCurrentLineNumber());
-        //     if (lastLineNumber > currentLine - 2)
-        //     {
-        //         return;
-        //     }
-        //     ChangeBallType(lastLineNumber, isLeft, ScoreMakerBallType.Long);
-        //     CreateBall(currentLine, isLeft, ScoreMakerBallType.Long);
-        //     SEManager.instance.PlaySe(SeName.Beat);
-        // }).AddTo(this);
 
         _playBgmButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -256,21 +222,6 @@ public class ScoreMakerView : MonoBehaviour
             }
             GameManager.instance.OpenScene(SceneType.Home, new HomeSceneInfo()).Forget();
         }).AddTo(this);
-        _finishPlayMakeModeButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            UpdatePastScoreLineList();
-            _playMakeModeUiRoot.SetActive(false);
-            _controlUiRoot.SetActive(true);
-            _isPlayMakeMode = false;
-        }).AddTo(this);
-        _resetPlayMakeModeButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            BGMManager.instance.Pause();
-            _isPause = true;
-            CreateBallFromLineState(_startPlayMakeLineList, startNumber: 0);
-            SetPositionByLineNumber(_startPlayMakeLineNumber);
-        }).AddTo(this);
-
 
         _basePitch = BGMManager.instance.CurrentPitch;
         _pitchAdjuster.Init(1f, 0.1f);
@@ -548,8 +499,7 @@ public class ScoreMakerView : MonoBehaviour
             case ControlPanelRequestPlayMake _:
                 _startPlayMakeLineNumber = GetCurrentLineNumber();
                 _startPlayMakeLineList = GetCurrentLineList();
-                _controlUiRoot.SetActive(false);
-                _playMakeModeUiRoot.SetActive(true);
+                _controlPanel.SetModePanel(isPlayMakeMode: true);
                 _isPlayMakeMode = true;
                 break;
             case ControlPanelRequestPractice _:
@@ -597,6 +547,44 @@ public class ScoreMakerView : MonoBehaviour
                 break;
             case ControlPanelRequestUndo _:
                 Undo();
+                break;
+
+            case ControlPanelRequestFinishPlayMake _:
+                UpdatePastScoreLineList();
+                _controlPanel.SetModePanel(isPlayMakeMode: false);
+                _isPlayMakeMode = false;
+                break;
+            case ControlPanelRequestResetPlayMake _:
+                BGMManager.instance.Pause();
+                _isPause = true;
+                CreateBallFromLineState(_startPlayMakeLineList, startNumber: 0);
+                SetPositionByLineNumber(_startPlayMakeLineNumber);
+                break;
+
+            case ControlPanelRequestTimeJump timeJump:
+                _bgmScrollBar.value = timeJump.TimeRate;
+                break;
+            case ControlPanelRequestRegisterTimeJump registerTimeJump:
+                _controlPanel.SetJumpTimeRate(registerTimeJump.Index, _bgmScrollBar.value);
+                float width = _moveButtonArea.rect.width;
+                if (_timeStampList.TryGetValue(registerTimeJump.Index, out var existingButton))
+                {
+                    existingButton.SetPosX(_bgmScrollBar.value, width);
+                }
+                else
+                {
+                    var stamp = Instantiate(_jumpIconPrefab, _moveButtonArea);
+                    _timeStampList[registerTimeJump.Index] = stamp;
+                    stamp.SetNumber(registerTimeJump.Index + 1);
+                    stamp.SetPosX(_bgmScrollBar.value, width);
+                }
+                break;
+            case ControlPanelRequestDeleteTimeJump deleteTimeJump:
+                _controlPanel.SetJumpTimeRate(deleteTimeJump.Index, -1);
+                if (_timeStampList.TryGetValue(deleteTimeJump.Index, out var targetButton))
+                {
+                    targetButton.Destroy();
+                }
                 break;
         }
     }
@@ -756,7 +744,6 @@ public class ScoreMakerView : MonoBehaviour
         _isEdited = true;
         var createdBall = _scoreLineList[lineNumber].CreateBall(ballType, isLeft);
         ConnectLongBall(lineNumber, isLeft, createdBall);
-        SetGoLastButton();
     }
 
     // ロングボールを線で繋げる
@@ -795,50 +782,6 @@ public class ScoreMakerView : MonoBehaviour
         {
             _longBallLineList.Remove(line);
         }).AddTo(this);
-    }
-
-    private void SetGoLastButton()
-    {
-        var lastLine = _scoreLineList.LastOrDefault(l => l.HasBall);
-        if (lastLine == null)
-        {
-            return;
-        }
-        if (_goLastButton == null)
-        {
-            _goLastButton = Instantiate(_moveButtonPrefab, _moveButtonArea);
-            SubscribeMoveButton(_goLastButton);
-        }
-        _goLastButton.SetLineNumber(lastLine.LineNumber, _scoreLineList.Count);
-    }
-
-    private void CreateMoveButton(int lineNumber)
-    {
-        var sameNuberButton = _moveButtonList.FirstOrDefault(b => b.TargetLineNumber == lineNumber);
-        var targetLine = _scoreLineList.FirstOrDefault(l => l.LineNumber == lineNumber);
-        if (sameNuberButton != null)
-        {
-            _moveButtonList.Remove(sameNuberButton);
-            Destroy(sameNuberButton.gameObject);
-            targetLine.SetMoveButton(false);
-        }
-        else
-        {
-            var button = Instantiate(_moveButtonPrefab, _moveButtonArea);
-            SubscribeMoveButton(button);
-            _moveButtonList.Add(button);
-            button.SetLineNumber(lineNumber, _scoreLineList.Count);
-            targetLine.SetMoveButton(true);
-        }
-    }
-
-    private void SubscribeMoveButton(MoveButton moveButton)
-    {
-        moveButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            var posY = _scoreAreaBottom - moveButton.TargetLineNumber * (_scoreAreaLayoutGroup.spacing + _scoreLineHeight);
-            _scoreAreaRect.anchoredPosition = new Vector2(0, posY);
-        }).AddTo(moveButton);
     }
 
     // ラインのリストから最初の線でつながれていないロングボールを探す

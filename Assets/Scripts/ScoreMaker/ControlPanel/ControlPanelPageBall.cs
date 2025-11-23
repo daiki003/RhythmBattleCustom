@@ -30,6 +30,7 @@ public class ControlPanelPageBall : ControlPanelPageBase
 
     public override void Init()
     {
+        SetSelectBallType(OperationType.Hybrid);
         _changeButton.OnClickAsObservable().Subscribe(_ =>
         {
             _currentOperationType++;

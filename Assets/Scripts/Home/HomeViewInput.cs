@@ -9,7 +9,7 @@ using UnityEngine.UI;
 /// </summary>
 public class HomeViewInput : MonoBehaviour
 {
-    [SerializeField] private List<MenuButton> _menuButtonList;
+    [SerializeField] private TabGroup _tabGroup;
     [SerializeField] private Button _settingButton;
     [SerializeField] private Button _helpButton;
 
@@ -28,14 +28,11 @@ public class HomeViewInput : MonoBehaviour
 
     public void Init()
     {
-        foreach (var menuButton in _menuButtonList)
+        _tabGroup.Init();
+        _tabGroup.OnTabSelected.Subscribe(index =>
         {
-            menuButton.OnWhenClicked.Subscribe(_ =>
-            {
-                _onClickButton.OnNext(new MenuButtonArgs { PanelType = menuButton.ButtonType });
-                SetMenuButton(menuButton.ButtonType);
-            }).AddTo(this);
-        }
+            _onClickButton.OnNext(new MenuButtonArgs { PanelType = (HomePanelType)index });
+        });
 
         _playStageButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -81,7 +78,6 @@ public class HomeViewInput : MonoBehaviour
         }).AddTo(this);
 
         SetButtonInteractable(false);
-        SetMenuButton(HomePanelType.Custom);
     }
 
     public void ChangeButtonByCustomMode(bool isCustom)
@@ -96,14 +92,6 @@ public class HomeViewInput : MonoBehaviour
         _playStageButton.interactable = isInteractable;
         _editStageButton.interactable = isInteractable;
         _deleteStageButton.interactable = isInteractable;
-    }
-
-    private void SetMenuButton(HomePanelType titlePanelType)
-    {
-        foreach (var button in _menuButtonList)
-        {
-            button.SetLight(button.ButtonType == titlePanelType);
-        }
     }
 }
 

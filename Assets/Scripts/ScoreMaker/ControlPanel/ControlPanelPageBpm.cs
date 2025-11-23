@@ -11,6 +11,8 @@ public class ControlPanelPageBpm : ControlPanelPageBase
     [SerializeField] private ValueAdjuster _startTimeInput;
     [SerializeField] private ValueAdjuster _endTimeInput;
     [SerializeField] private Button _estimateBpmButton;
+    [SerializeField] private GameObject _messageMask;
+    [SerializeField] private Text _messageText;
 
     private ReactiveProperty<float> _bpm = new(0f);
     private ReactiveProperty<float> _startTime = new(0f);
@@ -56,14 +58,16 @@ public class ControlPanelPageBpm : ControlPanelPageBase
             var audioClip = BGMManager.instance.CurrentClip;
             // EstimateBPMに時間がかかるので先にSEを鳴らす
             SEManager.instance.PlaySe(SeName.Button1);
-            _onRequest.OnNext(new ControlPanelRequestStartEstimate());
+            SetMessageMask(true, "計測中...");
             await UniTask.NextFrame();
             var bpm = AudioClipUtility.EstimateBPM(audioClip);
             var startTime = AudioClipUtility.GetStartSoundTime(audioClip);
             _bpmInput.SetValue(bpm);
             _startTimeInput.SetValue(startTime);
-            _onRequest.OnNext(new ControlPanelRequestFinishEstimate());
+            SetMessageMask(false);
         }).AddTo(this);
+
+        SetMessageMask(false);
     }
 
     public override void SetMusicParameter(MusicParameter musicParameter)
@@ -71,5 +75,14 @@ public class ControlPanelPageBpm : ControlPanelPageBase
         _bpm.Value = musicParameter.Bpm;
         _startTime.Value = musicParameter.StartTime;
         _endTime.Value = musicParameter.EndTime;
+    }
+
+    private void SetMessageMask(bool isActive, string message = "")
+    {
+        _messageMask.SetActive(isActive);
+        if (isActive)
+        {
+            _messageText.text = message;
+        }
     }
 }

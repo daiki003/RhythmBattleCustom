@@ -103,14 +103,6 @@ public class ControlPanelRequestChangeEndTime : ControlPanelRequestBase
         EndTime = endTime;
     }
 }
-public class ControlPanelRequestStartEstimate : ControlPanelRequestBase
-{
-    public ControlPanelRequestStartEstimate() {}
-}
-public class ControlPanelRequestFinishEstimate : ControlPanelRequestBase
-{
-    public ControlPanelRequestFinishEstimate() {}
-}
 
 // 拍子変更ページ
 public class ControlPanelRequestBeatsNumber : ControlPanelRequestBase
@@ -139,4 +131,40 @@ public class ControlPanelRequestResetModulation : ControlPanelRequestBase
 public class ControlPanelRequestUndo : ControlPanelRequestBase
 {
     public ControlPanelRequestUndo() { }
+}
+
+// 演奏作成モード関連
+public class ControlPanelRequestFinishPlayMake : ControlPanelRequestBase
+{
+    public ControlPanelRequestFinishPlayMake() { }
+}
+public class ControlPanelRequestResetPlayMake : ControlPanelRequestBase
+{
+    public ControlPanelRequestResetPlayMake() { }
+}
+
+// タイムジャンプ関連
+public class ControlPanelRequestRegisterTimeJump : ControlPanelRequestBase
+{
+    public int Index { get; private set; }
+    public ControlPanelRequestRegisterTimeJump(int index)
+    {
+        Index = index;
+    }
+}
+public class ControlPanelRequestTimeJump : ControlPanelRequestBase
+{
+    public float TimeRate { get; private set; }
+    public ControlPanelRequestTimeJump(float lineNumber)
+    {
+        TimeRate = lineNumber;
+    }
+}
+public class ControlPanelRequestDeleteTimeJump : ControlPanelRequestBase
+{
+    public int Index { get; private set; }
+    public ControlPanelRequestDeleteTimeJump(int index)
+    {
+        Index = index;
+    }
 }
