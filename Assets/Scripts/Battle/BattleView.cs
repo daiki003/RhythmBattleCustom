@@ -107,6 +107,10 @@ public class BattleView : MonoBehaviour
     {
         get
         {
+            if (_isPausedBgm)
+            {
+                return _stageHeader.StartTime + _stageLength * _practiceUi.SliderValue;
+            }
             if (_currentState < BattleState.DuringBgm)
             {
                 return Time.time - _startBgmTime;
@@ -271,7 +275,8 @@ public class BattleView : MonoBehaviour
             BGMManager.instance.Pause();
             // 曲を止める場合はボールの動きを止める
             StopLaunchedBall();
-            _practiceUi.SetSlider(BGMManager.instance.CurrentTime / _stageLength);
+            float timeRate = Math.Max(0, BGMManager.instance.CurrentTime - _stageHeader.StartTime);
+            _practiceUi.SetSlider(timeRate / _stageLength);
         }
         else
         {

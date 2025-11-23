@@ -27,6 +27,7 @@ public class ScoreMakerControlPanel : MonoBehaviour
 
     public bool IsWaitingPaste { get; private set; }
     public bool IsPasteMode => _copyPasteParts.IsPasteMode;
+    private bool _isUnderMenuOpen;
 
     private Subject<ControlPanelRequestBase> _onRequest = new();
     public Observable<ControlPanelRequestBase> OnRequest => _onRequest;
@@ -125,15 +126,16 @@ public class ScoreMakerControlPanel : MonoBehaviour
     // 演奏作成モードかどうかでパネルを切り替え
     public void SetModePanel(bool isPlayMakeMode)
     {
-        _menuObject.SetActive(!isPlayMakeMode);
+        _menuObject.SetActive(!isPlayMakeMode && _isUnderMenuOpen);
         _copyPasteParts.gameObject.SetActive(!isPlayMakeMode);
         _undoButton.gameObject.SetActive(!isPlayMakeMode);
         _playMakeModeUI.SetActive(isPlayMakeMode);
-        _timeJumpParts.gameObject.SetActive(!isPlayMakeMode);
+        _timeJumpParts.gameObject.SetActive(!isPlayMakeMode && !_isUnderMenuOpen);
     }
 
     private void ChangeUnderMenuOpen(bool isOpen)
     {
+        _isUnderMenuOpen = isOpen;
         _openButton.gameObject.SetActive(!isOpen);
         _timeJumpParts.gameObject.SetActive(!isOpen);
         _menuObject.SetActive(isOpen);

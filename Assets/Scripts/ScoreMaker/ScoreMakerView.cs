@@ -22,7 +22,6 @@ public class ScoreMakerView : MonoBehaviour
     [SerializeField] private Transform _scoreLineTransform;
     [SerializeField] private ScoreLine _scoreLinePrefab; 
     [SerializeField] private ScrollRect _scoreScrollRect;
-    [SerializeField] private Button _saveButton;
     [SerializeField] private Button _helpButton;
     [SerializeField] private Button _backButton;
 
@@ -187,11 +186,7 @@ public class ScoreMakerView : MonoBehaviour
 
         _playBgmButton.OnClickAsObservable().Subscribe(_ =>
         {
-            ChangePause();
-        }).AddTo(this);
-        _saveButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            _clickSaveButton.OnNext(default);
+            ChangePause(!_isPause);
         }).AddTo(this);
         _helpButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -199,7 +194,7 @@ public class ScoreMakerView : MonoBehaviour
         }).AddTo(this);
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {
-            _isPause = false;
+            ChangePause(true);
             BGMManager.instance.Pause();
             if (_isEdited)
             {
@@ -504,6 +499,7 @@ public class ScoreMakerView : MonoBehaviour
                 break;
             case ControlPanelRequestPractice _:
                 _isStartMake = false;
+                ChangePause(true);
                 _clickPracticeButton.OnNext(_bgmScrollBar.value);
                 break;
             case ControlPanelRequestSave _:
@@ -555,8 +551,7 @@ public class ScoreMakerView : MonoBehaviour
                 _isPlayMakeMode = false;
                 break;
             case ControlPanelRequestResetPlayMake _:
-                BGMManager.instance.Pause();
-                _isPause = true;
+                ChangePause(true);
                 CreateBallFromLineState(_startPlayMakeLineList, startNumber: 0);
                 SetPositionByLineNumber(_startPlayMakeLineNumber);
                 break;
@@ -629,10 +624,16 @@ public class ScoreMakerView : MonoBehaviour
         }
     }
 
-    private void ChangePause()
+    private void ChangePause(bool isPause)
     {
+        const float _roundZeroLineNumber = 0.001f;
         float lineNumber = GetCurrentLineNumber();
-        _isPause = !_isPause;
+        // 一番下にスクロールしていても、若干_scoreAreaRectがずれていることがあるので補正する
+        if (lineNumber < _roundZeroLineNumber)
+        {
+            lineNumber = 0;
+        }
+        _isPause = isPause;
         if (_isPause)
         {
             BGMManager.instance.Pause();
@@ -1087,6 +1088,12 @@ public class ScoreMakerView : MonoBehaviour
         }
         if (!_isPause)
         {
+            if (_currentTime >= CurrentEndTime || _currentTime < CurrentStartTime)
+            {
+                // BGMが終わったら自動で止める
+                ChangePause(true);
+                return;
+            }
             float currentLineNumber = GetCurrentLineNumber();
             float anchorY = _scoreAreaBottom - (_scoreAreaLayoutGroup.spacing + _scoreLineHeight) * currentLineNumber;
             _scoreAreaRect.anchoredPosition = new Vector2(0, anchorY);
@@ -1098,12 +1105,6 @@ public class ScoreMakerView : MonoBehaviour
                     nextLine.Beat();
                 }
                 nextLine.IsEnd = true;
-            }
-            if (_currentTime > CurrentEndTime)
-            {
-                // BGMが終わったら自動で止める
-                _isPause = true;
-                BGMManager.instance.FadeOut(duration: 1f).Forget();
             }
         }
 
