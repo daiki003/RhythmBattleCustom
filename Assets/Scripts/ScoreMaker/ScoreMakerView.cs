@@ -25,9 +25,6 @@ public class ScoreMakerView : MonoBehaviour
     [SerializeField] private Button _helpButton;
     [SerializeField] private Button _backButton;
 
-    [SerializeField] private InputField _startTimeInput;
-    [SerializeField] private InputField _endTimeInput;
-
     [SerializeField] private RectTransform _scoreAreaRect;
     [SerializeField] private VerticalLayoutGroup _scoreAreaLayoutGroup;
     [SerializeField] private Scrollbar _bgmScrollBar;
@@ -69,7 +66,7 @@ public class ScoreMakerView : MonoBehaviour
     public MusicParameter CurrentMusicParameter;
     public float CurrentBpm => CurrentMusicParameter.Bpm;
     public float CurrentStartTime => CurrentMusicParameter.StartTime;
-    public float CurrentEndTime => CurrentMusicParameter.EndTime > 0 ? CurrentMusicParameter.EndTime : BGMManager.instance.Length;
+    public float CurrentEndTime => CurrentMusicParameter.EndTime;
 
     // 編集された状態がセーブされていないかどうか
     private bool _isEdited;
@@ -132,7 +129,7 @@ public class ScoreMakerView : MonoBehaviour
         {
             Bpm = stageHeader.BPM,
             StartTime = stageHeader.StartTime,
-            EndTime = stageHeader.EndTime,
+            EndTime = stageHeader.EndTime > 0 ? stageHeader.EndTime : BGMManager.instance.Length,
             BeatsNumber = stageHeader.BeatsNumber,
             ModulationList = stageHeader.ModulationList.ToList()
         };
@@ -141,8 +138,6 @@ public class ScoreMakerView : MonoBehaviour
         _currentOperationType = OperationType.Hybrid;
         StartSubscribeMain();
         StartSubscribeControllPanel();
-        _startTimeInput.text = CurrentStartTime.ToString();
-        _endTimeInput.text = CurrentEndTime.ToString();
         CreateLine(notes);
         _scoreScrollRect.verticalNormalizedPosition = 0;
         _isEdited = false;
@@ -219,7 +214,7 @@ public class ScoreMakerView : MonoBehaviour
         }).AddTo(this);
 
         _basePitch = BGMManager.instance.CurrentPitch;
-        _pitchAdjuster.Init(1f, 0.1f);
+        _pitchAdjuster.Init(1f, 0.1f, 1);
         _pitchAdjuster.CurrentValue.Subscribe(value =>
         {
             BGMManager.instance.SetPitch(_basePitch * value);
@@ -578,6 +573,7 @@ public class ScoreMakerView : MonoBehaviour
                 _controlPanel.SetJumpTimeRate(deleteTimeJump.Index, -1);
                 if (_timeStampList.TryGetValue(deleteTimeJump.Index, out var targetButton))
                 {
+                    _timeStampList.Remove(deleteTimeJump.Index);
                     targetButton.Destroy();
                 }
                 break;

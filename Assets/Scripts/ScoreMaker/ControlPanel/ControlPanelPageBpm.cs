@@ -19,36 +19,34 @@ public class ControlPanelPageBpm : ControlPanelPageBase
     private ReactiveProperty<float> _endTime = new(0f);
 
     public override string PageName => "テンポ";
+    private const int _minDecimalPlaces = 2;
 
     public override void Init()
     {
         _bpm.Subscribe(value =>
         {
-            _bpmInput.SetValue(value);
             _onRequest.OnNext(new ControlPanelRequestChangeBpm(value));
         }).AddTo(this);
         _startTime.Subscribe(value =>
         {
-            _startTimeInput.SetValue(value);
             _onRequest.OnNext(new ControlPanelRequestChangeStartTime(value));
         }).AddTo(this);
         _endTime.Subscribe(value =>
         {
-            _endTimeInput.SetValue(value);
             _onRequest.OnNext(new ControlPanelRequestChangeEndTime(value));
         }).AddTo(this);
 
-        _bpmInput.Init(_bpm.Value, 0.1f);
+        _bpmInput.Init(_bpm.Value, 0.1f, _minDecimalPlaces);
         _bpmInput.CurrentValue.Subscribe(value =>
         {
             _bpm.Value = value;
         }).AddTo(this);;
-        _startTimeInput.Init(_startTime.Value, 0.1f);
+        _startTimeInput.Init(_startTime.Value, 0.1f, _minDecimalPlaces);
         _startTimeInput.CurrentValue.Subscribe(value =>
         {
             _startTime.Value = value;
         }).AddTo(this);;
-        _endTimeInput.Init(_endTime.Value, 0.1f);
+        _endTimeInput.Init(_endTime.Value, 0.1f, _minDecimalPlaces);
         _endTimeInput.CurrentValue.Subscribe(value =>
         {
             _endTime.Value = value;
@@ -72,9 +70,9 @@ public class ControlPanelPageBpm : ControlPanelPageBase
 
     public override void SetMusicParameter(MusicParameter musicParameter)
     {
-        _bpm.Value = musicParameter.Bpm;
-        _startTime.Value = musicParameter.StartTime;
-        _endTime.Value = musicParameter.EndTime;
+        _bpmInput.SetValue(musicParameter.Bpm);
+        _startTimeInput.SetValue(musicParameter.StartTime);
+        _endTimeInput.SetValue(musicParameter.EndTime);
     }
 
     private void SetMessageMask(bool isActive, string message = "")

@@ -49,8 +49,8 @@ public class SettingDialog : DialogBase
             SEManager.instance.AdjustVolume(x);
         }).AddTo(this);
 
-        _offsetAdjuster.Init(SaveDataManager.SettingData.Offset, _changeOffsetUnit);
-        _speedAdjuster.Init(SaveDataManager.SettingData.BallSpeed, _changeSpeedUnit);
+        _offsetAdjuster.Init(SaveDataManager.SettingData.Offset, _changeOffsetUnit, 2);
+        _speedAdjuster.Init(SaveDataManager.SettingData.BallSpeed, _changeSpeedUnit, 1);
 
         _creditButton.OnClickAsObservable().Subscribe(_ =>
         {

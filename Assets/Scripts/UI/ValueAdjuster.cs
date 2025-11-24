@@ -19,11 +19,13 @@ public class ValueAdjuster : MonoBehaviour
 
     private ReactiveProperty<float> _currentValue = new(0f);
     private float _changeValueUnit;
+    private int _minDecimalPlaces;
     public ReactiveProperty<float> CurrentValue => _currentValue;
 
-    public void Init(float startValue, float changeValueUnit)
+    public void Init(float startValue, float changeValueUnit, int minDecimalPlaces = 0)
     {
         _changeValueUnit = changeValueUnit;
+        _minDecimalPlaces = minDecimalPlaces;
         SetValue(startValue);
         _minusButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -70,8 +72,7 @@ public class ValueAdjuster : MonoBehaviour
     public void SetValue(float value)
     {
         _currentValue.Value = value;
-        int decimalPlaces = _changeValueUnit.GetPrecision();
-        string valueString = _currentValue.Value.ToString("F" + decimalPlaces);
+        string valueString = _currentValue.Value.ToString("F" + _minDecimalPlaces);
         if (_inputField != null)
         {
             _inputField.text = valueString;
