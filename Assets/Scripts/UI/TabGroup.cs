@@ -10,7 +10,7 @@ public class TabGroup : MonoBehaviour
     private Subject<int> _onTabSelected = new();
     public Observable<int> OnTabSelected => _onTabSelected;
 
-    public void Init()
+    public void Init(int firstIndex = 0)
     {
         for (int i = 0; i < _tabButtonList.Count; i++)
         {
@@ -19,10 +19,9 @@ public class TabGroup : MonoBehaviour
             _tabButtonList[i].OnClick.Subscribe(_ =>
             {
                 SetActiveTab(index);
-                _onTabSelected.OnNext(index);
             }).AddTo(this);
         }
-        SetActiveTab(0);
+        SetActiveTab(firstIndex);
     }
 
     public void SetActiveTab(int index)
@@ -31,6 +30,7 @@ public class TabGroup : MonoBehaviour
         {
             _tabButtonList[i].SetActive(i == index);
         }
+        _onTabSelected.OnNext(index);
     }
 
     public void SetTabText(int index, string text)

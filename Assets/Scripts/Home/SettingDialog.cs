@@ -11,7 +11,6 @@ public class SettingDialog : DialogBase
     [SerializeField] private ValueAdjuster _offsetAdjuster;
     [SerializeField] private ValueAdjuster _speedAdjuster;
     [SerializeField] private Button _creditButton;
-    [SerializeField] private Slider _targetSlider;
 
     private const float _changeOffsetUnit = 0.01f;
     private const float _changeSpeedUnit = 0.1f;
@@ -56,13 +55,11 @@ public class SettingDialog : DialogBase
         {
             DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.CreditDialogPrefabName, _creditDialogOption);
         }).AddTo(this);
-
-        _targetSlider.value = SaveDataManager.SettingData.Target;
     }
 
     public override void ClosePanel(DialogResultType resultType)
     {
-        SaveDataManager.UpdateSettingData(_bgmSlider.value, _seSlider.value, _offsetAdjuster.CurrentValue.Value, _speedAdjuster.CurrentValue.Value, _targetSlider.value);
+        SaveDataManager.UpdateSettingData(_bgmSlider.value, _seSlider.value, _offsetAdjuster.CurrentValue.Value, _speedAdjuster.CurrentValue.Value);
         base.ClosePanel(resultType);
     }
 }

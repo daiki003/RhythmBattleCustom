@@ -9,8 +9,8 @@ public class ControlPanelPageModulation : ControlPanelPageBase
 {
     [SerializeField] private ValueAdjuster _beatsAdjuster;
     [SerializeField] private InputField _measureInput;
-    [SerializeField] private InputField _beatInput;
-    [SerializeField] private Button _modulationButton;
+    [SerializeField] private Button _modulationForwardButton;
+    [SerializeField] private Button _modulationBackButton;
     [SerializeField] private Button _modulationResetButton;
 
     public override string PageName => "拍子";
@@ -29,12 +29,19 @@ public class ControlPanelPageModulation : ControlPanelPageBase
         {
             _beatsNumber.Value = (int)value;
             _onRequest.OnNext(new ControlPanelRequestBeatsNumber(_beatsNumber.Value));
-        });
-        _modulationButton.OnClickAsObservable().Subscribe(_ =>
+        }).AddTo(this);
+        _modulationForwardButton.OnClickAsObservable().Subscribe(_ =>
         {
-            if (int.TryParse(_measureInput.text, out int measure) && int.TryParse(_beatInput.text, out int beat))
+            if (int.TryParse(_measureInput.text, out int measure))
             {
-                _onRequest.OnNext(new ControlPanelRequestModulation(measure, beat));
+                _onRequest.OnNext(new ControlPanelRequestModulationChange(measure, isForward: true));
+            }
+        }).AddTo(this);
+        _modulationBackButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            if (int.TryParse(_measureInput.text, out int measure))
+            {
+                _onRequest.OnNext(new ControlPanelRequestModulationChange(measure, isForward: false));
             }
         }).AddTo(this);
         _modulationResetButton.OnClickAsObservable().Subscribe(_ =>
@@ -43,8 +50,8 @@ public class ControlPanelPageModulation : ControlPanelPageBase
         }).AddTo(this);
     }
 
-    public override void SetMusicParameter(MusicParameter musicParameter)
+    public override void SetParameter(StageHeader stageHeader)
     {
-        _beatsNumber = new ReactiveProperty<int>(musicParameter.BeatsNumber);
+        _beatsNumber.Value = stageHeader.BeatsNumber;
     }
 }

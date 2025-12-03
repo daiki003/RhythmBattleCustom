@@ -15,7 +15,7 @@ public class ControlPanelPageBase : MonoBehaviour
         
     }
 
-    public virtual void SetMusicParameter(MusicParameter musicParameter)
+    public virtual void SetParameter(StageHeader stageHeader)
     {
         
     }

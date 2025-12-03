@@ -32,7 +32,7 @@ public class ScoreMakerControlPanel : MonoBehaviour
     private Subject<ControlPanelRequestBase> _onRequest = new();
     public Observable<ControlPanelRequestBase> OnRequest => _onRequest;
 
-    public void Init(MusicParameter musicParameter)
+    public void Init()
     {
         // パーツ系
         InitializeParts(_ballParts);
@@ -41,17 +41,16 @@ public class ScoreMakerControlPanel : MonoBehaviour
         InitializeParts(_timeJumpParts);
 
         // 下部メニュー
-        _tabGroup.Init();
         _tabGroup.OnTabSelected.Subscribe(index =>
         {
             SetPage(index);
         }).AddTo(this);
-        SetPage(0);
+        _tabGroup.Init();
         for (int i = 0; i < _menuPageList.Count; i++)
         {
             var page = _menuPageList[i];
             _tabGroup.SetTabText(i, page.PageName);
-            InitializeParts(page, musicParameter);
+            InitializeParts(page);
         }
 
         // ボタン系
@@ -83,10 +82,9 @@ public class ScoreMakerControlPanel : MonoBehaviour
         ChangeUnderMenuOpen(isOpen: true);
     }
 
-    private void InitializeParts(ControlPanelPageBase parts, MusicParameter musicParameter = null)
+    private void InitializeParts(ControlPanelPageBase parts)
     {
         parts.Init();
-        parts.SetMusicParameter(musicParameter);
         parts.OnRequest.Subscribe(request => _onRequest.OnNext(request)).AddTo(this);
     }
 
@@ -115,11 +113,11 @@ public class ScoreMakerControlPanel : MonoBehaviour
         _undoButton.interactable = isExsistPastLine;
     }
 
-    public void SetMusicParameter(MusicParameter musicParameter)
+    public void SetParameter(StageHeader stageHeader)
     {
         foreach (var page in _menuPageList)
         {
-            page.SetMusicParameter(musicParameter);
+            page.SetParameter(stageHeader);
         }
     }
 
@@ -144,6 +142,11 @@ public class ScoreMakerControlPanel : MonoBehaviour
     public void SetJumpTimeRate(int index, float timeRate)
     {
         _timeJumpParts.SetTimeRate(index, timeRate);
+    }
+
+    public Dictionary<int, float> GetTimeJumpDict()
+    {
+        return _timeJumpParts.GetTimeJumpDict();
     }
 
     private void OnDestroy()

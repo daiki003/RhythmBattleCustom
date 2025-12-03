@@ -51,10 +51,6 @@ public class ControlPanelRequestInversion : ControlPanelRequestBase
 {
     public ControlPanelRequestInversion() {}
 }
-public class ControlPanelRequestStageDuplicate : ControlPanelRequestBase
-{
-    public ControlPanelRequestStageDuplicate() {}
-}
 
 // 自動生成ページ
 public class ControlPanelRequestEvenlySpaced : ControlPanelRequestBase
@@ -113,14 +109,14 @@ public class ControlPanelRequestBeatsNumber : ControlPanelRequestBase
         BeatsNumber = beatsNumber;
     }
 }
-public class ControlPanelRequestModulation : ControlPanelRequestBase
+public class ControlPanelRequestModulationChange : ControlPanelRequestBase
 {
     public int Measure { get; private set; }
-    public int Beat { get; private set; }
-    public ControlPanelRequestModulation(int measure, int beat)
+    public bool IsForward { get; private set; }
+    public ControlPanelRequestModulationChange(int measure, bool isForward)
     {
         Measure = measure;
-        Beat = beat;
+        IsForward = isForward;
     }
 }
 public class ControlPanelRequestResetModulation : ControlPanelRequestBase
@@ -144,20 +140,20 @@ public class ControlPanelRequestResetPlayMake : ControlPanelRequestBase
 }
 
 // タイムジャンプ関連
-public class ControlPanelRequestRegisterTimeJump : ControlPanelRequestBase
-{
-    public int Index { get; private set; }
-    public ControlPanelRequestRegisterTimeJump(int index)
-    {
-        Index = index;
-    }
-}
 public class ControlPanelRequestTimeJump : ControlPanelRequestBase
 {
     public float TimeRate { get; private set; }
     public ControlPanelRequestTimeJump(float lineNumber)
     {
         TimeRate = lineNumber;
+    }
+}
+public class ControlPanelRequestRegisterTimeJump : ControlPanelRequestBase
+{
+    public int Index { get; private set; }
+    public ControlPanelRequestRegisterTimeJump(int index)
+    {
+        Index = index;
     }
 }
 public class ControlPanelRequestDeleteTimeJump : ControlPanelRequestBase

@@ -10,7 +10,6 @@ public class ControlPanelPageEdit : ControlPanelPageBase
     [SerializeField] private Button _pasteButton; // ペーストボタン
     [SerializeField] private Button _inversionButton; // 左右反転ボタン
     [SerializeField] private Button _deleteRangeButton; // 範囲削除ボタン
-    [SerializeField] private Button _stageDuplicateButton; // ステージ複製ボタン
 
     private bool _isSelectedLine;
     private bool _isCopiedLine;
@@ -28,10 +27,6 @@ public class ControlPanelPageEdit : ControlPanelPageBase
         _deleteRangeButton.OnClickAsObservable().Subscribe(_ =>
         {
             _onRequest.OnNext(new ControlPanelRequestDeleteRange());
-        }).AddTo(this);
-        _stageDuplicateButton.OnClickAsObservable().Subscribe(_ =>
-        {
-            _onRequest.OnNext(new ControlPanelRequestStageDuplicate());
         }).AddTo(this);
     }
 

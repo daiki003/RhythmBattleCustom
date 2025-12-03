@@ -68,7 +68,6 @@ public class ScoreMakerBall : MonoBehaviour
             }
             var note = new NoteMaster()
             {
-                lpb = 4,
                 num = LineNumber,
                 block = IsLeft ? 1 : 5,
                 type = isLong ? 2 : 1,

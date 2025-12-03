@@ -17,9 +17,15 @@ public class ScoreMakerPresenter : MonoBehaviour
     public void Init(SingleStageMaster stageMaster, bool isNewCreate)
     {
         _model = new ScoreMakerModel();
-        _model.Init(stageMaster);
+        _model.OnChangeLineNumber.Subscribe(lineNumber =>
+        {
+            _view.AdjustmentLineNumber(lineNumber);
+        }).AddTo(this);
+        _model.OnChangeParameter.Subscribe(parameter =>
+        {
+            _view.SetHeaderParameter(parameter);
+        }).AddTo(this);
 
-        _view.Init(stageMaster.StageHeader, _model.CurrentMaster.Notes);
         _view.ClickPracticeButton.Subscribe(async timeRate =>
         {
             _model.UpdateCurrentLevelNotes(_view.CreateNoteList());
@@ -36,21 +42,26 @@ public class ScoreMakerPresenter : MonoBehaviour
         {
             _view.DisplaySaveDialog(_model.OriginalStageInfo.StageHeader.StageName, isNewCreate);
         }).AddTo(this);
-        _view.OnSave.Subscribe(async x =>
+        _view.OnSave.Subscribe(async name =>
         {
             // 現在のレベルの譜面を保存
-            await SaveScore(x.Item1, x.Item2);
+            await SaveScore(name);
         }).AddTo(this);
-        _view.ClickDuplicateButton.Subscribe(_ =>
+        _view.OnChangeParameter.Subscribe(param =>
         {
-            _view.DisplayDuplicateDialog(_model.OriginalStageInfo);
-        }).AddTo(this);
+            _model.ChangeHeaderParameter(param, BGMManager.instance.Length);
+        });
+
+        stageMaster.StageHeader.EndTime = stageMaster.StageHeader.EndTime > 0 ? stageMaster.StageHeader.EndTime : BGMManager.instance.Length;
+        _model.Init(stageMaster);
+        _view.Init(_model.CurrentMaster.Notes, _model.LineNumber);
+        _view.SetHeaderParameter(_model.CurrentMaster.StageHeader);
     }
 
-    private async UniTask SaveScore(string stageName, MusicParameter parameter)
+    private async UniTask SaveScore(string stageName)
     {
         // 現在のレベルの譜面を保存
-        await _model.SaveScore(_view.CreateNoteList(), stageName, parameter);
+        await _model.SaveScore(_view.CreateNoteList(), stageName, _view.GetTimeJumpDict());
         _view.DisplaySaveFinishDialog();
     }
 

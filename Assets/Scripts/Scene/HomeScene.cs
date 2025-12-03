@@ -11,6 +11,11 @@ public class HomeScene : SceneBase
     public override async UniTask InitAsync(SceneInfoBase lastSceneInfo, SceneInfoBase nextSceneInfo, Image fadePanel)
     {
         await base.InitAsync(lastSceneInfo, nextSceneInfo, fadePanel);
-        _titleManager.Init();
+        var firstPanelType = HomePanelType.Custom;
+        if (lastSceneInfo is BattleSceneInfo battleSceneInfo)
+        {
+            firstPanelType = (HomePanelType)battleSceneInfo.StageMaster.StageHeader.PanelType;
+        }
+        _titleManager.Init(firstPanelType);
     }
 }

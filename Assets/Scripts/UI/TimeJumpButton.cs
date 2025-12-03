@@ -10,6 +10,7 @@ public class TimeJumpButton : MonoBehaviour
     [SerializeField] private Image _numberIcon;
 
     private float _targetTimeRate = -1;
+    public float TargetTimeRate => _targetTimeRate;
     private int _index;
 
     private const string _numberUIconPath = "Images/NumberButton/{0}";

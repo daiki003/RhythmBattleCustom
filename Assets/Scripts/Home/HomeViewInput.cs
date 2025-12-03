@@ -26,13 +26,13 @@ public class HomeViewInput : MonoBehaviour
     private Subject<HomeViewButtonEventArgs> _onClickButton = new();
     public Observable<HomeViewButtonEventArgs> OnClickButton => _onClickButton;
 
-    public void Init()
+    public void Init(HomePanelType firstPanelType)
     {
-        _tabGroup.Init();
         _tabGroup.OnTabSelected.Subscribe(index =>
         {
             _onClickButton.OnNext(new MenuButtonArgs { PanelType = (HomePanelType)index });
-        });
+        }).AddTo(this);
+        _tabGroup.Init((int)firstPanelType);
 
         _playStageButton.OnClickAsObservable().Subscribe(_ =>
         {

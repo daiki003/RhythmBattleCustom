@@ -12,12 +12,12 @@ public class HomePresenter : MonoBehaviour
     [SerializeField] private  HomeView _view;
     private HomeModel _model;
 
-    public void Init()
+    public void Init(HomePanelType firstPanelType)
     {
         _model = new HomeModel();
         _model.Init();
 
-        _view.Init(_model.StageMasterList);
+        _view.Init(_model.StageMasterList, firstPanelType);
         _view.ClickPlayStageButton.Subscribe(x =>
         {
             StartBattle(x.stageKey, isPractice: x.isPractice);

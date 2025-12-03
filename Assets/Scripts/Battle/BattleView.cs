@@ -293,12 +293,12 @@ public class BattleView : MonoBehaviour
             AttachMoveTween();
             _isPausedBgm = false;
         }
+        _practiceUi.OnPause(isPause);
     }
 
     public void SetSliderForAdditional(float timeRate)
     {
         _currentState = BattleState.DuringBgm;
-        _practiceUi.Pause(true);
         _practiceUi.SetSlider(timeRate);
         _practiceUi.RegisterTime(0);
     }
@@ -342,8 +342,7 @@ public class BattleView : MonoBehaviour
 
     private float CalcNoteTime(NoteMaster noteMaster)
     {
-        int noteNumber = noteMaster.num * (_stageHeader.LPB / noteMaster.lpb);
-        return noteNumber * (60f / (_stageHeader.BPM * 4)) + _stageHeader.StartTime + SaveDataManager.SettingData.Offset;
+        return noteMaster.num * (60f / (_stageHeader.BPM * 4)) + _stageHeader.StartTime + SaveDataManager.SettingData.Offset;
     }
 
     public async UniTask PrepareBattle()
@@ -507,7 +506,6 @@ public class BattleView : MonoBehaviour
             _currentState = BattleState.Result;
             if (_isPractice)
             {
-                _practiceUi.Pause(true);
                 _practiceUi.SetSlider(1f);
             }
             else

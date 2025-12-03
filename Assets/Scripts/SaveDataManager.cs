@@ -33,7 +33,6 @@ public class SettingData
     public float SeVolume;
     public float Offset;
     public float BallSpeed;
-    public float Target;
 }
 
 public static class SaveDataManager
@@ -117,13 +116,12 @@ public static class SaveDataManager
         SEManager.instance.AdjustVolume(SettingData.SeVolume);
     }
 
-    public static void UpdateSettingData(float bgmVolume, float seVolume, float offset, float ballSpeed, float target)
+    public static void UpdateSettingData(float bgmVolume, float seVolume, float offset, float ballSpeed)
     {
         SettingData.BgmVolume = bgmVolume;
         SettingData.SeVolume = seVolume;
         SettingData.Offset = offset;
         SettingData.BallSpeed = ballSpeed;
-        SettingData.Target = target;
 
         // タイトルで使うのでPlayerPrefsに保存
         PlayerPrefs.SetFloat(_bgmVolumeKey, bgmVolume);

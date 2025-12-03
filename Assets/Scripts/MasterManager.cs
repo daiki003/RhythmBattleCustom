@@ -16,12 +16,10 @@ public class SettingMaster
 
 public class NoteMaster
 {
-    public int lpb;
     public int num;
     public int block;
     public int type;
     public List<NoteMaster> notes = new List<NoteMaster>();
-    public int noteNumber => num * (4 / lpb);
 }
 
 public class StageHeader
@@ -32,11 +30,11 @@ public class StageHeader
     public float StripStartTime;
     public float StripEndTime;
     public float BPM;
-    public int LPB;
     public float StartTime;
     public float EndTime;
     public int BeatsNumber;
-    public List<int> ModulationList = new();
+    public Dictionary<string, int> ModulationDict = new();
+    public Dictionary<string, float> TimeJumpDict = new();
     public float AdditionalBallSpeed;
 
     public StageHeader CreateCopy()
@@ -48,11 +46,11 @@ public class StageHeader
             StripStartTime = StripStartTime,
             StripEndTime = StripEndTime,
             BPM = BPM,
-            LPB = LPB,
             StartTime = StartTime,
             EndTime = EndTime,
             BeatsNumber = BeatsNumber,
-            ModulationList = ModulationList.ToList(),
+            ModulationDict = ModulationDict != null ? new Dictionary<string, int>(ModulationDict) : new Dictionary<string, int>(),
+            TimeJumpDict = TimeJumpDict != null ? new Dictionary<string, float>(TimeJumpDict) : new Dictionary<string, float>(),
             AdditionalBallSpeed = AdditionalBallSpeed
         };
     }
@@ -79,13 +77,11 @@ public class SingleStageMaster
             StageId = StageId,
             Notes = Notes.Select(n => new NoteMaster
             {
-                lpb = n.lpb,
                 num = n.num,
                 block = n.block,
                 type = n.type,
                 notes = n.notes.Select(nn => new NoteMaster
                 {
-                    lpb = nn.lpb,
                     num = nn.num,
                     block = nn.block,
                     type = nn.type,

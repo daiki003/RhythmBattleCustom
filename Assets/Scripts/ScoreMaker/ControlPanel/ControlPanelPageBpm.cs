@@ -68,11 +68,11 @@ public class ControlPanelPageBpm : ControlPanelPageBase
         SetMessageMask(false);
     }
 
-    public override void SetMusicParameter(MusicParameter musicParameter)
+    public override void SetParameter(StageHeader stageHeader)
     {
-        _bpmInput.SetValue(musicParameter.Bpm);
-        _startTimeInput.SetValue(musicParameter.StartTime);
-        _endTimeInput.SetValue(musicParameter.EndTime);
+        _bpmInput.SetValue(stageHeader.BPM);
+        _startTimeInput.SetValue(stageHeader.StartTime);
+        _endTimeInput.SetValue(stageHeader.EndTime);
     }
 
     private void SetMessageMask(bool isActive, string message = "")

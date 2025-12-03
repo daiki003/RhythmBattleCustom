@@ -63,11 +63,11 @@ public class HomeView : MonoBehaviour
     private GetStageKey _currentStageKey;
     private HomePanelType _currentPanelType;
 
-    public void Init(List<SingleStageMaster> stageList)
+    public void Init(List<SingleStageMaster> stageList, HomePanelType firstPanelType)
     {
         CreateStripList(stageList);
         BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true, isFade: true);
-        _homeViewInput.Init();
+
         _homeViewInput.OnClickButton.Subscribe(args =>
         {
             switch (args)
@@ -95,6 +95,7 @@ public class HomeView : MonoBehaviour
                     break;
             }
         }).AddTo(this);
+        _homeViewInput.Init(firstPanelType);
     }
 
     // ステージの短冊を全て作成

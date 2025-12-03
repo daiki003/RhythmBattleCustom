@@ -12,6 +12,7 @@ public class ControlPanelTimeJumpParts : ControlPanelPageBase
     {
         for (int i = 0; i < _jumpButtonList.Count; i++)
         {
+            int index = i;
             _jumpButtonList[i].Init(i);
             _jumpButtonList[i].OnClickMainButton.Subscribe(timeRate =>
             {
@@ -31,5 +32,15 @@ public class ControlPanelTimeJumpParts : ControlPanelPageBase
     public void SetTimeRate(int index, float timeRate)
     {
         _jumpButtonList[index].SetTimeRate(timeRate);
+    }
+
+    public Dictionary<int, float> GetTimeJumpDict()
+    {
+        var timeJumpDict = new Dictionary<int, float>();
+        for (int i = 0; i < _jumpButtonList.Count; i++)
+        {
+            timeJumpDict[i] = _jumpButtonList[i].TargetTimeRate;
+        }
+        return timeJumpDict;
     }
 }

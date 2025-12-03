@@ -22,7 +22,7 @@ public class BattlePracticeUI : MonoBehaviour
     public bool IsAuto { get; private set; }
     private const string _buttonIconPrefabPath = "JumpButtonIcon";
     private const float _sliderWidth = 780;
-    private List<JumpButtonIcon> _buttonIconList = new();
+    private Dictionary<int, JumpButtonIcon> _buttonIconDict = new();
 
     private Subject<bool> _onClickPauseButton = new();
     public Observable<bool> OnClickPauseButton => _onClickPauseButton;
@@ -39,7 +39,7 @@ public class BattlePracticeUI : MonoBehaviour
         _timeUI.gameObject.SetActive(false);
         _pauseButton.OnClickAsObservable().Subscribe(_ =>
         {
-            Pause(!_isPause);
+            _onClickPauseButton.OnNext(!_isPause);
         }).AddTo(this);
         _autoButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -61,6 +61,7 @@ public class BattlePracticeUI : MonoBehaviour
         {
             var jumpButton = _timeJumpButtonList[i];
             int index = i;
+            jumpButton.Init(index);
             jumpButton.OnClickMainButton.Subscribe(timeRate =>
             {
                 OnTimeJump.OnNext(timeRate);
@@ -69,13 +70,16 @@ public class BattlePracticeUI : MonoBehaviour
             {
                 RegisterTime(index);
             }).AddTo(this);
+            jumpButton.OnClickDeleteButton.Subscribe(_ =>
+            {
+                DeleteTime(index);
+            }).AddTo(this);
         }
     }
 
-    public void Pause(bool isPause)
+    public void OnPause(bool isPause)
     {
         _isPause = isPause;
-        _onClickPauseButton.OnNext(isPause);
         _timeUI.SetActive(_isPause);
     }
 
@@ -100,18 +104,25 @@ public class BattlePracticeUI : MonoBehaviour
         var jumpButton = _timeJumpButtonList[index];
         jumpButton.SetTimeRate(_timeSlider.value);
 
-        int number = index + 1;
-        foreach (var buttonIcon in _buttonIconList)
+        if (_buttonIconDict.TryGetValue(index, out var icon))
         {
-            if (buttonIcon.Number == number)
-            {
-                Destroy(buttonIcon.gameObject);
-            }
+            icon.transform.SetAnchoredPositionX(_sliderWidth * _timeSlider.value);
         }
+        else
+        {
+            var newIcon = Instantiate(ResourceManager.LoadPrefab<JumpButtonIcon>(_buttonIconPrefabPath), _buttonIconArea);
+            newIcon.SetNumber(index + 1);
+            newIcon.transform.SetAnchoredPositionX(_sliderWidth * _timeSlider.value);
+            _buttonIconDict[index] = newIcon;
+        }
+    }
 
-        var icon = Instantiate(ResourceManager.LoadPrefab<JumpButtonIcon>(_buttonIconPrefabPath), _buttonIconArea);
-        icon.SetNumber(number);
-        icon.transform.SetAnchoredPositionX(_sliderWidth * _timeSlider.value);
-        _buttonIconList.Add(icon);
+    private void DeleteTime(int index)
+    {
+        var jumpButton = _timeJumpButtonList[index];
+        jumpButton.SetTimeRate(-1);
+        var icon = _buttonIconDict[index];
+        _buttonIconDict.Remove(index);
+        icon.Destroy();
     }
 }

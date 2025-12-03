@@ -39,7 +39,6 @@ public class HomeModel
                     StageName = "",
                     PanelType = (int)panelType,
                     BPM = 100,
-                    LPB = 4,
                     StripStartTime = 0f,
                     StripEndTime = 20f,
                     EndTime = 100f,
