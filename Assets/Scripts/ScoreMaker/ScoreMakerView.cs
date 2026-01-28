@@ -80,6 +80,8 @@ public class ScoreMakerView : MonoBehaviour
     public Observable<Unit> ClickSaveButton => _clickSaveButton;
     private Subject<ChangeParameter> _onChangeParameter = new();
     public Observable<ChangeParameter> OnChangeParameter => _onChangeParameter;
+    private Subject<TutorialCommandList> _startTutorial = new();
+    public Observable<TutorialCommandList> StartTutorial => _startTutorial;
 
     private const float _scoreAreaBottom = -1660f;
     private const float _scoreLineHeight = 15f;
@@ -119,11 +121,13 @@ public class ScoreMakerView : MonoBehaviour
 
     private float _singleBeatTime => 60f / (_currentBpm * 4);
     private bool _isStartMake;
+    private bool _isTutorial;
 
     private Dictionary<bool, int> _lastBeatLineDict = new();
 
-    public void Init(List<NoteMaster> notes, int lineNumber)
+    public void Init(List<NoteMaster> notes, int lineNumber, bool isTutorial)
     {
+        _isTutorial = isTutorial;
         BGMManager.instance.SetTime(_currentStartTime);
 
         _currentOperationType = OperationType.Hybrid;
@@ -165,24 +169,22 @@ public class ScoreMakerView : MonoBehaviour
     private void StartSubscribeMain()
     {
         // 基本操作系
-        GameManager.instance.ClickHandler.OnClickScoreMakerNarrowPocket.Subscribe(x =>
+        GameManager.Instance.ClickHandler.OnClickScoreMakerNarrowPocket.Subscribe(x =>
         {
             OnClickLine(ClickLineType.NorrowPocket, x.number, x.isLeft);
         }).AddTo(this);
-        GameManager.instance.ClickHandler.OnClickScoreLinePocket.Subscribe(x =>
+        GameManager.Instance.ClickHandler.OnClickScoreLinePocket.Subscribe(x =>
         {
             OnClickLine(ClickLineType.Pocket, x.number, x.isLeft);
         }).AddTo(this);
-        GameManager.instance.ClickHandler.OnClickScoreLine.Subscribe(number =>
+        GameManager.Instance.ClickHandler.OnClickScoreLine.Subscribe(number =>
         {
             OnClickLine(ClickLineType.Line, number);
         }).AddTo(this);
-        GameManager.instance.ClickHandler.OnClickButton.Subscribe(isLeft =>
+        GameManager.Instance.ClickHandler.OnClickButton.Subscribe(isLeft =>
         {
-            if (!_isPlayMakeMode)
-            {
-                return;
-            }
+            if (!gameObject.activeSelf) return;
+            if (!_isPlayMakeMode) return;
             int currentLine = Mathf.RoundToInt(GetCurrentLineNumber());
             _lastBeatLineDict[isLeft] = currentLine;
             CreateBall(currentLine, isLeft, ScoreMakerBallType.Single);
@@ -195,7 +197,21 @@ public class ScoreMakerView : MonoBehaviour
         }).AddTo(this);
         _helpButton.OnClickAsObservable().Subscribe(_ =>
         {
-            DialogManager.instance.OpenHelpDialog(HelpDialogPageType.ScoreMaker);
+            var commandList =  TutorialManager.Instance.GetTutorialCommandLists(TutorialType.ScoreMaker);
+            var dialog = DialogManager.instance.OpenTutorialDialog(commandList);
+            dialog.OnCloseDialog.Subscribe(async result =>
+            {
+                if (result is not TutorialDialogResult tutorialResult)
+                {
+                    return;
+                }
+                switch (result.ResultType)
+                {
+                    case DialogResultType.Ok:
+                        _startTutorial.OnNext(tutorialResult.SelectedCommand);
+                        break;
+                }
+            }).AddTo(dialog);
         }).AddTo(this);
         _backButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -215,12 +231,12 @@ public class ScoreMakerView : MonoBehaviour
                 {
                     if (result.ResultType == DialogResultType.Ok)
                     {
-                        GameManager.instance.OpenScene(SceneType.Home, new HomeSceneInfo()).Forget();
+                        GameManager.Instance.OpenScene(SceneType.Home, new HomeSceneInfo()).Forget();
                     }
                 });
                 return;
             }
-            GameManager.instance.OpenScene(SceneType.Home, new HomeSceneInfo()).Forget();
+            GameManager.Instance.OpenScene(SceneType.Home, new HomeSceneInfo()).Forget();
         }).AddTo(this);
 
         _basePitch = BGMManager.instance.CurrentPitch;
@@ -233,6 +249,8 @@ public class ScoreMakerView : MonoBehaviour
 
     private void OnClickLine(ClickLineType clickType, int lineNumber, bool isLeft = false)
     {
+        if (!gameObject.activeSelf) return;
+
         // ペーストモードならペーストして終了
         if (_controlPanel.IsPasteMode)
         {
@@ -273,6 +291,7 @@ public class ScoreMakerView : MonoBehaviour
 
     private void ClickLinePocket(int lineNumber, bool isLeft)
     {
+        TutorialManager.Instance.AdvanceStep("ClickLine" + (isLeft ? "Left" : "Right"));
         SEManager.instance.PlaySe(SeName.Button2);
         var ball = _scoreLineList[lineNumber].GetBall(isLeft);
         if (ball != null)
@@ -353,6 +372,7 @@ public class ScoreMakerView : MonoBehaviour
 
     private void ClickLine(int lineNumber)
     {
+        TutorialManager.Instance.AdvanceStep("ClickLine");
         SEManager.instance.PlaySe(SeName.Button2);
         SelectLine(lineNumber);
     }
@@ -684,6 +704,12 @@ public class ScoreMakerView : MonoBehaviour
                         _selectedBallPocket = null;
                     }
                 }).AddTo(this);
+
+                // ラインをチュートリアル用に登録
+                if (_isTutorial)
+                {
+                    scoreLine.RegisterForTutorial(i);
+                }
             }
         }
         SetFirstBeatNumberText();
@@ -1065,6 +1091,22 @@ public class ScoreMakerView : MonoBehaviour
         {
             line.ClearLine();
         }
+    }
+
+    public void PrepareTutorial(ScoreMakerStartParam startParam)
+    {
+        // チュートリアル中はスクロール禁止
+        _scoreScrollRect.enabled = false;
+        SetScroll(startParam.ScrollPositionY);
+        foreach (var arrangement in startParam.BallArrangementList)
+        {
+            CreateBall(arrangement.Number, isLeft: arrangement.IsLeft, ScoreMakerBallType.Single);
+        }
+    }
+
+    public void SetScroll(float posY)
+    {
+        _scoreAreaRect.anchoredPosition = new Vector2(0, posY);
     }
 
     void Update()

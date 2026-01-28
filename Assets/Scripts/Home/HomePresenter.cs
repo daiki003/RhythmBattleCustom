@@ -40,7 +40,7 @@ public class HomePresenter : MonoBehaviour
             StageMaster = stageMaster,
             IsPractice = isPractice
         };
-        GameManager.instance.OpenScene(SceneType.Battle, sceneInfo).Forget();
+        GameManager.Instance.OpenScene(SceneType.Battle, sceneInfo).Forget();
     }
 
     private void StartScoreMaker(string musicId, int stageId, bool isNewCreate)
@@ -48,9 +48,8 @@ public class HomePresenter : MonoBehaviour
         var sceneInfo = new ScoreMakerSceneInfo
         {
             StageMaster = _model.GetStageInfo(musicId, stageId, HomePanelType.Custom),
-            TargetLevel = stageId,
             IsNewCreate = isNewCreate,
         };
-        GameManager.instance.OpenScene(SceneType.ScoreMaker, sceneInfo).Forget();
+        GameManager.Instance.OpenScene(SceneType.ScoreMaker, sceneInfo).Forget();
     }
 }

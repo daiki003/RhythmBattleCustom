@@ -1,0 +1,96 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cf6f6a467af96b4f92b69c722727b96, type: 3}
+  m_Name: scoremaker_003
+  m_EditorClassIdentifier: 
+  TutorialName: "\u30E9\u30A4\u30F3\u9078\u629E"
+  TutorialType: 2
+  ScoreMakerStartParam:
+    ScrollPositionY: -1866
+    BallArrangementList:
+    - Number: 4
+      IsLeft: 0
+    - Number: 8
+      IsLeft: 0
+  Commands:
+  - AdvanceType: 0
+    MaskType: 0
+    MaskTargetId: 
+    IsEmphasis: 0
+    AddUnmaskWidth: 0
+    AddUnmaskHeight: 0
+    PositionOffset: {x: 0, y: 0}
+    WaitPushButtonId: 
+    AdvanceId: 
+    Message: "\u4ECA\u56DE\u306F\u30E9\u30A4\u30F3\u9078\u629E\u306B\u3064\u3044\u3066\u8AAC\u660E\u3057\u307E\u3059\u3002"
+    MessagePositionY: -300
+    TargetArrowVector: 0
+  - AdvanceType: 2
+    MaskType: 1
+    MaskTargetId: ScoreMakerLine4
+    IsEmphasis: 0
+    AddUnmaskWidth: -450
+    AddUnmaskHeight: 80
+    PositionOffset: {x: 0, y: 0}
+    WaitPushButtonId: 
+    AdvanceId: ClickLine
+    Message: "\u5404\u30E9\u30A4\u30F3\u306E\u4E2D\u592E\u8FBA\u308A\u3092\u30BF\u30C3\u30D7\u3059\u308B\u3068\u30E9\u30A4\u30F3\u3092\u9078\u629E\u3067\u304D\u307E\u3059\u3002\n\u8A66\u3057\u306B\u9078\u629E\u3057\u3066\u307F\u307E\u3057\u3087\u3046\u3002"
+    MessagePositionY: -300
+    TargetArrowVector: 2
+  - AdvanceType: 0
+    MaskType: 1
+    MaskTargetId: ScoreMakerLine4
+    IsEmphasis: 0
+    AddUnmaskWidth: 40
+    AddUnmaskHeight: 80
+    PositionOffset: {x: 0, y: 0}
+    WaitPushButtonId: 
+    AdvanceId: 
+    Message: "\u30E9\u30A4\u30F3\u304C\u9078\u629E\u3055\u308C\u307E\u3057\u305F\u3002"
+    MessagePositionY: -300
+    TargetArrowVector: 2
+  - AdvanceType: 2
+    MaskType: 1
+    MaskTargetId: ScoreMakerLine8
+    IsEmphasis: 0
+    AddUnmaskWidth: -450
+    AddUnmaskHeight: 80
+    PositionOffset: {x: 0, y: 0}
+    WaitPushButtonId: 
+    AdvanceId: ClickLine
+    Message: "\u3053\u306E\u72B6\u614B\u3067\u3001\u5225\u306E\u30E9\u30A4\u30F3\u3092\u30BF\u30C3\u30D7\u3057\u3066\u307F\u307E\u3057\u3087\u3046\u3002"
+    MessagePositionY: -300
+    TargetArrowVector: 1
+  - AdvanceType: 0
+    MaskType: 1
+    MaskTargetId: ScoreMakerLine6
+    IsEmphasis: 0
+    AddUnmaskWidth: 500
+    AddUnmaskHeight: 1000
+    PositionOffset: {x: 0, y: 0}
+    WaitPushButtonId: 
+    AdvanceId: ClickLineRight
+    Message: "\u9593\u306E\u7BC4\u56F2\u5168\u4F53\u304C\u9078\u629E\u3055\u308C\u307E\u3057\u305F\u3002"
+    MessagePositionY: -300
+    TargetArrowVector: 1
+  - AdvanceType: 0
+    MaskType: 0
+    MaskTargetId: 
+    IsEmphasis: 0
+    AddUnmaskWidth: -60
+    AddUnmaskHeight: -40
+    PositionOffset: {x: 0, y: 0}
+    WaitPushButtonId: 
+    AdvanceId: 
+    Message: "\u4ECA\u56DE\u306E\u8AAC\u660E\u306F\u4EE5\u4E0A\u3067\u3059\u3002\n\u30C1\u30E5\u30FC\u30C8\u30EA\u30A2\u30EB\u958B\u59CB\u524D\u306E\u72B6\u614B\u306B\u623B\u308A\u307E\u3059\u3002"
+    MessagePositionY: -300
+    TargetArrowVector: 1

@@ -91,7 +91,22 @@ public class HomeView : MonoBehaviour
                     DialogManager.instance.OpenSettingDialog();
                     break;
                 case HelpButtonArgs helpArgs:
-                    DialogManager.instance.OpenHelpDialog(_currentPanelType.IsSample() ? HelpDialogPageType.Home : HelpDialogPageType.Home2);
+                    var commandList =  TutorialManager.Instance.GetTutorialCommandLists(TutorialType.Home);
+                    var dialog = DialogManager.instance.OpenTutorialDialog(commandList);
+                    dialog.OnCloseDialog.Subscribe(async result =>
+                    {
+                        if (result is not TutorialDialogResult tutorialResult)
+                        {
+                            return;
+                        }
+                        switch (result.ResultType)
+                        {
+                            case DialogResultType.Ok:
+                                CancelSelectStrip();
+                                await TutorialManager.Instance.StartTutorialAsync(tutorialResult.SelectedCommand);
+                                break;
+                        }
+                    }).AddTo(dialog);
                     break;
             }
         }).AddTo(this);
@@ -102,9 +117,16 @@ public class HomeView : MonoBehaviour
     public void CreateStripList(List<SingleStageMaster> stageList)
     {
         DestroyAllStrip();
+        bool isAddTutorialStrip = false;
         foreach (var stageInfo in stageList)
         {
-            CreateStageStrip(stageInfo.StageHeader, stageInfo.StageId, _customStripTransform);
+            var strip = CreateStageStrip(stageInfo.StageHeader, stageInfo.StageId, _customStripTransform);
+            // チュートリアル用に最初の短冊を登録しておく
+            if (!isAddTutorialStrip && (HomePanelType)stageInfo.StageHeader.PanelType == HomePanelType.Level1)
+            {
+                isAddTutorialStrip = true;
+                TutorialManager.Instance.AddTargetRect("FirstStageStrip", strip.transform as RectTransform);
+            }
         }
     }
 

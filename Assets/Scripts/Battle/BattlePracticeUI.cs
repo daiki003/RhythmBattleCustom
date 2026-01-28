@@ -28,6 +28,8 @@ public class BattlePracticeUI : MonoBehaviour
     public Observable<bool> OnClickPauseButton => _onClickPauseButton;
     private Subject<bool> _onClickScoreReset = new();
     public Observable<bool> OnClickScoreReset => _onClickScoreReset;
+    private Subject<bool> _onClickHelpButton = new();
+    public Observable<bool> OnClickHelpButton => _onClickHelpButton;
     public Subject<float> OnSliderValueChange = new();
     public Subject<float> OnTimeJump = new();
 
@@ -47,7 +49,7 @@ public class BattlePracticeUI : MonoBehaviour
         }).AddTo(this);
         _helpButton.OnClickAsObservable().Subscribe(_ =>
         {
-            DialogManager.instance.OpenHelpDialog(HelpDialogPageType.PracticeMode);
+            _onClickHelpButton.OnNext(true);
         }).AddTo(this);
         _scoreResetButton.OnClickAsObservable().Subscribe(_ =>
         {
@@ -74,6 +76,11 @@ public class BattlePracticeUI : MonoBehaviour
             {
                 DeleteTime(index);
             }).AddTo(this);
+            if (i == 0)
+            {
+                // 1つ目のボタンはチュートリアルマスク用に登録
+                jumpButton.RegisterForTutorial();
+            }
         }
     }
 

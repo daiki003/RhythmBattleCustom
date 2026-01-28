@@ -140,15 +140,15 @@ public class BattleView : MonoBehaviour
         _targetDistance = _startToTargetVectorLeft.magnitude;
         _surplusDistance = Vector3.Distance(_leftTargetPoint.localPosition, _leftEndPosition);
 
-        GameManager.instance.ClickHandler.OnClickButton.Subscribe(isLeft =>
+        GameManager.Instance.ClickHandler.OnClickButton.Subscribe(isLeft =>
         {
             OnClickButton(isLeft);
         }).AddTo(this);
-        GameManager.instance.ClickHandler.OnReleaseButton.Subscribe(isLeft =>
+        GameManager.Instance.ClickHandler.OnReleaseButton.Subscribe(isLeft =>
         {
             OnReleaseButton(isLeft);
         }).AddTo(this);
-        GameManager.instance.ClickHandler.OnDragBattleBg.Subscribe(move =>
+        GameManager.Instance.ClickHandler.OnDragBattleBg.Subscribe(move =>
         {
             if(_isPausedBgm)
             {
@@ -214,18 +214,7 @@ public class BattleView : MonoBehaviour
             _practiceUi.Init();
             _practiceUi.OnClickPauseButton.Subscribe(isPause =>
             {
-                if (_bgmStartCts != null)
-                {
-                    _bgmStartCts.Cancel();
-                    _bgmStartCts.Dispose();
-                    _bgmStartCts = null;
-                    _currentState = BattleState.DuringBgm;
-                }
-                if (_currentState == BattleState.Result)
-                {
-                    _currentState = BattleState.DuringBgm;
-                }
-                Pause(isPause);
+                OnClickPause(isPause);
             }).AddTo(this);
             _practiceUi.OnClickScoreReset.Subscribe(_ =>
             {
@@ -241,6 +230,27 @@ public class BattleView : MonoBehaviour
             _practiceUi.OnTimeJump.Subscribe(timeRate =>
             {
                 _practiceUi.SetSlider(timeRate);
+            }).AddTo(this);
+            _practiceUi.OnClickHelpButton.Subscribe(_ =>
+            {
+                var commandList =  TutorialManager.Instance.GetTutorialCommandLists(TutorialType.Practice);
+                var dialog = DialogManager.instance.OpenTutorialDialog(commandList);
+                dialog.OnCloseDialog.Subscribe(async result =>
+                {
+                    if (result is not TutorialDialogResult tutorialResult)
+                    {
+                        return;
+                    }
+                    switch (result.ResultType)
+                    {
+                        case DialogResultType.Ok:
+                            OnClickPause(true);
+                            _ballTransform.gameObject.SetActive(false);
+                            await TutorialManager.Instance.StartTutorialAsync(tutorialResult.SelectedCommand);
+                            _ballTransform.gameObject.SetActive(true);
+                            break;
+                    }
+                }).AddTo(dialog);
             }).AddTo(this);
         }
 
@@ -262,6 +272,22 @@ public class BattleView : MonoBehaviour
                 Pause(isPause: false);
             }
         }).AddTo(this);
+    }
+
+    private void OnClickPause(bool isPause)
+    {
+        if (_bgmStartCts != null)
+        {
+            _bgmStartCts.Cancel();
+            _bgmStartCts.Dispose();
+            _bgmStartCts = null;
+            _currentState = BattleState.DuringBgm;
+        }
+        if (_currentState == BattleState.Result)
+        {
+            _currentState = BattleState.DuringBgm;
+        }
+        Pause(isPause);
     }
 
     private void Pause(bool isPause)

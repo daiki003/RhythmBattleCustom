@@ -1,0 +1,100 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cf6f6a467af96b4f92b69c722727b96, type: 3}
+  m_Name: practice_001
+  m_EditorClassIdentifier: 
+  TutorialName: "\u5404\u7A2E\u30DC\u30BF\u30F3\u306B\u3064\u3044\u3066"
+  TutorialType: 1
+  ScoreMakerStartParam:
+    ScrollPositionY: 0
+    BallArrangementList: []
+  Commands:
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536409755385867
+    ArrowParam:
+      rid: -2
+    IsEmphasis: 0
+    AdvanceId: 
+    Message: "\u7DF4\u7FD2\u30E2\u30FC\u30C9\u306E\u5404\u30DC\u30BF\u30F3\u306B\u3064\u3044\u3066\u8AAC\u660E\u3057\u307E\u3059\u3002"
+    MessagePositionY: 0
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536389089001498
+    ArrowParam:
+      rid: -2
+    IsEmphasis: 1
+    AdvanceId: 
+    Message: "\u3053\u306E\u30DC\u30BF\u30F3\u3067\u66F2\u3092\u4E00\u6642\u505C\u6B62\u3067\u304D\u307E\u3059\u3002\n\u3082\u3046\u4E00\u5EA6\u62BC\u3059\u3068\u518D\u958B\u3057\u307E\u3059\u3002"
+    MessagePositionY: 0
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536409755385868
+    ArrowParam:
+      rid: -2
+    IsEmphasis: 1
+    AdvanceId: 
+    Message: "\u3053\u306E\u30DC\u30BF\u30F3\u3067\u81EA\u52D5\u30D7\u30EC\u30A4\u30E2\u30FC\u30C9\u306E\u5207\u66FF\u304C\u3067\u304D\u307E\u3059\u3002"
+    MessagePositionY: 0
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536409755385869
+    ArrowParam:
+      rid: -2
+    IsEmphasis: 1
+    AdvanceId: 
+    Message: "\u3053\u306E\u30DC\u30BF\u30F3\u3067\u30B9\u30B3\u30A2\u306E\u30EA\u30BB\u30C3\u30C8\u304C\u3067\u304D\u307E\u3059\u3002"
+    MessagePositionY: 0
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536409755385870
+    ArrowParam:
+      rid: -2
+    IsEmphasis: 0
+    AdvanceId: 
+    Message: "\u4ECA\u56DE\u306E\u8AAC\u660E\u306F\u4EE5\u4E0A\u3067\u3059\u3002"
+    MessagePositionY: 0
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 1467536389089001498
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: PracticePauseButton
+        OverrideParam:
+          rid: -2
+    - rid: 1467536409755385867
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536409755385868
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536409755385869
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536409755385870
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2

@@ -8,7 +8,6 @@ public class ScoreLine : MonoBehaviour
 {
     [SerializeField] private LinePocket _leftPocket;
     [SerializeField] private LinePocket _rightPocket;
-    [SerializeField] private Image _moveButton;
     [SerializeField] private Text _numberText;
     public LinePocket LeftPocket => _leftPocket;
     public LinePocket RightPocket => _rightPocket;
@@ -83,14 +82,16 @@ public class ScoreLine : MonoBehaviour
         return ball != null ? ball.CreateMaster() : null;
     }
 
-    public void SetMoveButton(bool isActive)
-    {
-        _moveButton.gameObject.SetActive(isActive);
-    }
-
     void OnDestroy()
     {
         Destroy(_leftPocket.gameObject);
         Destroy(_rightPocket.gameObject);
+    }
+
+    public void RegisterForTutorial(int number)
+    {
+        TutorialManager.Instance.AddTargetRect("ScoreMakerLine" + number, transform as RectTransform);
+        TutorialManager.Instance.AddTargetRect("SMLLeftPocket" + number, _leftPocket.transform as RectTransform);
+        TutorialManager.Instance.AddTargetRect("SMLRightPocket" + number, _rightPocket.transform as RectTransform);
     }
 }

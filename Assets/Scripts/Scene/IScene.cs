@@ -18,6 +18,7 @@ public class SceneInfoBase
 {
     public virtual SceneType SceneType => SceneType.None;
     public bool IsAdditional;
+    public TutorialCommandList TutorialCommand;
 }
 
 public class BattleSceneInfo : SceneInfoBase
@@ -42,7 +43,6 @@ public class ScoreMakerSceneInfo : SceneInfoBase
 {
     public override SceneType SceneType => SceneType.ScoreMaker;
     public SingleStageMaster StageMaster;
-    public int TargetLevel;
     public bool IsNewCreate;
 }
 

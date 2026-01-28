@@ -51,4 +51,11 @@ public class TimeJumpButton : MonoBehaviour
     {
         _mainButton.interactable = _targetTimeRate >= 0;
     }
+
+    public void RegisterForTutorial()
+    {
+        TutorialManager.Instance.AddTargetRect("TJMainButton", _mainButton.transform as RectTransform);
+        TutorialManager.Instance.AddTargetRect("TJRegisterButton", _registerButton.transform as RectTransform);
+        TutorialManager.Instance.AddTargetRect("TJDeleteButton", _deleteButton.transform as RectTransform);
+    }
 }

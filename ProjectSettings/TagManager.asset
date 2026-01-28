@@ -13,6 +13,8 @@ TagManager:
   - BattleBg
   - ScoreMakerBall
   - NarrowPocket
+  - Block
+  - UnMask
   layers:
   - Default
   - TransparentFX

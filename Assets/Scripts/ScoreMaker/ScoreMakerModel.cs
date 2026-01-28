@@ -95,4 +95,20 @@ public class ScoreMakerModel
     {
         _currentMaster.Notes = notes;
     }
+
+    public SingleStageMaster GetTutorialStageMaster()
+    {
+        return new SingleStageMaster
+        {
+            StageHeader = new StageHeader
+            {
+                MusicId = "BattleAbysswalker",
+                StartTime = 0f,
+                EndTime = 60f,
+                BPM = 120f,
+                BeatsNumber = 4
+            },
+            Notes = new List<NoteMaster>()
+        };
+    }
 }

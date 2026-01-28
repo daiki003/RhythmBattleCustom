@@ -47,12 +47,12 @@ public class GameManager : MonoBehaviour
     private UniTaskCompletionSource _loadPlayfabTask = new();
     private bool _isDuaringTransitionScene;
 
-    public static GameManager instance;
+    public static GameManager Instance;
 	public void Awake()
 	{
-		if (instance == null)
+		if (Instance == null)
 		{
-			instance = this;
+			Instance = this;
 		}
         // フレームレート設定（FPS60にしたい場合）
         Application.targetFrameRate = 120;

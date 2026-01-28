@@ -14,7 +14,7 @@ public class ScoreMakerPresenter : MonoBehaviour
     private ScoreMakerModel _model;
 
 
-    public void Init(SingleStageMaster stageMaster, bool isNewCreate)
+    public void Init(SingleStageMaster stageMaster, bool isNewCreate, bool isTutorial)
     {
         _model = new ScoreMakerModel();
         _model.OnChangeLineNumber.Subscribe(lineNumber =>
@@ -36,7 +36,7 @@ public class ScoreMakerPresenter : MonoBehaviour
                 IsPractice = true,
                 IsAdditional = true
             };
-            await GameManager.instance.OpenAdditionalScene(SceneType.Battle, sceneInfo);
+            await GameManager.Instance.OpenAdditionalScene(SceneType.Battle, sceneInfo);
         }).AddTo(this);
         _view.ClickSaveButton.Subscribe(_ =>
         {
@@ -51,10 +51,21 @@ public class ScoreMakerPresenter : MonoBehaviour
         {
             _model.ChangeHeaderParameter(param, BGMManager.instance.Length);
         });
+        _view.StartTutorial.Subscribe(async tutorialCommand =>
+        {
+            var sceneInfo = new ScoreMakerSceneInfo
+            {
+                StageMaster = _model.GetTutorialStageMaster(),
+                IsNewCreate = isNewCreate,
+                IsAdditional = true,
+                TutorialCommand = tutorialCommand
+            };
+            await GameManager.Instance.OpenAdditionalScene(SceneType.ScoreMaker, sceneInfo);
+        });
 
         stageMaster.StageHeader.EndTime = stageMaster.StageHeader.EndTime > 0 ? stageMaster.StageHeader.EndTime : BGMManager.instance.Length;
         _model.Init(stageMaster);
-        _view.Init(_model.CurrentMaster.Notes, _model.LineNumber);
+        _view.Init(_model.CurrentMaster.Notes, _model.LineNumber, isTutorial);
         _view.SetHeaderParameter(_model.CurrentMaster.StageHeader);
     }
 
@@ -68,5 +79,13 @@ public class ScoreMakerPresenter : MonoBehaviour
     public void StartMake()
     {
         _view.StartMake();
+    }
+
+    public async UniTask PlayTutorialAsync(TutorialCommandList tutorialCommand)
+    {
+        _view.PrepareTutorial(tutorialCommand.ScoreMakerStartParam);
+        await TutorialManager.Instance.StartTutorialAsync(tutorialCommand);
+        // チュートリアルが終わったらメインシーンに戻る
+        GameManager.Instance.BackToMainScene().Forget();
     }
 }

@@ -22,11 +22,11 @@ public class BattlePresenter : MonoBehaviour
         {
             if (_battleSceneInfo.IsAdditional)
             {
-                GameManager.instance.BackToMainScene().Forget();
+                GameManager.Instance.BackToMainScene().Forget();
             }
             else
             {
-                GameManager.instance.OpenScene(SceneType.Home, new HomeSceneInfo()).Forget();
+                GameManager.Instance.OpenScene(SceneType.Home, new HomeSceneInfo()).Forget();
             }
         }).AddTo(this);
         _battleView.OnWhenFinishBattle.Subscribe(score =>

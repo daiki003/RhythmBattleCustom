@@ -10,6 +10,7 @@ using UnityEngine.UI;
 public class HomeViewInput : MonoBehaviour
 {
     [SerializeField] private TabGroup _tabGroup;
+    public TabGroup TabGroup => _tabGroup;
     [SerializeField] private Button _settingButton;
     [SerializeField] private Button _helpButton;
 

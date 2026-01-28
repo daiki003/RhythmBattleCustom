@@ -114,7 +114,7 @@ public class ClickHandler
     private void ClickAction(Touch touch = default, bool isDouble = false)
     {
         var clickType = GetClickType(touch);
-        // クリックしていなければ何もしない
+        // クリックしていなければ何もしない 
         if (clickType == ClickType.None)
         {
             return;
@@ -195,7 +195,8 @@ public class ClickHandler
             }
         }
         // 2本指のドラッグはピンチ操作なので別で検知
-        else if (clickType == ClickType.Moved && !isDouble)
+        // チュートリアル中はドラッグ禁止
+        else if (clickType == ClickType.Moved && !isDouble && !TutorialManager.Instance.IsDuringTutorial)
         {
             if (IsOnTargetTag("BattleBg", touch))
             {
@@ -287,14 +288,24 @@ public class ClickHandler
 		EventSystem.current.RaycastAll(pointer, results);
 
         var returnResults = new List<RaycastResult>();
+        bool isUnmask = false;
+        var unmask = results.FirstOrDefault(r => r.gameObject.CompareTag("UnMask"));
+        if (unmask.gameObject != null)
+        {
+            if (unmask.gameObject.TryGetComponent<Image>(out var unmaskImage) && unmaskImage.raycastTarget)
+            {
+                // UnMaskのraycastTargetがTrueならタップ無効
+                return returnResults;
+            }
+        }
         foreach (RaycastResult raycastResult in results)
         {
             returnResults.Add(raycastResult);
-            // Blockタグを持ったオブジェクトがあった場合、それ以下の要素は取得しない
-            // if (raycastResult.gameObject.CompareTag("Block"))
-            // {
-            //     break;
-            // }
+            // アンマスクされていない部分で、Blockタグを持ったオブジェクトがあった場合、それ以下の要素は取得しない
+            if (!isUnmask && raycastResult.gameObject.CompareTag("Block"))
+            {
+                break;
+            }
             // 有効なButtonコンポーネントを持っている場合、それ以下の要素は取得しない
             var button = raycastResult.gameObject.GetComponent<Button>();
             if (button != null && button.interactable)

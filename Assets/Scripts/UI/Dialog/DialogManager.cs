@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class DialogManager : MonoBehaviour
@@ -21,6 +22,7 @@ public class DialogManager : MonoBehaviour
     public const string InputDialogPrefabName = "InputDialog";
     public const string SettingDialogPrefabName = "SettingDialog";
     public const string HelpDialogPrefabName = "HelpDialog";
+    public const string TutorialDialogPrefabName = "TutorialDialog";
     public const string NewCreateListDialogPrefabName = "NewCreateListDialog";
     public const string StageDuplicateDialogPrefabName = "StageDuplicateDialog";
 
@@ -58,6 +60,20 @@ public class DialogManager : MonoBehaviour
                 OkButtonSeType = ButtonSeType.ChangePage,
                 CancelButtonSeType = ButtonSeType.ChangePage,
                 FirstPageType = pageType
+            }
+        );
+    }
+
+    public TutorialDialog OpenTutorialDialog(TutorialCommandList[] tutorialCommands)
+    {
+        return CreateDialog<TutorialDialog>(
+            TutorialDialogPrefabName,
+            new TutorialDialogOption
+            {
+                CommandList = tutorialCommands,
+                TitleText = "チュートリアル",
+                HideCancelButton = true,
+                HideOkButton = true,
             }
         );
     }
