@@ -14,6 +14,7 @@ public class ChangeParameter
     public float? EndTime;
     public int? BeatNumber;
     public (int measure, int diff)? ModulationChange;
+    public bool ResetModulation;
 }
 
 public class ScoreMakerView : MonoBehaviour
@@ -74,10 +75,10 @@ public class ScoreMakerView : MonoBehaviour
 
     private Subject<float> _clickPracticeButton = new();
     public Observable<float> ClickPracticeButton => _clickPracticeButton;
-    private Subject<string> _onSave = new();
-    public Observable<string> OnSave => _onSave;
-    private Subject<Unit> _clickSaveButton = new();
-    public Observable<Unit> ClickSaveButton => _clickSaveButton;
+    private Subject<(string, bool)> _onSave = new();
+    public Observable<(string name, bool isNewSave)> OnSave => _onSave;
+    private Subject<bool> _clickSaveButton = new();
+    public Observable<bool> ClickSaveButton => _clickSaveButton;
     private Subject<ChangeParameter> _onChangeParameter = new();
     public Observable<ChangeParameter> OnChangeParameter => _onChangeParameter;
     private Subject<TutorialCommandList> _startTutorial = new();
@@ -125,7 +126,7 @@ public class ScoreMakerView : MonoBehaviour
 
     private Dictionary<bool, int> _lastBeatLineDict = new();
 
-    public void Init(List<NoteMaster> notes, int lineNumber, bool isTutorial)
+    public void Init(List<NoteMaster> notes, int lineNumber, bool isTutorial, bool isCanOverriteSave)
     {
         _isTutorial = isTutorial;
         BGMManager.instance.SetTime(_currentStartTime);
@@ -139,7 +140,7 @@ public class ScoreMakerView : MonoBehaviour
         }).AddTo(this);
 
         _selectMask.SetActive(false);
-        _controlPanel.Init();
+        _controlPanel.Init(isCanOverriteSave);
 
         AdjustmentLineNumber(lineNumber);
         CreateLine(notes);
@@ -158,12 +159,13 @@ public class ScoreMakerView : MonoBehaviour
         _controlPanel.SetParameter(stageHeader);
         foreach (var timeJump in stageHeader.TimeJumpDict)
         {
-              if (int.TryParse(timeJump.Key, out var index))
-              {
-                 _controlPanel.SetJumpTimeRate(index, timeJump.Value);
-                 CreateTimeJumpStamp(index, timeJump.Value);
-              }
+            if (int.TryParse(timeJump.Key, out var index))
+            {
+                _controlPanel.SetJumpTimeRate(index, timeJump.Value);
+                CreateTimeJumpStamp(index, timeJump.Value);
+            }
         }
+        SetFirstBeatNumberText();
     }
 
     private void StartSubscribeMain()
@@ -379,9 +381,9 @@ public class ScoreMakerView : MonoBehaviour
 
     #region ダイアログ系
     // セーブ確認のダイアログ表示
-    public void DisplaySaveDialog(string stageName, bool isNewCreate)
+    public void DisplaySaveDialog(string stageName, bool isNewSave)
     {
-        var dialog = CreateSaveDialog(stageName, isNewCreate);
+        var dialog = CreateSaveDialog(stageName, isNewSave);
         dialog.OnCloseDialog.Subscribe(result =>
         {
             string stageName = "";
@@ -391,15 +393,17 @@ public class ScoreMakerView : MonoBehaviour
             }
             if (result.ResultType == DialogResultType.Ok)
             {
-                _onSave.OnNext(stageName);
+                _onSave.OnNext((stageName, isNewSave));
+                // 新規保存後は上書き保存可能にする
+                _controlPanel.ChangeCanOverriteSave(true);
             }
         }).AddTo(this);
     }
 
     // セーブ確認のダイアログ作成
-    public DialogBase CreateSaveDialog(string stageName, bool isNewCreate)
+    public DialogBase CreateSaveDialog(string stageName, bool isNewSave)
     {
-        if (isNewCreate)
+        if (isNewSave)
         {
             // 新規作成ならステージ名入力ダイアログを出す
             var option = new InputDialogOption
@@ -417,7 +421,7 @@ public class ScoreMakerView : MonoBehaviour
             // 確認ダイアログを出す
             var option = new MessageDialogOption
             {
-                TitleText = "保存",
+                TitleText = "上書き保存",
                 MessageText = "変更すると\nこのレベルのハイスコアは削除されます。\n変更を保存しますか？",
                 OkButtonText = "保存する",
             };
@@ -473,8 +477,8 @@ public class ScoreMakerView : MonoBehaviour
                 for (int i = 0; i < _scoreLineList.Count; i++)
                 {
                     _scoreLineList[i].ClearLine();
-                    // 4の倍数で配置
-                    if (i % 4 != 0)
+                    // _beatsNumberの倍数で配置
+                    if (i % _beatsNumber != 0)
                     {
                         continue;
                     }
@@ -495,7 +499,10 @@ public class ScoreMakerView : MonoBehaviour
                 _clickPracticeButton.OnNext(_bgmScrollBar.value);
                 break;
             case ControlPanelRequestSave _:
-                _clickSaveButton.OnNext(default);
+                _clickSaveButton.OnNext(false);
+                break;
+            case ControlPanelRequestNewSave _:
+                _clickSaveButton.OnNext(true);
                 break;
             case ControlPanelRequestAllClear _:
                 for (int i = 0; i < _scoreLineList.Count; i++)
@@ -514,7 +521,6 @@ public class ScoreMakerView : MonoBehaviour
                 break;
             case ControlPanelRequestBeatsNumber beatsNumber:
                 _onChangeParameter.OnNext(new ChangeParameter { BeatNumber = beatsNumber.BeatsNumber });
-                SetFirstBeatNumberText();
                 break;
             case ControlPanelRequestModulationChange modulationChange:
                 int diff = modulationChange.IsForward ? -1 : 1;
@@ -524,13 +530,10 @@ public class ScoreMakerView : MonoBehaviour
                 {
                     return;
                 }
-                _modulationDict[modulationChange.Measure] = modulationNum;
                 _onChangeParameter.OnNext(new ChangeParameter { ModulationChange = (modulationChange.Measure, diff) });
-                SetFirstBeatNumberText();
                 break;
             case ControlPanelRequestResetModulation _:
-                _modulationDict = new Dictionary<int, int>();
-                SetFirstBeatNumberText();
+                _onChangeParameter.OnNext(new ChangeParameter { ResetModulation = true });
                 break;
             case ControlPanelRequestUndo _:
                 Undo();
@@ -971,6 +974,7 @@ public class ScoreMakerView : MonoBehaviour
     // コピーされた列情報を指定位置に貼り付ける
     private void PasteLine(int startLineNumber)
     {
+        TutorialManager.Instance.AdvanceStep("Paste");
         // ペースト前に状態を保存しておく
         UpdatePastScoreLineList();
         CreateBallFromLineState(_copiedLineState, startLineNumber);
@@ -1095,12 +1099,20 @@ public class ScoreMakerView : MonoBehaviour
 
     public void PrepareTutorial(ScoreMakerStartParam startParam)
     {
-        // チュートリアル中はスクロール禁止
-        _scoreScrollRect.enabled = false;
+        // タイムジャンプのないチュートリアル中はスクロール禁止
+        if (startParam.TimeJumpList.Count == 0)
+        {
+            _scoreScrollRect.enabled = false;
+        }
         SetScroll(startParam.ScrollPositionY);
         foreach (var arrangement in startParam.BallArrangementList)
         {
             CreateBall(arrangement.Number, isLeft: arrangement.IsLeft, ScoreMakerBallType.Single);
+        }
+        foreach (var timeJump in startParam.TimeJumpList)
+        {
+            _controlPanel.SetJumpTimeRate(timeJump.Index, timeJump.TimeRate);
+            CreateTimeJumpStamp(timeJump.Index, timeJump.TimeRate);
         }
     }
 
@@ -1117,7 +1129,7 @@ public class ScoreMakerView : MonoBehaviour
         }
         if (!_isPause)
         {
-            if (_currentTime >= _currentEndTime || _currentTime < _currentStartTime)
+            if (BGMManager.instance.IsFinishBgm)
             {
                 // BGMが終わったら自動で止める
                 ChangePause(true);

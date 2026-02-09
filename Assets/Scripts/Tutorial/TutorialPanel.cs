@@ -94,13 +94,12 @@ public class TutorialPanel : MonoBehaviour
 
         // アンマスクの設定
         SetUnmask(_unmaskRoot, command.MaskTarget);
-        if (command.ArrowParam != null)
+        if (!string.IsNullOrEmpty(command.ArrowTarget?.TargetId))
         {
-            var arrowTarget = command.ArrowParam.OverrideTarget ?? command.MaskTarget;
-            _targetArrow.Show(arrowTarget, command.ArrowParam.TargetArrowVector);
+            _targetArrow.Show(command.ArrowTarget, command.TargetArrowVector);
             // 矢印があるならタッチ可能にする
             _touchableUnmask.raycastTarget = false;
-            SetUnmask(_touchableRoot, command.ArrowParam.TouchableOverride ?? arrowTarget);
+            SetUnmask(_touchableRoot, command.TouchableTarget);
         }
 
         // メッセージ表示位置の設定
@@ -244,7 +243,7 @@ public class TutorialPanel : MonoBehaviour
 
         if (target.OverrideParam != null)
         {
-            unmaskRect.sizeDelta = new Vector2(target.OverrideParam.Width, target.OverrideParam.Height);
+            unmaskRect.sizeDelta += new Vector2(target.OverrideParam.Width, target.OverrideParam.Height);
             unmaskRect.localPosition += new Vector3(target.OverrideParam.PositionOffset.x, target.OverrideParam.PositionOffset.y, 0f);
         }
     }

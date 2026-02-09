@@ -19,110 +19,205 @@ MonoBehaviour:
     BallArrangementList: []
   Commands:
   - AdvanceType: 0
-    MaskType: 1
-    MaskTargetId: PracticeTimeUI
+    MaskTarget:
+      rid: 1467536409755385885
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
+      rid: -2
     IsEmphasis: 0
-    AddUnmaskWidth: 0
-    AddUnmaskHeight: 0
-    UnmaskPosition: {x: 0, y: 0}
-    WaitPushButtonId: 
     AdvanceId: 
     Message: "\u66F2\u3092\u6B62\u3081\u3066\u3044\u308B\u9593\u3001\u753B\u9762\u4E0B\u90E8\u306B\u6642\u9593\u64CD\u4F5C\u7528\u306EUI\u304C\u51FA\u3066\u304D\u307E\u3059\u3002"
-    MessagePositionY: -100
-    TargetArrowVector: 0
+    MessagePositionY: -300
   - AdvanceType: 0
-    MaskType: 1
-    MaskTargetId: PracticeTimeSlider
+    MaskTarget:
+      rid: 1467536409755385886
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
+      rid: -2
     IsEmphasis: 1
-    AddUnmaskWidth: 0
-    AddUnmaskHeight: 0
-    UnmaskPosition: {x: 0, y: 0}
-    WaitPushButtonId: 
     AdvanceId: 
     Message: "\u3053\u306E\u30B9\u30E9\u30A4\u30C0\u30FC\u3067\u66F2\u306E\u6642\u9593\u3092\u79FB\u52D5\u3055\u305B\u308B\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002"
-    MessagePositionY: -100
-    TargetArrowVector: 4
+    MessagePositionY: -300
   - AdvanceType: 0
-    MaskType: 1
-    MaskTargetId: PracticeBallCanvas
+    MaskTarget:
+      rid: 1467536409755385887
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
+      rid: -2
     IsEmphasis: 0
-    AddUnmaskWidth: 0
-    AddUnmaskHeight: 0
-    UnmaskPosition: {x: 0, y: 0}
-    WaitPushButtonId: 
     AdvanceId: 
     Message: "\u307E\u305F\u3001\u753B\u9762\u4E0A\u3092\u30B9\u30EF\u30A4\u30D7\u3059\u308B\u3053\u3068\u3067\u6642\u9593\u3092\u5FAE\u8ABF\u6574\u3067\u304D\u307E\u3059\u3002"
-    MessagePositionY: -100
-    TargetArrowVector: 4
+    MessagePositionY: -300
   - AdvanceType: 0
-    MaskType: 1
-    MaskTargetId: PracticeTJButtons
+    MaskTarget:
+      rid: 1467536409755385888
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
+      rid: -2
     IsEmphasis: 1
-    AddUnmaskWidth: 0
-    AddUnmaskHeight: 0
-    UnmaskPosition: {x: 0, y: 0}
-    WaitPushButtonId: 
     AdvanceId: 
     Message: "\u3053\u3053\u306E\u30DC\u30BF\u30F3\u3067\u306F\u3001\u7279\u5B9A\u306E\u6642\u9593\u3092\u4FDD\u5B58\u3057\u3066\u304A\u304D\u3001\u305D\u3053\u306B\u77AC\u6642\u306B\u98DB\u3076\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002"
-    MessagePositionY: -100
-    TargetArrowVector: 3
+    MessagePositionY: -300
   - AdvanceType: 1
-    MaskType: 1
-    MaskTargetId: TJRegisterButton
-    IsEmphasis: 0
-    AddUnmaskWidth: 0
-    AddUnmaskHeight: 0
-    UnmaskPosition: {x: 0, y: 0}
-    WaitPushButtonId: TJRegisterButton
-    AdvanceId: 
-    Message: "\u767B\u9332\u30DC\u30BF\u30F3\u3067\u3001\u73FE\u5728\u306E\u6642\u9593\u3092\u767B\u9332\u3067\u304D\u307E\u3059\u3002\n\u8A66\u3057\u306B\u62BC\u3057\u3066\u307F\u307E\u3057\u3087\u3046\u3002"
-    MessagePositionY: -100
+    MaskTarget:
+      rid: 1467536409755385889
+    ArrowTarget:
+      rid: 1467536432002236419
     TargetArrowVector: 3
+    TouchableTarget:
+      rid: 1467536432002236479
+    IsEmphasis: 0
+    AdvanceId: TJRegisterButton
+    Message: "\u767B\u9332\u30DC\u30BF\u30F3\u3067\u3001\u73FE\u5728\u306E\u6642\u9593\u3092\u767B\u9332\u3067\u304D\u307E\u3059\u3002\n\u8A66\u3057\u306B\u62BC\u3057\u3066\u307F\u307E\u3057\u3087\u3046\u3002"
+    MessagePositionY: -300
   - AdvanceType: 0
-    MaskType: 1
-    MaskTargetId: TJIcon
+    MaskTarget:
+      rid: 1467536409755385890
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
+      rid: -2
     IsEmphasis: 1
-    AddUnmaskWidth: 0
-    AddUnmaskHeight: 0
-    UnmaskPosition: {x: 0, y: 0}
-    WaitPushButtonId: 
     AdvanceId: 
     Message: "\u30B9\u30E9\u30A4\u30C0\u30FC\u306E\u4E0A\u306B\u30A2\u30A4\u30B3\u30F3\u304C\u4F5C\u6210\u3055\u308C\u307E\u3057\u305F\u3002"
-    MessagePositionY: -100
-    TargetArrowVector: 2
+    MessagePositionY: -300
   - AdvanceType: 0
-    MaskType: 1
-    MaskTargetId: TJMainButton
+    MaskTarget:
+      rid: 1467536409755385891
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
+      rid: -2
     IsEmphasis: 1
-    AddUnmaskWidth: 0
-    AddUnmaskHeight: 0
-    UnmaskPosition: {x: 0, y: 0}
-    WaitPushButtonId: 
     AdvanceId: 
     Message: "\u3053\u306E\u72B6\u614B\u3067\u6570\u5B57\u306E\u66F8\u3044\u3066\u3042\u308B\u30DC\u30BF\u30F3\u3092\u62BC\u3059\u3068\u3001\u5BFE\u5FDC\u3059\u308B\u30A2\u30A4\u30B3\u30F3\u306E\u3042\u308B\u6642\u9593\u306B\u98DB\u3076\u3053\u3068\u304C\u3067\u304D\u307E\u3059\u3002"
-    MessagePositionY: -100
-    TargetArrowVector: 3
+    MessagePositionY: -300
   - AdvanceType: 1
-    MaskType: 1
-    MaskTargetId: TJDeleteButton
-    IsEmphasis: 0
-    AddUnmaskWidth: 0
-    AddUnmaskHeight: 0
-    UnmaskPosition: {x: 0, y: 0}
-    WaitPushButtonId: TJDeleteButton
-    AdvanceId: 
-    Message: "\u524A\u9664\u30DC\u30BF\u30F3\u3092\u62BC\u3059\u3068\u3001\u3053\u306E\u756A\u53F7\u306E\u30A2\u30A4\u30B3\u30F3\u3092\u524A\u9664\u3067\u304D\u307E\u3059\u3002\n\u8A66\u3057\u306B\u62BC\u3057\u3066\u307F\u307E\u3057\u3087\u3046\u3002"
-    MessagePositionY: -100
+    MaskTarget:
+      rid: 1467536409755385892
+    ArrowTarget:
+      rid: 1467536432002236420
     TargetArrowVector: 3
-  - AdvanceType: 0
-    MaskType: 0
-    MaskTargetId: 
+    TouchableTarget:
+      rid: 1467536432002236480
     IsEmphasis: 0
-    AddUnmaskWidth: 0
-    AddUnmaskHeight: 0
-    UnmaskPosition: {x: 0, y: 0}
-    WaitPushButtonId: 
+    AdvanceId: TJDeleteButton
+    Message: "\u524A\u9664\u30DC\u30BF\u30F3\u3092\u62BC\u3059\u3068\u3001\u3053\u306E\u756A\u53F7\u306E\u30A2\u30A4\u30B3\u30F3\u3092\u524A\u9664\u3067\u304D\u307E\u3059\u3002\n\u8A66\u3057\u306B\u62BC\u3057\u3066\u307F\u307E\u3057\u3087\u3046\u3002"
+    MessagePositionY: -300
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536409755385893
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
+      rid: -2
+    IsEmphasis: 0
     AdvanceId: 
     Message: "\u30A2\u30A4\u30B3\u30F3\u304C\u524A\u9664\u3055\u308C\u307E\u3057\u305F\u3002\n\u6642\u9593\u64CD\u4F5C\u5468\u308A\u306E\u8AAC\u660E\u306F\u4EE5\u4E0A\u3067\u3059\u3002"
-    MessagePositionY: -100
-    TargetArrowVector: 3
+    MessagePositionY: -300
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 1467536409755385885
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: TimeUI
+        OverrideParam:
+          rid: 1467536432002236504
+    - rid: 1467536409755385886
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: PracticeTimeSlider
+        OverrideParam:
+          rid: 1467536432002236505
+    - rid: 1467536409755385887
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: PracticeBallCanvas
+        OverrideParam:
+          rid: -2
+    - rid: 1467536409755385888
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: PracticeTJButtons
+        OverrideParam:
+          rid: -2
+    - rid: 1467536409755385889
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: TJRegisterButton
+        OverrideParam:
+          rid: -2
+    - rid: 1467536409755385890
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: TJIcon
+        OverrideParam:
+          rid: -2
+    - rid: 1467536409755385891
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: TJMainButton
+        OverrideParam:
+          rid: -2
+    - rid: 1467536409755385892
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: TJDeleteButton
+        OverrideParam:
+          rid: -2
+    - rid: 1467536409755385893
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236419
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: TJRegisterButton
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236420
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: TJDeleteButton
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236479
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: TJRegisterButton
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236480
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: TJDeleteButton
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236504
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 0
+        Height: -20
+        PositionOffset: {x: 0, y: -30}
+    - rid: 1467536432002236505
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 50
+        Height: 0
+        PositionOffset: {x: 0, y: 0}

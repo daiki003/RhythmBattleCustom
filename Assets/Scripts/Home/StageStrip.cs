@@ -23,6 +23,7 @@ public class StageStrip : MonoBehaviour
     public float StartTime => _stageHeader.StripStartTime;
     public float EndTime => _stageHeader.StripEndTime;
     public HomePanelType PanelType => (HomePanelType)_stageHeader.PanelType;
+    public bool IsMyMusic => _stageHeader.IsMyMusic;
 
     public Subject<Unit> OnClickedStrip { get; private set; } = new();
 

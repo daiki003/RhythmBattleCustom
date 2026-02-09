@@ -27,6 +27,7 @@ public class StageHeader
     public string MusicId;
     public string StageName;
     public int PanelType;
+    public bool IsMyMusic;
     public float StripStartTime;
     public float StripEndTime;
     public float BPM;
@@ -146,6 +147,7 @@ public static class MasterManager
                     Notes = levelNotes,
                 };
                 singleMaster.StageHeader.PanelType = i + 1;
+                singleMaster.StageHeader.IsMyMusic = false;
                 singleMaster.Notes = levelNotes;
                 SampleStageList.Add(singleMaster);
             }
@@ -155,7 +157,7 @@ public static class MasterManager
     {
         SaveDataManager.ClearStateList = clearStateList;
     }
-    public static async UniTask UpdateStageMaster(SingleStageMaster stageMaster)
+    public static async UniTask UpdateStageMaster(SingleStageMaster stageMaster, bool isNewSave)
     {
         int index = CustomStageList.FindIndex(s => s.MusicId == stageMaster.StageHeader.MusicId && s.StageId == stageMaster.StageId);
         if (index >= 0)

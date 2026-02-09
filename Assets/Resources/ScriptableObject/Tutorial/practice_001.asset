@@ -21,48 +21,63 @@ MonoBehaviour:
   - AdvanceType: 0
     MaskTarget:
       rid: 1467536409755385867
-    ArrowParam:
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
       rid: -2
     IsEmphasis: 0
     AdvanceId: 
     Message: "\u7DF4\u7FD2\u30E2\u30FC\u30C9\u306E\u5404\u30DC\u30BF\u30F3\u306B\u3064\u3044\u3066\u8AAC\u660E\u3057\u307E\u3059\u3002"
-    MessagePositionY: 0
+    MessagePositionY: -50
   - AdvanceType: 0
     MaskTarget:
       rid: 1467536389089001498
-    ArrowParam:
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
       rid: -2
     IsEmphasis: 1
     AdvanceId: 
     Message: "\u3053\u306E\u30DC\u30BF\u30F3\u3067\u66F2\u3092\u4E00\u6642\u505C\u6B62\u3067\u304D\u307E\u3059\u3002\n\u3082\u3046\u4E00\u5EA6\u62BC\u3059\u3068\u518D\u958B\u3057\u307E\u3059\u3002"
-    MessagePositionY: 0
+    MessagePositionY: -50
   - AdvanceType: 0
     MaskTarget:
       rid: 1467536409755385868
-    ArrowParam:
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
       rid: -2
     IsEmphasis: 1
     AdvanceId: 
     Message: "\u3053\u306E\u30DC\u30BF\u30F3\u3067\u81EA\u52D5\u30D7\u30EC\u30A4\u30E2\u30FC\u30C9\u306E\u5207\u66FF\u304C\u3067\u304D\u307E\u3059\u3002"
-    MessagePositionY: 0
+    MessagePositionY: -50
   - AdvanceType: 0
     MaskTarget:
       rid: 1467536409755385869
-    ArrowParam:
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
       rid: -2
     IsEmphasis: 1
     AdvanceId: 
     Message: "\u3053\u306E\u30DC\u30BF\u30F3\u3067\u30B9\u30B3\u30A2\u306E\u30EA\u30BB\u30C3\u30C8\u304C\u3067\u304D\u307E\u3059\u3002"
-    MessagePositionY: 0
+    MessagePositionY: -50
   - AdvanceType: 0
     MaskTarget:
       rid: 1467536409755385870
-    ArrowParam:
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
       rid: -2
     IsEmphasis: 0
     AdvanceId: 
     Message: "\u4ECA\u56DE\u306E\u8AAC\u660E\u306F\u4EE5\u4E0A\u3067\u3059\u3002"
-    MessagePositionY: 0
+    MessagePositionY: -50
   references:
     version: 2
     RefIds:
@@ -83,13 +98,13 @@ MonoBehaviour:
     - rid: 1467536409755385868
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
-        TargetId: 
+        TargetId: AutoPlayButton
         OverrideParam:
           rid: -2
     - rid: 1467536409755385869
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
-        TargetId: 
+        TargetId: ScoreResetButton
         OverrideParam:
           rid: -2
     - rid: 1467536409755385870

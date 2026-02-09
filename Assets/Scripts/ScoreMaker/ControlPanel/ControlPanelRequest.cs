@@ -67,7 +67,11 @@ public class ControlPanelRequestPractice : ControlPanelRequestBase
 }
 public class ControlPanelRequestSave : ControlPanelRequestBase
 {
-    public ControlPanelRequestSave() {}
+    public ControlPanelRequestSave() { }
+}
+public class ControlPanelRequestNewSave : ControlPanelRequestBase
+{
+    public ControlPanelRequestNewSave() {}
 }
 public class ControlPanelRequestAllClear : ControlPanelRequestBase
 {

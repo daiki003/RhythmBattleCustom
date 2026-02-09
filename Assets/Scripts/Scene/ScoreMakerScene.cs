@@ -16,10 +16,9 @@ public class ScoreMakerScene : SceneBase
         {
             return;
         }
-        Debug.Log("MusicId:" + _scoreMakerSceneInfo.StageMaster.StageHeader.MusicId);
         await BGMManager.instance.SetStageClip(_scoreMakerSceneInfo.StageMaster.StageHeader.MusicId, immediatePlay: false);
         bool isTutorial = _scoreMakerSceneInfo.TutorialCommand != null;
-        _scoreMaker.Init(_scoreMakerSceneInfo.StageMaster, _scoreMakerSceneInfo.IsNewCreate, isTutorial);
+        _scoreMaker.Init(_scoreMakerSceneInfo.StageMaster, isTutorial);
         if (isTutorial)
         {
             _scoreMaker.PlayTutorialAsync(_scoreMakerSceneInfo.TutorialCommand).Forget();

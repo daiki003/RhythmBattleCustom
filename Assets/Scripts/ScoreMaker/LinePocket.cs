@@ -72,4 +72,10 @@ public class LinePocket : MonoBehaviour
     {
         _selectedPanel.SetActive(isSelected);
     }
+
+    public void RegisterForTutorial(int number)
+    {
+        string side = IsLeft ? "Left" : "Right";
+        TutorialManager.Instance.AddTargetRect(string.Concat(side, "LinePocketDelete", number), _deleteButton.transform as RectTransform);
+    }
 }

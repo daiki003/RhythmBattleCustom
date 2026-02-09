@@ -73,6 +73,8 @@ public class ControlPanelPageBpm : ControlPanelPageBase
         _bpmInput.SetValue(stageHeader.BPM);
         _startTimeInput.SetValue(stageHeader.StartTime);
         _endTimeInput.SetValue(stageHeader.EndTime);
+        bool canEstimate = stageHeader.IsMyMusic || TutorialManager.Instance.IsDuringTutorial;
+        _estimateBpmButton.gameObject.SetActive(canEstimate);
     }
 
     private void SetMessageMask(bool isActive, string message = "")

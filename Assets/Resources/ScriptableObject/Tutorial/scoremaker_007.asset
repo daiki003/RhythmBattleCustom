@@ -1,0 +1,199 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cf6f6a467af96b4f92b69c722727b96, type: 3}
+  m_Name: scoremaker_007
+  m_EditorClassIdentifier: 
+  TutorialName: "\u4E00\u822C\u30BF\u30D6\u30DC\u30BF\u30F3"
+  TutorialType: 2
+  ScoreMakerStartParam:
+    ScrollPositionY: -1580
+    BallArrangementList: []
+  Commands:
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536432002236437
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
+      rid: -2
+    IsEmphasis: 0
+    AdvanceId: 
+    Message: "\u4ECA\u56DE\u306F\u4E00\u822C\u30BF\u30D6\u306E\u5404\u7A2E\u30DC\u30BF\u30F3\u306B\u3064\u3044\u3066\u8AAC\u660E\u3057\u307E\u3059\u3002"
+    MessagePositionY: -570
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536454988333084
+    ArrowTarget:
+      rid: 1467536454988333085
+    TargetArrowVector: 3
+    TouchableTarget:
+      rid: 1467536454988333086
+    IsEmphasis: 1
+    AdvanceId: 
+    Message: "\u3053\u306E\u30DC\u30BF\u30F3\u3092\u62BC\u3059\u3068\u3001\u7DF4\u7FD2\u30E2\u30FC\u30C9\u306B\u79FB\u884C\u3057\u3066\u8A66\u3057\u6253\u3061\u3067\u304D\u307E\u3059\u3002"
+    MessagePositionY: -570
+  - AdvanceType: 1
+    MaskTarget:
+      rid: 1467536454988333096
+    ArrowTarget:
+      rid: 1467536454988333097
+    TargetArrowVector: 4
+    TouchableTarget:
+      rid: 1467536454988333098
+    IsEmphasis: 0
+    AdvanceId: EvenlySpaced
+    Message: "\u3053\u306E\u30DC\u30BF\u30F3\u3092\u62BC\u3059\u3068\u3001\u6570\u5B57\u306E\u4ED8\u3044\u305F\u30E9\u30A4\u30F3\u306B\u5DE6\u53F3\u4EA4\u4E92\u3067\u30DC\u30FC\u30EB\u304C\u914D\u7F6E\u3055\u308C\u307E\u3059\u3002"
+    MessagePositionY: -570
+  - AdvanceType: 1
+    MaskTarget:
+      rid: 337953672379236352
+    ArrowTarget:
+      rid: 337953672379236353
+    TargetArrowVector: 4
+    TouchableTarget:
+      rid: 337953672379236354
+    IsEmphasis: 0
+    AdvanceId: AllClearButton
+    Message: "\u3053\u306E\u30DC\u30BF\u30F3\u3092\u62BC\u3059\u3068\u3001\u914D\u7F6E\u3055\u308C\u3066\u3044\u308B\u30DC\u30FC\u30EB\u304C\u5168\u3066\u524A\u9664\u3055\u308C\u307E\u3059\u3002"
+    MessagePositionY: -570
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 337953672379236355
+    ArrowTarget:
+      rid: 337953672379236356
+    TargetArrowVector: 4
+    TouchableTarget:
+      rid: 337953672379236357
+    IsEmphasis: 1
+    AdvanceId: AllClearButton
+    Message: "\u3053\u306E\u30DC\u30BF\u30F3\u3092\u62BC\u3059\u3068\u3001\u65B0\u3057\u3044\u30B9\u30C6\u30FC\u30B8\u3068\u3057\u3066\u73FE\u5728\u306E\u72B6\u614B\u304C\u4FDD\u5B58\u3055\u308C\u307E\u3059\u3002"
+    MessagePositionY: -570
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 337953672379236358
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 4
+    TouchableTarget:
+      rid: -2
+    IsEmphasis: 1
+    AdvanceId: AllClearButton
+    Message: "\u3053\u306E\u30DC\u30BF\u30F3\u3092\u62BC\u3059\u3068\u4E0A\u66F8\u304D\u4FDD\u5B58\u3055\u308C\u307E\u3059\u3002"
+    MessagePositionY: -570
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536454988333120
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 1
+    TouchableTarget:
+      rid: -2
+    IsEmphasis: 0
+    AdvanceId: ClickLineRight
+    Message: "\u4ECA\u56DE\u306E\u8AAC\u660E\u306F\u4EE5\u4E0A\u3067\u3059\u3002"
+    MessagePositionY: -570
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 337953672379236352
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: AllClearButton
+        OverrideParam:
+          rid: -2
+    - rid: 337953672379236353
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: AllClearButton
+        OverrideParam:
+          rid: -2
+    - rid: 337953672379236354
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: AllClearButton
+        OverrideParam:
+          rid: -2
+    - rid: 337953672379236355
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: NewSave
+        OverrideParam:
+          rid: -2
+    - rid: 337953672379236356
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 337953672379236357
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 337953672379236358
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: OverwriteSave
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236437
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333084
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: Practice
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333085
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333086
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333096
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: EvenlySpaced
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333097
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: EvenlySpaced
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333098
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: EvenlySpaced
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333120
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2

@@ -35,11 +35,13 @@ public class GetStageKey
     public string MusicId;
     public int StageId;
     public HomePanelType PanelType;
-    public GetStageKey(string musicId, int stageId, HomePanelType panelType)
+    public bool IsMyMusic;
+    public GetStageKey(string musicId, int stageId, HomePanelType panelType, bool isMyMusic)
     {
         MusicId = musicId;
         StageId = stageId;
         PanelType = panelType;
+        IsMyMusic = isMyMusic;
     }
 }
 
@@ -142,7 +144,7 @@ public class HomeView : MonoBehaviour
             {
                 _selectedStrip?.SetSelected(false);
                 _selectedStrip = strip;
-                _currentStageKey = new GetStageKey(strip.MusicIdId, strip.StageId, strip.PanelType);
+                _currentStageKey = new GetStageKey(strip.MusicIdId, strip.StageId, strip.PanelType, strip.IsMyMusic);
                 strip.SetSelected(true);
                 await BGMManager.instance.SetStageClip(strip.MusicIdId, isFade: true, startTime: strip.StartTime, endTime: strip.EndTime);
                 _homeViewInput.SetButtonInteractable(true);

@@ -9,6 +9,8 @@ public class ScoreLine : MonoBehaviour
     [SerializeField] private LinePocket _leftPocket;
     [SerializeField] private LinePocket _rightPocket;
     [SerializeField] private Text _numberText;
+    [SerializeField] private Transform _leftNarrowPocket;
+    [SerializeField] private Transform _rightNarrowPocket;
     public LinePocket LeftPocket => _leftPocket;
     public LinePocket RightPocket => _rightPocket;
 
@@ -93,5 +95,9 @@ public class ScoreLine : MonoBehaviour
         TutorialManager.Instance.AddTargetRect("ScoreMakerLine" + number, transform as RectTransform);
         TutorialManager.Instance.AddTargetRect("SMLLeftPocket" + number, _leftPocket.transform as RectTransform);
         TutorialManager.Instance.AddTargetRect("SMLRightPocket" + number, _rightPocket.transform as RectTransform);
+        TutorialManager.Instance.AddTargetRect("SMLLeftNarrowPocket" + number, _leftNarrowPocket.transform as RectTransform);
+        TutorialManager.Instance.AddTargetRect("SMLRightNarrowPocket" + number, _rightNarrowPocket.transform as RectTransform);
+        _leftPocket.RegisterForTutorial(number);
+        _rightPocket.RegisterForTutorial(number);
     }
 }

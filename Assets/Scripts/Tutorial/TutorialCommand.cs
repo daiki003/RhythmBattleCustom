@@ -23,6 +23,7 @@ public class ScoreMakerStartParam
 {
     public float ScrollPositionY;
     public List<BallArrangementPartam> BallArrangementList = new();
+    public List<TimeJumpParam> TimeJumpList = new();
 }
 
 [System.Serializable]
@@ -30,6 +31,13 @@ public class BallArrangementPartam
 {
     public int Number;
     public bool IsLeft;
+}
+
+[System.Serializable]
+public class TimeJumpParam
+{
+    public int Index;
+    public float TimeRate;
 }
 
 public enum TutorialAdvanceType
@@ -46,7 +54,10 @@ public class TutorialCommandParam
     [SerializeReference]
     public TutorialTarget MaskTarget;
     [SerializeReference]
-    public ArrowParam ArrowParam;
+    public TutorialTarget ArrowTarget;
+    public TargetArrow.ArrowVector TargetArrowVector;
+    [SerializeReference]
+    public TutorialTarget TouchableTarget;
     public bool IsEmphasis;
     public string AdvanceId;
     [TextArea(3, 10)]

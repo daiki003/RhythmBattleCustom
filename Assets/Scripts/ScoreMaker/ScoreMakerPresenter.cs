@@ -14,7 +14,7 @@ public class ScoreMakerPresenter : MonoBehaviour
     private ScoreMakerModel _model;
 
 
-    public void Init(SingleStageMaster stageMaster, bool isNewCreate, bool isTutorial)
+    public void Init(SingleStageMaster stageMaster, bool isTutorial)
     {
         _model = new ScoreMakerModel();
         _model.OnChangeLineNumber.Subscribe(lineNumber =>
@@ -38,14 +38,14 @@ public class ScoreMakerPresenter : MonoBehaviour
             };
             await GameManager.Instance.OpenAdditionalScene(SceneType.Battle, sceneInfo);
         }).AddTo(this);
-        _view.ClickSaveButton.Subscribe(_ =>
+        _view.ClickSaveButton.Subscribe(isNewSave =>
         {
-            _view.DisplaySaveDialog(_model.OriginalStageInfo.StageHeader.StageName, isNewCreate);
+            _view.DisplaySaveDialog(_model.OriginalStageInfo.StageHeader.StageName, isNewSave);
         }).AddTo(this);
-        _view.OnSave.Subscribe(async name =>
+        _view.OnSave.Subscribe(async param =>
         {
             // 現在のレベルの譜面を保存
-            await SaveScore(name);
+            await SaveScore(param.name, param.isNewSave);
         }).AddTo(this);
         _view.OnChangeParameter.Subscribe(param =>
         {
@@ -56,7 +56,6 @@ public class ScoreMakerPresenter : MonoBehaviour
             var sceneInfo = new ScoreMakerSceneInfo
             {
                 StageMaster = _model.GetTutorialStageMaster(),
-                IsNewCreate = isNewCreate,
                 IsAdditional = true,
                 TutorialCommand = tutorialCommand
             };
@@ -65,14 +64,14 @@ public class ScoreMakerPresenter : MonoBehaviour
 
         stageMaster.StageHeader.EndTime = stageMaster.StageHeader.EndTime > 0 ? stageMaster.StageHeader.EndTime : BGMManager.instance.Length;
         _model.Init(stageMaster);
-        _view.Init(_model.CurrentMaster.Notes, _model.LineNumber, isTutorial);
+        _view.Init(_model.CurrentMaster.Notes, _model.LineNumber, isTutorial, _model.CurrentMaster.StageId > 0);
         _view.SetHeaderParameter(_model.CurrentMaster.StageHeader);
     }
 
-    private async UniTask SaveScore(string stageName)
+    private async UniTask SaveScore(string stageName, bool isNewSave)
     {
         // 現在のレベルの譜面を保存
-        await _model.SaveScore(_view.CreateNoteList(), stageName, _view.GetTimeJumpDict());
+        await _model.SaveScore(_view.CreateNoteList(), stageName, _view.GetTimeJumpDict(), isNewSave);
         _view.DisplaySaveFinishDialog();
     }
 

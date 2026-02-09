@@ -1,0 +1,331 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cf6f6a467af96b4f92b69c722727b96, type: 3}
+  m_Name: scoremaker_004
+  m_EditorClassIdentifier: 
+  TutorialName: "\u30B3\u30D4\u30FC\u30FB\u30DA\u30FC\u30B9\u30C8"
+  TutorialType: 2
+  ScoreMakerStartParam:
+    ScrollPositionY: -1582
+    BallArrangementList:
+    - Number: 0
+      IsLeft: 0
+    - Number: 1
+      IsLeft: 1
+    - Number: 2
+      IsLeft: 0
+  Commands:
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536432002236437
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
+      rid: -2
+    IsEmphasis: 0
+    AdvanceId: 
+    Message: "\u4ECA\u56DE\u306F\u30B3\u30D4\u30FC\u30FB\u30DA\u30FC\u30B9\u30C8\u306B\u3064\u3044\u3066\u8AAC\u660E\u3057\u307E\u3059\u3002"
+    MessagePositionY: -850
+  - AdvanceType: 2
+    MaskTarget:
+      rid: 1467536454988333084
+    ArrowTarget:
+      rid: 1467536454988333085
+    TargetArrowVector: 1
+    TouchableTarget:
+      rid: 1467536454988333086
+    IsEmphasis: 0
+    AdvanceId: ClickLine
+    Message: "\u307E\u305A\u306F\u30B3\u30D4\u30FC\u3057\u305F\u3044\u7BC4\u56F2\u3092\u9078\u629E\u3057\u307E\u3059\u3002\n\u4E0B3\u5217\u3092\u9078\u629E\u3057\u307E\u3057\u3087\u3046\u3002"
+    MessagePositionY: -850
+  - AdvanceType: 2
+    MaskTarget:
+      rid: 1467536454988333096
+    ArrowTarget:
+      rid: 1467536454988333097
+    TargetArrowVector: 2
+    TouchableTarget:
+      rid: 1467536454988333098
+    IsEmphasis: 0
+    AdvanceId: ClickLine
+    Message: "\u307E\u305A\u306F\u30B3\u30D4\u30FC\u3057\u305F\u3044\u7BC4\u56F2\u3092\u9078\u629E\u3057\u307E\u3059\u3002\n\u4E0B3\u5217\u3092\u9078\u629E\u3057\u307E\u3057\u3087\u3046\u3002"
+    MessagePositionY: -850
+  - AdvanceType: 1
+    MaskTarget:
+      rid: 1467536432002236440
+    ArrowTarget:
+      rid: 1467536454988333102
+    TargetArrowVector: 3
+    TouchableTarget:
+      rid: 1467536454988333103
+    IsEmphasis: 0
+    AdvanceId: CopyButton
+    Message: "\u3053\u306E\u30DC\u30BF\u30F3\u3092\u62BC\u3059\u3068\u3001\u9078\u629E\u3057\u305F\u7BC4\u56F2\u3092\u30B3\u30D4\u30FC\u3067\u304D\u307E\u3059\u3002"
+    MessagePositionY: -850
+  - AdvanceType: 1
+    MaskTarget:
+      rid: 1467536454988333104
+    ArrowTarget:
+      rid: 1467536454988333105
+    TargetArrowVector: 3
+    TouchableTarget:
+      rid: 1467536454988333106
+    IsEmphasis: 0
+    AdvanceId: PasteButton
+    Message: "\u3053\u306E\u30DC\u30BF\u30F3\u3067\u3001\u30DA\u30FC\u30B9\u30C8\u30E2\u30FC\u30C9\u306E\u5207\u308A\u66FF\u3048\u304C\u3067\u304D\u307E\u3059\u3002"
+    MessagePositionY: -850
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536454988333109
+    ArrowTarget:
+      rid: 1467536454988333110
+    TargetArrowVector: 3
+    TouchableTarget:
+      rid: 1467536454988333111
+    IsEmphasis: 1
+    AdvanceId: PasteButton
+    Message: "\u30DA\u30FC\u30B9\u30C8\u30E2\u30FC\u30C9\u306B\u306A\u308A\u307E\u3057\u305F\u3002"
+    MessagePositionY: -850
+  - AdvanceType: 2
+    MaskTarget:
+      rid: 1467536432002236441
+    ArrowTarget:
+      rid: 1467536432002236442
+    TargetArrowVector: 1
+    TouchableTarget:
+      rid: 1467536454988333059
+    IsEmphasis: 0
+    AdvanceId: Paste
+    Message: "\u30DA\u30FC\u30B9\u30C8\u30E2\u30FC\u30C9\u4E2D\u306B\u30E9\u30A4\u30F3\u3092\u30BF\u30C3\u30D7\u3059\u308B\u3068\u3001\u305D\u3053\u306B\u30B3\u30D4\u30FC\u3057\u305F\u30DC\u30FC\u30EB\u3092\u914D\u7F6E\u3067\u304D\u307E\u3059\u3002"
+    MessagePositionY: -850
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536432002236443
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 1
+    TouchableTarget:
+      rid: -2
+    IsEmphasis: 1
+    AdvanceId: ClickLineRight
+    Message: "\u30B3\u30D4\u30FC\u3057\u305F\u30DC\u30FC\u30EB\u304C\u914D\u7F6E\u3055\u308C\u307E\u3057\u305F\u3002"
+    MessagePositionY: -850
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536454988333107
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 1
+    TouchableTarget:
+      rid: -2
+    IsEmphasis: 0
+    AdvanceId: ClickLineRight
+    Message: "\u4ECA\u56DE\u306E\u8AAC\u660E\u306F\u4EE5\u4E0A\u3067\u3059\u3002"
+    MessagePositionY: -850
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 1467536432002236437
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236440
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: CopyButton
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236441
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: ScoreMakerLine4
+        OverrideParam:
+          rid: 1467536454988333064
+    - rid: 1467536432002236442
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: ScoreMakerLine4
+        OverrideParam:
+          rid: 1467536454988333065
+    - rid: 1467536432002236443
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: ScoreMakerLine5
+        OverrideParam:
+          rid: 1467536454988333108
+    - rid: 1467536454988333059
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: ScoreMakerLine4
+        OverrideParam:
+          rid: 1467536454988333066
+    - rid: 1467536454988333064
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 50
+        Height: 50
+        PositionOffset: {x: 0, y: 0}
+    - rid: 1467536454988333065
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 50
+        Height: 50
+        PositionOffset: {x: 0, y: 0}
+    - rid: 1467536454988333066
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: -490
+        Height: 100
+        PositionOffset: {x: 0, y: 0}
+    - rid: 1467536454988333084
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: ScoreMakerLine1
+        OverrideParam:
+          rid: 1467536454988333087
+    - rid: 1467536454988333085
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: ScoreMakerLine0
+        OverrideParam:
+          rid: 1467536454988333088
+    - rid: 1467536454988333086
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: ScoreMakerLine0
+        OverrideParam:
+          rid: 1467536454988333089
+    - rid: 1467536454988333087
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 50
+        Height: 380
+        PositionOffset: {x: 0, y: 0}
+    - rid: 1467536454988333088
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: -490
+        Height: 100
+        PositionOffset: {x: 0, y: 0}
+    - rid: 1467536454988333089
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: -490
+        Height: 100
+        PositionOffset: {x: 0, y: 0}
+    - rid: 1467536454988333096
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: ScoreMakerLine1
+        OverrideParam:
+          rid: 1467536454988333099
+    - rid: 1467536454988333097
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: ScoreMakerLine2
+        OverrideParam:
+          rid: 1467536454988333100
+    - rid: 1467536454988333098
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: ScoreMakerLine2
+        OverrideParam:
+          rid: 1467536454988333101
+    - rid: 1467536454988333099
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 50
+        Height: 380
+        PositionOffset: {x: 0, y: 0}
+    - rid: 1467536454988333100
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: -490
+        Height: 100
+        PositionOffset: {x: 0, y: 0}
+    - rid: 1467536454988333101
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: -490
+        Height: 100
+        PositionOffset: {x: 0, y: 0}
+    - rid: 1467536454988333102
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: CopyButton
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333103
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: CopyButton
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333104
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: PasteButton
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333105
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: PasteButton
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333106
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: PasteButton
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333107
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333108
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 50
+        Height: 425
+        PositionOffset: {x: 0, y: 0}
+    - rid: 1467536454988333109
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: PasteButton
+        OverrideParam:
+          rid: 1467536454988333112
+    - rid: 1467536454988333110
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333111
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333112
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 20
+        Height: 20
+        PositionOffset: {x: 0, y: 0}

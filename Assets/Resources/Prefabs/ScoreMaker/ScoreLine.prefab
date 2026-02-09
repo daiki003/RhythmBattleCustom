@@ -95,6 +95,8 @@ MonoBehaviour:
   _leftPocket: {fileID: 817938005739878638}
   _rightPocket: {fileID: 8178882067302679409}
   _numberText: {fileID: 6843480778544978602}
+  _leftNarrowPocket: {fileID: 1842851285914623953}
+  _rightNarrowPocket: {fileID: 819914278541675203}
   IsEnd: 0
 --- !u!1 &2538630142547811537
 GameObject:

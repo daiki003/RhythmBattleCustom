@@ -1,0 +1,175 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cf6f6a467af96b4f92b69c722727b96, type: 3}
+  m_Name: scoremaker_006
+  m_EditorClassIdentifier: 
+  TutorialName: "\u6F14\u594F\u4F5C\u6210"
+  TutorialType: 2
+  ScoreMakerStartParam:
+    ScrollPositionY: -1580
+    BallArrangementList: []
+  Commands:
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536432002236437
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
+      rid: -2
+    IsEmphasis: 0
+    AdvanceId: 
+    Message: "\u4ECA\u56DE\u306F\u6F14\u594F\u4F5C\u6210\u30E2\u30FC\u30C9\u306B\u3064\u3044\u3066\u8AAC\u660E\u3057\u307E\u3059\u3002"
+    MessagePositionY: -120
+  - AdvanceType: 1
+    MaskTarget:
+      rid: 1467536454988333084
+    ArrowTarget:
+      rid: 1467536454988333085
+    TargetArrowVector: 3
+    TouchableTarget:
+      rid: 1467536454988333086
+    IsEmphasis: 0
+    AdvanceId: PlayMakeMode
+    Message: "\u4E0B\u306E\u30C0\u30A4\u30A2\u30ED\u30B0\u306E\u3053\u306E\u30DC\u30BF\u30F3\u3092\u62BC\u3059\u3068\u3001\u6F14\u594F\u4F5C\u6210\u30E2\u30FC\u30C9\u306B\u79FB\u884C\u3057\u307E\u3059\u3002"
+    MessagePositionY: -120
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536454988333096
+    ArrowTarget:
+      rid: 1467536454988333097
+    TargetArrowVector: 1
+    TouchableTarget:
+      rid: 1467536454988333098
+    IsEmphasis: 0
+    AdvanceId: PlayMakePanel
+    Message: "\u3053\u306E\u72B6\u614B\u3067\u306F\u3001\u753B\u9762\u4E0B\u90E8\u3092\u30BF\u30C3\u30D7\u3059\u308B\u3053\u3068\u3067\u30DC\u30FC\u30EB\u3092\u914D\u7F6E\u3067\u304D\u307E\u3059\u3002"
+    MessagePositionY: -120
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 337953651658850304
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 1
+    TouchableTarget:
+      rid: -2
+    IsEmphasis: 1
+    AdvanceId: PlayMakePanel
+    Message: "\u3053\u306E\u30DC\u30BF\u30F3\u3092\u62BC\u3059\u3068\u3001\u6F14\u594F\u4F5C\u6210\u30E2\u30FC\u30C9\u4E2D\u306B\u884C\u3063\u305F\u5909\u66F4\u304C\u30EA\u30BB\u30C3\u30C8\u3055\u308C\u307E\u3059\u3002"
+    MessagePositionY: -120
+  - AdvanceType: 1
+    MaskTarget:
+      rid: 1467536432002236440
+    ArrowTarget:
+      rid: 1467536454988333102
+    TargetArrowVector: 3
+    TouchableTarget:
+      rid: 1467536454988333103
+    IsEmphasis: 0
+    AdvanceId: PlayMakeFinish
+    Message: "\u3053\u306E\u30DC\u30BF\u30F3\u3092\u62BC\u3059\u3068\u6F14\u594F\u4F5C\u6210\u30E2\u30FC\u30C9\u3092\u7D42\u4E86\u3057\u307E\u3059\u3002"
+    MessagePositionY: -120
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536454988333120
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 1
+    TouchableTarget:
+      rid: -2
+    IsEmphasis: 0
+    AdvanceId: ClickLineRight
+    Message: "\u4ECA\u56DE\u306E\u8AAC\u660E\u306F\u4EE5\u4E0A\u3067\u3059\u3002"
+    MessagePositionY: -120
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 337953651658850304
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: PlayMakeReset
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236437
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236440
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: PlayMakeFinish
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333084
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: PlayMakeMode
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333085
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: PlayMakeMode
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333086
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: PlayMakeMode
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333096
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: PlayMakePanel
+        OverrideParam:
+          rid: 1467536454988333099
+    - rid: 1467536454988333097
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333098
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333099
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 0
+        Height: -500
+        PositionOffset: {x: 0, y: -100}
+    - rid: 1467536454988333102
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: PlayMakeFinish
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333103
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: PlayMakeFinish
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333120
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2

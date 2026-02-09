@@ -43,7 +43,6 @@ public class ScoreMakerSceneInfo : SceneInfoBase
 {
     public override SceneType SceneType => SceneType.ScoreMaker;
     public SingleStageMaster StageMaster;
-    public bool IsNewCreate;
 }
 
 public static class SceneInfoExtension

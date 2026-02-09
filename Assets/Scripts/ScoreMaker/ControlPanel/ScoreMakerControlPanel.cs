@@ -32,7 +32,9 @@ public class ScoreMakerControlPanel : MonoBehaviour
     private Subject<ControlPanelRequestBase> _onRequest = new();
     public Observable<ControlPanelRequestBase> OnRequest => _onRequest;
 
-    public void Init()
+    private ControlPanelPageAutoCreate _pageOption;
+
+    public void Init(bool isCanOverriteSave)
     {
         // パーツ系
         InitializeParts(_ballParts);
@@ -51,6 +53,11 @@ public class ScoreMakerControlPanel : MonoBehaviour
             var page = _menuPageList[i];
             _tabGroup.SetTabText(i, page.PageName);
             InitializeParts(page);
+            if (page is ControlPanelPageAutoCreate optionPage)
+            {
+                _pageOption = optionPage;
+                _pageOption.SetCanOverriteSave(isCanOverriteSave);
+            }
         }
 
         // ボタン系
@@ -119,6 +126,11 @@ public class ScoreMakerControlPanel : MonoBehaviour
         {
             page.SetParameter(stageHeader);
         }
+    }
+
+    public void ChangeCanOverriteSave(bool isCanOverriteSave)
+    {
+        _pageOption.SetCanOverriteSave(isCanOverriteSave);
     }
 
     // 演奏作成モードかどうかでパネルを切り替え

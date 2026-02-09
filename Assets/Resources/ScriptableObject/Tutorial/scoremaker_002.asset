@@ -24,21 +24,25 @@ MonoBehaviour:
   Commands:
   - AdvanceType: 0
     MaskTarget:
-      rid: -2
+      rid: 1467536432002236445
     ArrowTarget:
       rid: 1467536389089001472
+    TargetArrowVector: 0
+    TouchableTarget:
+      rid: -2
     IsEmphasis: 0
-    WaitPushButtonId: 
     AdvanceId: 
     Message: "\u4ECA\u56DE\u306F\u30ED\u30F3\u30B0\u30DC\u30FC\u30EB\u306E\u914D\u7F6E\u65B9\u6CD5\u306B\u3064\u3044\u3066\u8AAC\u660E\u3057\u307E\u3059\u3002"
     MessagePositionY: -100
   - AdvanceType: 2
     MaskTarget:
-      rid: -2
+      rid: 1467536432002236446
     ArrowTarget:
-      rid: -2
+      rid: 1467536432002236447
+    TargetArrowVector: 4
+    TouchableTarget:
+      rid: 1467536432002236506
     IsEmphasis: 0
-    WaitPushButtonId: 
     AdvanceId: ClickLineRight
     Message: "\u307E\u305A\u306F\u914D\u7F6E\u3057\u3066\u3042\u308B\u30DC\u30FC\u30EB\u3092\u9078\u629E\u3057\u307E\u3057\u3087\u3046\u3002"
     MessagePositionY: -100
@@ -46,19 +50,23 @@ MonoBehaviour:
     MaskTarget:
       rid: 1467536364811321374
     ArrowTarget:
-      rid: -2
+      rid: 1467536432002236448
+    TargetArrowVector: 4
+    TouchableTarget:
+      rid: 1467536432002236507
     IsEmphasis: 0
-    WaitPushButtonId: 
     AdvanceId: ClickLineRight
     Message: "\u305D\u306E\u72B6\u614B\u3067\u3001\u5225\u306E\u30DC\u30FC\u30EB\u3092\u9078\u629E\u3057\u3066\u307F\u307E\u3057\u3087\u3046\u3002"
     MessagePositionY: -100
   - AdvanceType: 0
     MaskTarget:
-      rid: -2
+      rid: 1467536432002236449
     ArrowTarget:
       rid: -2
-    IsEmphasis: 0
-    WaitPushButtonId: 
+    TargetArrowVector: 0
+    TouchableTarget:
+      rid: -2
+    IsEmphasis: 1
     AdvanceId: 
     Message: "\u30DC\u30FC\u30EB\u304C\u3064\u306A\u304C\u308A\u3001\u30ED\u30F3\u30B0\u30DC\u30FC\u30EB\u306B\u306A\u308A\u307E\u3057\u305F\u3002"
     MessagePositionY: -100
@@ -66,9 +74,11 @@ MonoBehaviour:
     MaskTarget:
       rid: 1467536364811321354
     ArrowTarget:
-      rid: -2
+      rid: 1467536432002236450
+    TargetArrowVector: 4
+    TouchableTarget:
+      rid: 1467536432002236508
     IsEmphasis: 0
-    WaitPushButtonId: 
     AdvanceId: ClickLineRight
     Message: "\u6B21\u306B\u89E3\u9664\u65B9\u6CD5\u3067\u3059\u3002\n\u518D\u5EA6\u30DC\u30FC\u30EB\u3092\u9078\u629E\u3057\u3066\u307F\u307E\u3057\u3087\u3046\u3002"
     MessagePositionY: -100
@@ -76,9 +86,11 @@ MonoBehaviour:
     MaskTarget:
       rid: 1467536364811321355
     ArrowTarget:
-      rid: -2
+      rid: 1467536432002236451
+    TargetArrowVector: 4
+    TouchableTarget:
+      rid: 1467536432002236509
     IsEmphasis: 0
-    WaitPushButtonId: 
     AdvanceId: ClickLineRight
     Message: "\u3053\u306E\u72B6\u614B\u3067\u3082\u3046\u4E00\u65B9\u306E\u30DC\u30FC\u30EB\u3082\u9078\u629E\u3057\u307E\u3057\u3087\u3046\u3002"
     MessagePositionY: -100
@@ -87,8 +99,10 @@ MonoBehaviour:
       rid: 1467536364811321356
     ArrowTarget:
       rid: -2
-    IsEmphasis: 0
-    WaitPushButtonId: UndoButton
+    TargetArrowVector: 0
+    TouchableTarget:
+      rid: -2
+    IsEmphasis: 1
     AdvanceId: 
     Message: "\u3053\u308C\u3067\u30ED\u30F3\u30B0\u30DC\u30FC\u30EB\u304C\u89E3\u9664\u3055\u308C\u307E\u3057\u305F\u3002"
     MessagePositionY: -100
@@ -97,8 +111,10 @@ MonoBehaviour:
       rid: 1467536364811321357
     ArrowTarget:
       rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
+      rid: -2
     IsEmphasis: 0
-    WaitPushButtonId: 
     AdvanceId: 
     Message: "\u4ECA\u56DE\u306E\u8AAC\u660E\u306F\u4EE5\u4E0A\u3067\u3059\u3002\n\u30C1\u30E5\u30FC\u30C8\u30EA\u30A2\u30EB\u958B\u59CB\u524D\u306E\u72B6\u614B\u306B\u623B\u308A\u307E\u3059\u3002"
     MessagePositionY: -100
@@ -110,21 +126,21 @@ MonoBehaviour:
     - rid: 1467536364811321354
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
-        TargetId: 
+        TargetId: SMLRightPocket8
         OverrideParam:
           rid: -2
     - rid: 1467536364811321355
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
-        TargetId: 
+        TargetId: SMLRightPocket4
         OverrideParam:
           rid: -2
     - rid: 1467536364811321356
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
-        TargetId: 
+        TargetId: SMLRightPocket6
         OverrideParam:
-          rid: -2
+          rid: 1467536454988333057
     - rid: 1467536364811321357
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
@@ -134,7 +150,7 @@ MonoBehaviour:
     - rid: 1467536364811321374
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
-        TargetId: 
+        TargetId: SMLRightPocket8
         OverrideParam:
           rid: -2
     - rid: 1467536389089001472
@@ -145,3 +161,81 @@ MonoBehaviour:
           rid: -2
         TouchableOverride:
           rid: -2
+    - rid: 1467536432002236445
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236446
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: SMLRightPocket4
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236447
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: SMLRightPocket4
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236448
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: SMLRightPocket8
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236449
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: SMLRightPocket6
+        OverrideParam:
+          rid: 1467536454988333056
+    - rid: 1467536432002236450
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: SMLRightPocket8
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236451
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: SMLRightPocket4
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236506
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: SMLRightNarrowPocket4
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236507
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: SMLRightNarrowPocket8
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236508
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: SMLRightNarrowPocket8
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236509
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: SMLRightNarrowPocket4
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333056
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 0
+        Height: 565
+        PositionOffset: {x: 0, y: 0}
+    - rid: 1467536454988333057
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 0
+        Height: 565
+        PositionOffset: {x: 0, y: 0}

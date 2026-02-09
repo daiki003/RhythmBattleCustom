@@ -1,0 +1,229 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9cf6f6a467af96b4f92b69c722727b96, type: 3}
+  m_Name: scoremaker_008
+  m_EditorClassIdentifier: 
+  TutorialName: "\u30C6\u30F3\u30DD\u5909\u66F4"
+  TutorialType: 2
+  ScoreMakerStartParam:
+    ScrollPositionY: -1580
+    BallArrangementList: []
+  Commands:
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536432002236437
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
+      rid: -2
+    IsEmphasis: 0
+    AdvanceId: 
+    Message: "\u4ECA\u56DE\u306F\u30C6\u30F3\u30DD\u95A2\u9023\u306B\u3064\u3044\u3066\u306E\u8AAC\u660E\u3067\u3059\u3002"
+    MessagePositionY: -430
+  - AdvanceType: 1
+    MaskTarget:
+      rid: 1467536454988333084
+    ArrowTarget:
+      rid: 1467536454988333085
+    TargetArrowVector: 2
+    TouchableTarget:
+      rid: 1467536454988333086
+    IsEmphasis: 1
+    AdvanceId: UnderMenuTab2
+    Message: "\u4E0B\u306E\u30E1\u30CB\u30E5\u30FC\u306E\u30C6\u30F3\u30DD\u30BF\u30D6\u3092\u62BC\u3059\u3068\u3001\u30C6\u30F3\u30DD\u95A2\u9023\u306E\u8A2D\u5B9A\u304C\u3067\u304D\u307E\u3059\u3002"
+    MessagePositionY: -430
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536454988333096
+    ArrowTarget:
+      rid: 1467536454988333097
+    TargetArrowVector: 4
+    TouchableTarget:
+      rid: 1467536454988333098
+    IsEmphasis: 1
+    AdvanceId: StartTime
+    Message: "\u3053\u3053\u3067\u66F2\u306E\u958B\u59CB\u6642\u9593\u3092\u5909\u66F4\u3067\u304D\u307E\u3059\u3002"
+    MessagePositionY: -430
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 337953672379236352
+    ArrowTarget:
+      rid: 337953672379236353
+    TargetArrowVector: 4
+    TouchableTarget:
+      rid: 337953672379236354
+    IsEmphasis: 1
+    AdvanceId: AllClearButton
+    Message: "\u3053\u3053\u3067\u66F2\u306E\u7D42\u4E86\u6642\u9593\u3092\u5909\u66F4\u3067\u304D\u307E\u3059\u3002"
+    MessagePositionY: -430
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 337953672379236355
+    ArrowTarget:
+      rid: 337953672379236356
+    TargetArrowVector: 4
+    TouchableTarget:
+      rid: 337953672379236357
+    IsEmphasis: 1
+    AdvanceId: AllClearButton
+    Message: "\u3053\u3053\u3067BPM\u3092\u5909\u66F4\u3067\u304D\u307E\u3059\u3002"
+    MessagePositionY: -430
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 337953672379236358
+    ArrowTarget:
+      rid: 337953672379236359
+    TargetArrowVector: 3
+    TouchableTarget:
+      rid: 337953672379236360
+    IsEmphasis: 1
+    AdvanceId: Estimate
+    Message: "\u3053\u306E\u30DC\u30BF\u30F3\u3092\u62BC\u3059\u3068\u3001\u958B\u59CB\u6642\u9593\u3084BPM\u3092\u81EA\u52D5\u8A08\u6E2C\u3057\u3066\u8A2D\u5B9A\u3067\u304D\u307E\u3059\u3002\n\uFF08\u66F2\u306B\u3088\u3063\u3066\u306F\u6B63\u78BA\u306A\u8A08\u6E2C\u304C\u3067\u304D\u306A\u3044\u5834\u5408\u3082\u3042\u308A\u307E\u3059\uFF09"
+    MessagePositionY: -430
+  - AdvanceType: 0
+    MaskTarget:
+      rid: 1467536454988333120
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 1
+    TouchableTarget:
+      rid: -2
+    IsEmphasis: 0
+    AdvanceId: ClickLineRight
+    Message: "\u4ECA\u56DE\u306E\u8AAC\u660E\u306F\u4EE5\u4E0A\u3067\u3059\u3002"
+    MessagePositionY: -430
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 337953672379236352
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: EndTime
+        OverrideParam:
+          rid: 337953672379236362
+    - rid: 337953672379236353
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 337953672379236354
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 337953672379236355
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: BpmInput
+        OverrideParam:
+          rid: 337953672379236363
+    - rid: 337953672379236356
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 337953672379236357
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 337953672379236358
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: Estimate
+        OverrideParam:
+          rid: -2
+    - rid: 337953672379236359
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 337953672379236360
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 337953672379236361
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 130
+        Height: 40
+        PositionOffset: {x: 0, y: 19}
+    - rid: 337953672379236362
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 130
+        Height: 24.9
+        PositionOffset: {x: 0, y: 19}
+    - rid: 337953672379236363
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 130
+        Height: 40
+        PositionOffset: {x: 0, y: 19}
+    - rid: 1467536432002236437
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333084
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: UnderMenuTab2
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333085
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: UnderMenuTab2
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333086
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: UnderMenuTab2
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333096
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: StartTime
+        OverrideParam:
+          rid: 337953672379236361
+    - rid: 1467536454988333097
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333098
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536454988333120
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2

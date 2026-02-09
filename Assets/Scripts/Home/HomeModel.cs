@@ -7,12 +7,8 @@ using UnityEngine;
 
 public class HomeModel
 {
-    private List<SingleStageMaster> _customStageList = new();
-    private List<SingleStageMaster> _sampleStageList = new();
     private List<SingleStageMaster> _stageMasterList = new();
     public List<SingleStageMaster> StageMasterList => _stageMasterList;
-
-    private const int _minStageId = 1;
 
     public void Init()
     {
@@ -21,29 +17,33 @@ public class HomeModel
 
     private void CreateStageList()
     {
-        _customStageList = MasterManager.CustomStageList;
-        _sampleStageList = MasterManager.SampleStageList;
         _stageMasterList = MasterManager.CustomStageList.Concat(MasterManager.SampleStageList).ToList();
     }
 
-    public SingleStageMaster GetStageInfo(string musicId, int stageId, HomePanelType panelType)
+    public SingleStageMaster GetStageInfo(string musicId, int stageId, HomePanelType panelType, bool isMyMusic)
     {
         var stageMaster = _stageMasterList.FirstOrDefault(s => s.MusicId == musicId && s.StageId == stageId && s.StageHeader.PanelType == (int)panelType);
         if (stageMaster == null)
         {
+            var stageHeader = new StageHeader
+            {
+                MusicId = musicId,
+                StageName = "",
+                PanelType = (int)panelType,
+                IsMyMusic = isMyMusic,
+                BPM = 100,
+                StripStartTime = 0f,
+                StripEndTime = 20f,
+                EndTime = 100f,
+                BeatsNumber = 4,
+            };
+            if (!isMyMusic)
+            {
+                stageHeader = MasterManager.SampleStageList.FirstOrDefault(s => s.MusicId == musicId)?.StageHeader;
+            }
             stageMaster = new SingleStageMaster
             {
-                StageHeader = new StageHeader
-                {
-                    MusicId = musicId,
-                    StageName = "",
-                    PanelType = (int)panelType,
-                    BPM = 100,
-                    StripStartTime = 0f,
-                    StripEndTime = 20f,
-                    EndTime = 100f,
-                    BeatsNumber = 4,
-                },
+                StageHeader = stageHeader,
                 StageId = stageId,
                 Notes = new List<NoteMaster>(),
             };

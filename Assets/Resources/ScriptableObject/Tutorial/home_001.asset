@@ -21,7 +21,10 @@ MonoBehaviour:
   - AdvanceType: 0
     MaskTarget:
       rid: 1467536409755385875
-    ArrowParam:
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
       rid: -2
     IsEmphasis: 0
     AdvanceId: 
@@ -30,7 +33,10 @@ MonoBehaviour:
   - AdvanceType: 0
     MaskTarget:
       rid: 1467536389089001489
-    ArrowParam:
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
       rid: -2
     IsEmphasis: 1
     AdvanceId: 
@@ -39,7 +45,10 @@ MonoBehaviour:
   - AdvanceType: 0
     MaskTarget:
       rid: 1467536389089001491
-    ArrowParam:
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
       rid: -2
     IsEmphasis: 1
     AdvanceId: 
@@ -48,8 +57,11 @@ MonoBehaviour:
   - AdvanceType: 1
     MaskTarget:
       rid: 1467536364811321435
-    ArrowParam:
-      rid: 1467536389089001480
+    ArrowTarget:
+      rid: 1467536432002236416
+    TargetArrowVector: 1
+    TouchableTarget:
+      rid: 1467536432002236457
     IsEmphasis: 0
     AdvanceId: Sample1
     Message: "\u4ECA\u56DE\u306F\u30B5\u30F3\u30D7\u30EB1\u3092\u9078\u629E\u3057\u3066\u307F\u307E\u3057\u3087\u3046\u3002\n\u30B5\u30F3\u30D7\u30EB1\u30BF\u30D6\u3092\u62BC\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
@@ -57,8 +69,11 @@ MonoBehaviour:
   - AdvanceType: 1
     MaskTarget:
       rid: 1467536364811321438
-    ArrowParam:
-      rid: 1467536389089001492
+    ArrowTarget:
+      rid: 1467536432002236417
+    TargetArrowVector: 1
+    TouchableTarget:
+      rid: 1467536432002236458
     IsEmphasis: 0
     AdvanceId: FirstStageStrip
     Message: "\u3053\u306E\u66F2\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
@@ -66,7 +81,10 @@ MonoBehaviour:
   - AdvanceType: 0
     MaskTarget:
       rid: 1467536364811321440
-    ArrowParam:
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
       rid: -2
     IsEmphasis: 1
     AdvanceId: 
@@ -75,7 +93,10 @@ MonoBehaviour:
   - AdvanceType: 0
     MaskTarget:
       rid: 1467536364811321441
-    ArrowParam:
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
       rid: -2
     IsEmphasis: 1
     AdvanceId: 
@@ -84,7 +105,10 @@ MonoBehaviour:
   - AdvanceType: 0
     MaskTarget:
       rid: 1467536364811321442
-    ArrowParam:
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
       rid: -2
     IsEmphasis: 1
     AdvanceId: 
@@ -93,7 +117,10 @@ MonoBehaviour:
   - AdvanceType: 0
     MaskTarget:
       rid: 1467536409755385880
-    ArrowParam:
+    ArrowTarget:
+      rid: -2
+    TargetArrowVector: 0
+    TouchableTarget:
       rid: -2
     IsEmphasis: 0
     AdvanceId: 
@@ -134,14 +161,6 @@ MonoBehaviour:
         TargetId: PracticeToggle
         OverrideParam:
           rid: -2
-    - rid: 1467536389089001480
-      type: {class: ArrowParam, ns: , asm: Assembly-CSharp}
-      data:
-        TargetArrowVector: 1
-        OverrideTarget:
-          rid: 1467536409755385876
-        TouchableOverride:
-          rid: 1467536409755385877
     - rid: 1467536389089001489
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
@@ -154,39 +173,7 @@ MonoBehaviour:
         TargetId: StageTab
         OverrideParam:
           rid: -2
-    - rid: 1467536389089001492
-      type: {class: ArrowParam, ns: , asm: Assembly-CSharp}
-      data:
-        TargetArrowVector: 1
-        OverrideTarget:
-          rid: 1467536409755385878
-        TouchableOverride:
-          rid: 1467536409755385879
     - rid: 1467536409755385875
-      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
-      data:
-        TargetId: 
-        OverrideParam:
-          rid: -2
-    - rid: 1467536409755385876
-      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
-      data:
-        TargetId: 
-        OverrideParam:
-          rid: -2
-    - rid: 1467536409755385877
-      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
-      data:
-        TargetId: 
-        OverrideParam:
-          rid: -2
-    - rid: 1467536409755385878
-      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
-      data:
-        TargetId: 
-        OverrideParam:
-          rid: -2
-    - rid: 1467536409755385879
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
         TargetId: 
@@ -196,5 +183,29 @@ MonoBehaviour:
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
         TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236416
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: Sample1
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236417
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: FirstStageStrip
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236457
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: Sample1
+        OverrideParam:
+          rid: -2
+    - rid: 1467536432002236458
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: FirstStageStrip
         OverrideParam:
           rid: -2

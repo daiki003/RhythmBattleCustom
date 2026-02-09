@@ -8,8 +8,9 @@ public class ControlPanelPageAutoCreate : ControlPanelPageBase
 {
     [SerializeField] private Button _evenlySpacedButton; // 均等配置ボタン
     [SerializeField] private Button _playMakeButton; // 演奏作成ボタン
-    [SerializeField] private Button _practiceButton; // 演奏作成ボタン
-    [SerializeField] private Button _saveButton; // 演奏作成ボタン
+    [SerializeField] private Button _practiceButton; // 試し打ちボタン
+    [SerializeField] private Button _saveButton; // 上書き保存ボタン
+    [SerializeField] private Button _newSaveButton; //  新規保存ボタン
     [SerializeField] private Button _allClearButton; // 全削除ボタン
 
     public override string PageName => "一般";
@@ -32,9 +33,18 @@ public class ControlPanelPageAutoCreate : ControlPanelPageBase
         {
             _onRequest.OnNext(new ControlPanelRequestSave());
         }).AddTo(this);
+        _newSaveButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            _onRequest.OnNext(new ControlPanelRequestNewSave());
+        }).AddTo(this);
         _allClearButton.OnClickAsObservable().Subscribe(_ =>
         {
             _onRequest.OnNext(new ControlPanelRequestAllClear());
         }).AddTo(this);
+    }
+
+    public void SetCanOverriteSave(bool isCanOverriteSave)
+    {
+        _saveButton.interactable = isCanOverriteSave;
     }
 }

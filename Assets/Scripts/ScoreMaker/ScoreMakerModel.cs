@@ -53,7 +53,11 @@ public class ScoreMakerModel
         {
             _currentMaster.StageHeader.BeatsNumber = param.BeatNumber.Value;
         }
-        if (param.ModulationChange != null)
+        if (param.ResetModulation)
+        {
+            _currentMaster.StageHeader.ModulationDict.Clear();
+        }
+        else if (param.ModulationChange != null)
         {
             var (measure, diff) = param.ModulationChange.Value;
             var measureStr = measure.ToString();
@@ -66,13 +70,18 @@ public class ScoreMakerModel
         ChangeParameterWithLine();
     }
 
-    public async UniTask SaveScore(List<NoteMaster> notes, string stageName, Dictionary<int, float> timeJumpDict)
+    public async UniTask SaveScore(List<NoteMaster> notes, string stageName, Dictionary<int, float> timeJumpDict, bool isNewSave)
     {
         // 現在のレベルの譜面を保存
         UpdateCurrentLevelNotes(notes);
         if (!string.IsNullOrEmpty(stageName))
         {
             _currentMaster.StageHeader.StageName = stageName;
+        }
+        // 新規保存の場合はステージIDを更新
+        if (isNewSave)
+        {
+            _currentMaster.StageId = MasterManager.GetNextStageId(_currentMaster.MusicId);
         }
         if (timeJumpDict != null)
         {
@@ -87,7 +96,7 @@ public class ScoreMakerModel
         {
             _currentMaster.StageHeader.TimeJumpDict = new Dictionary<string, float>();
         }
-        await MasterManager.UpdateStageMaster(_currentMaster);
+        await MasterManager.UpdateStageMaster(_currentMaster, isNewSave);
     }
 
     // 現在のレベルの譜面状況を更新

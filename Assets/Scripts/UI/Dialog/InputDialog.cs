@@ -36,6 +36,11 @@ public class InputDialog : DialogBase
 
     public override void ClosePanel(DialogResultType resultType)
     {
+        // Okの場合はボタン側で鳴らしたい
+        if (resultType != DialogResultType.Ok)
+        {
+            SEManager.instance.PlaySe(SeName.Cancel);
+        }
         _onCloseDialog.OnNext(new InputDialogResult
         {
             ResultType = resultType,

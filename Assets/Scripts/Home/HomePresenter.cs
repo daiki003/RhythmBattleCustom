@@ -24,17 +24,17 @@ public class HomePresenter : MonoBehaviour
         }).AddTo(this);
         _view.ClickEditStageButton.Subscribe(x =>
         {
-            StartScoreMaker(x.stageKey.MusicId, x.stageKey.StageId, isNewCreate: x.isNewCreate);
+            StartScoreMaker(x.stageKey.MusicId, x.isNewCreate ? 0 : x.stageKey.StageId, isMyMusic: x.stageKey.IsMyMusic);
         }).AddTo(this);
         _view.ClickNewCreateStageButton.Subscribe(musicId =>
         {
-            StartScoreMaker(musicId, MasterManager.GetNextStageId(musicId), isNewCreate: true);
+            StartScoreMaker(musicId, 0, isMyMusic: true);
         }).AddTo(this);
     }
 
     private void StartBattle(GetStageKey getStageKey, bool isPractice)
     {
-        var stageMaster = _model.GetStageInfo(getStageKey.MusicId, getStageKey.StageId, getStageKey.PanelType);
+        var stageMaster = _model.GetStageInfo(getStageKey.MusicId, getStageKey.StageId, getStageKey.PanelType, false);
         var sceneInfo = new BattleSceneInfo
         {
             StageMaster = stageMaster,
@@ -43,12 +43,11 @@ public class HomePresenter : MonoBehaviour
         GameManager.Instance.OpenScene(SceneType.Battle, sceneInfo).Forget();
     }
 
-    private void StartScoreMaker(string musicId, int stageId, bool isNewCreate)
+    private void StartScoreMaker(string musicId, int stageId, bool isMyMusic)
     {
         var sceneInfo = new ScoreMakerSceneInfo
         {
-            StageMaster = _model.GetStageInfo(musicId, stageId, HomePanelType.Custom),
-            IsNewCreate = isNewCreate,
+            StageMaster = _model.GetStageInfo(musicId, stageId, HomePanelType.Custom, isMyMusic),
         };
         GameManager.Instance.OpenScene(SceneType.ScoreMaker, sceneInfo).Forget();
     }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -9,6 +10,9 @@ public class TutorialCommandEditor : Editor
     private SerializedProperty _tutorialType;
     private SerializedProperty _scoreMakerStartParam;
     private SerializedProperty _paramsList;
+
+    private const float _buttonWidth = 45;
+    private const float _buttonHeight = 18;
 
     void OnEnable()
     {
@@ -35,10 +39,12 @@ public class TutorialCommandEditor : Editor
             var element = _paramsList.GetArrayElementAtIndex(i);
 
             var advanceType = element.FindPropertyRelative("AdvanceType");
-            var maskTarget = element.FindPropertyRelative("MaskTarget");
-            var arrowParam = element.FindPropertyRelative("ArrowParam");
-            var isEmphasis = element.FindPropertyRelative("IsEmphasis");
             var advanceId = element.FindPropertyRelative("AdvanceId");
+            var maskTarget = element.FindPropertyRelative("MaskTarget");
+            var arrowTarget = element.FindPropertyRelative("ArrowTarget");
+            var touchableTarget = element.FindPropertyRelative("TouchableTarget");
+            var targetArrowVector = element.FindPropertyRelative("TargetArrowVector");
+            var isEmphasis = element.FindPropertyRelative("IsEmphasis");
             var message = element.FindPropertyRelative("Message");
             var messagePositionY = element.FindPropertyRelative("MessagePositionY");
 
@@ -60,7 +66,10 @@ public class TutorialCommandEditor : Editor
             EditorGUILayout.PropertyField(messagePositionY);
 
             // マスク
+            EditorGUILayout.BeginHorizontal();
             EditorGUILayout.PropertyField(maskTarget);
+            InheritButton(maskTarget, "TargetId", element, "AdvanceId");
+            EditorGUILayout.EndHorizontal();
             if (maskTarget.managedReferenceValue != null)
             {
                 EditorGUI.indentLevel++;
@@ -71,7 +80,22 @@ public class TutorialCommandEditor : Editor
             // 操作が必要な場合のパラメータ
             if ((TutorialAdvanceType)advanceType.enumValueIndex != TutorialAdvanceType.TapMessage)
             {
-                EditorGUILayout.PropertyField(arrowParam);
+                arrowTarget.managedReferenceValue ??= new TutorialTarget();
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.PropertyField(arrowTarget);
+                InheritButton(arrowTarget, "TargetId", maskTarget, "TargetId", touchableTarget);
+                EditorGUILayout.EndHorizontal();
+                if (!string.IsNullOrEmpty(arrowTarget.FindPropertyRelative("TargetId").stringValue))
+                {
+                    EditorGUI.indentLevel++;
+                    EditorGUILayout.PropertyField(targetArrowVector);
+                    EditorGUI.indentLevel--;
+                }
+
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.PropertyField(touchableTarget);
+                InheritButton(touchableTarget, "TargetId", arrowTarget, "TargetId");
+                EditorGUILayout.EndHorizontal();
             }
 
             EditorGUILayout.BeginHorizontal();
@@ -86,6 +110,10 @@ public class TutorialCommandEditor : Editor
             if (GUILayout.Button("Insert Command"))
             {
                 _paramsList.InsertArrayElementAtIndex(i);
+                var elem = _paramsList.GetArrayElementAtIndex(i + 1);
+                elem.FindPropertyRelative("MaskTarget").managedReferenceValue = null;
+                elem.FindPropertyRelative("ArrowTarget").managedReferenceValue = null;
+                elem.FindPropertyRelative("TouchableTarget").managedReferenceValue = null;
             }
             EditorGUILayout.EndHorizontal();
 
@@ -101,6 +129,30 @@ public class TutorialCommandEditor : Editor
 
         serializedObject.ApplyModifiedProperties();
     }
+
+    private void InheritButton(SerializedProperty targetProp, string targetName, SerializedProperty baseProp, string baseName, SerializedProperty subTargetProp = null)
+    {
+        if (string.IsNullOrEmpty(targetProp.FindPropertyRelative(targetName).stringValue))
+        {
+            // 継承ボタン
+            if (GUILayout.Button("Inherit", GUILayout.Width(_buttonWidth), GUILayout.Height(_buttonHeight)))
+            {
+                targetProp.FindPropertyRelative(targetName).stringValue = baseProp.FindPropertyRelative(baseName).stringValue;
+                if (subTargetProp != null)
+                {
+                    subTargetProp.FindPropertyRelative(targetName).stringValue = baseProp.FindPropertyRelative(baseName).stringValue;
+                }
+            }
+        }
+        else
+        {
+            // 削除ボタン
+            if (GUILayout.Button("Clear", GUILayout.Width(_buttonWidth), GUILayout.Height(_buttonHeight)))
+            {
+                targetProp.FindPropertyRelative(targetName).stringValue = "";
+            }
+        }
+    }
     
     private void CustomSizePropertyField(string label, float labelSize, SerializedProperty property, float mainSize)
     {
@@ -113,6 +165,7 @@ public class TutorialCommandEditor : Editor
 public class TutorialTargetEditor : StringKeyReferenceDrawerBase<TutorialTarget>
 {
     protected override string KeyPropertyName => "TargetId";
+    protected override string NullablePropertyName => "OverrideParam";
     protected override List<string> PropertyNames => new List<string>()
     {
         "OverrideParam",
@@ -143,22 +196,26 @@ public class OverrideTargetParamEditor : NullableReferenceDrawerBase<OverrideTar
 
 public abstract class NullableReferenceDrawerBase<T> : ReferenceDrawerBase<T> where T : class, new()
 {
-    public override float OnGUIMain(Rect position, SerializedProperty property, GUIContent label)
+    public override float OnGUIMain(Rect position, SerializedProperty property, GUIContent label, bool onlyCalc = false)
     {
+        float firstPosY = position.y;
         var headerRect = position;
         headerRect.height = EditorGUIUtility.singleLineHeight;
         Rect contentRect = EditorGUI.PrefixLabel(headerRect, label);
 
         if (property.managedReferenceValue == null)
         {
-            DrawNullState(contentRect, property);
+            if (!onlyCalc) DrawNullState(contentRect, property);
         }
+
+
         else
         {
-            DrawHeaderButtons(contentRect, property);
-            position = DrawValueContents(position, contentRect, property, true);
+            if (!onlyCalc) DrawHeaderButtons(contentRect, property);
+            position = BeginIndentedContent(position);
+            position = DrawValueContents(position, property, onlyCalc);
         }
-        return position.y;
+        return position.y - firstPosY;
     }
 
     protected virtual void DrawNullState(Rect contentRect, SerializedProperty property)
@@ -188,53 +245,66 @@ public abstract class NullableReferenceDrawerBase<T> : ReferenceDrawerBase<T> wh
 public abstract class StringKeyReferenceDrawerBase<T> : ReferenceDrawerBase<T> where T : class, new()
 {
     protected virtual string KeyPropertyName => "";
-    public override float OnGUIMain(Rect position, SerializedProperty property, GUIContent label)
+    protected virtual string NullablePropertyName => "";
+    public override float OnGUIMain(Rect position, SerializedProperty property, GUIContent label, bool onlyCalc = false)
     {
-        var headerRect = position;
-        headerRect.height = EditorGUIUtility.singleLineHeight;
-        Rect contentRect = EditorGUI.PrefixLabel(headerRect, label);
+        float firstPosY = position.y;
+        // var headerRect = position;
+        // headerRect.height = EditorGUIUtility.singleLineHeight;
 
         property.managedReferenceValue ??= new TutorialTarget();
+        position = EditorGUI.PrefixLabel(position, label);
 
         // キープロパティの入力 
         var targetIdProp = property.FindPropertyRelative(KeyPropertyName);
-        position.y += EditorGUIUtility.singleLineHeight;
-        position.x += IndentSize;
-        position.width -= IndentSize;
-        position = DrawProperty(targetIdProp, position);
+        var overrideProp = property.FindPropertyRelative(NullablePropertyName);
+        position = DrawPropertyWithButton(targetIdProp, position, GUIContent.none, () =>
+        {
+            if (overrideProp.managedReferenceValue == null)
+            {
+                overrideProp.managedReferenceValue = new OverrideTargetParam();
+            }
+            else
+            {
+                overrideProp.managedReferenceValue = null;
+            }
+        }, overrideProp.managedReferenceValue == null ? "▶" : "▼", onlyCalc);
+        position.x = IndentSize * 2;
+        position.width = 300f;
 
         // キーが入力されていれば他のプロパティも表示
-        if (!string.IsNullOrEmpty(targetIdProp.stringValue))
+        if (!string.IsNullOrEmpty(targetIdProp.stringValue) && overrideProp.managedReferenceValue != null)
         {
-            DrawValueContents(position, contentRect, property, true);
+            position = DrawValueContents(position, property, onlyCalc);
         }
-        return position.y;
+        return position.y - firstPosY;
     }
 }
 
 public abstract class ReferenceDrawerBase<T> : PropertyDrawer where T : class, new()
 {
-    protected const float ButtonWidth = 65f;
+    protected const float ButtonWidth = 55f;
+    protected const float OverrideButtonWidth = 20f;
     protected const float IndentSize = 15f;
     protected virtual List<string> PropertyNames => new List<string>();
-
-    private float _cachedHeight;
 
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {
         EditorGUI.BeginProperty(position, label, property);
-        _cachedHeight = OnGUIMain(position, property, label);
+        OnGUIMain(position, property, label);
         EditorGUI.EndProperty();
     }
 
-    public virtual float OnGUIMain(Rect position, SerializedProperty property, GUIContent label)
+    public virtual float OnGUIMain(Rect position, SerializedProperty property, GUIContent label, bool onlyCalc = false)
     {
+        float firstPosY = position.y;
         var headerRect = position;
         headerRect.height = EditorGUIUtility.singleLineHeight;
 
         Rect contentRect = EditorGUI.PrefixLabel(headerRect, label);
-        position = DrawValueContents(position, contentRect, property, true);
-        return position.y;
+        position = BeginIndentedContent(position);
+        position = DrawValueContents(position, property, onlyCalc);
+        return position.y - firstPosY;
     }
 
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
@@ -242,7 +312,7 @@ public abstract class ReferenceDrawerBase<T> : PropertyDrawer where T : class, n
         if (property.managedReferenceValue == null)
             return EditorGUIUtility.singleLineHeight;
 
-        return _cachedHeight;
+        return OnGUIMain(new Rect(0, 0, 0, 0), property, label, true);
     }
 
     protected Rect BeginIndentedContent(Rect position)
@@ -253,11 +323,30 @@ public abstract class ReferenceDrawerBase<T> : PropertyDrawer where T : class, n
         return position;
     }
 
-    protected Rect DrawProperty(SerializedProperty property, Rect rect, bool isDraw = true)
+    protected Rect DrawProperty(SerializedProperty property, Rect rect, GUIContent label, bool onlyCalc = false)
     {
         float h = EditorGUI.GetPropertyHeight(property, true);
         rect.height = h;
-        if (isDraw) EditorGUI.PropertyField(rect, property, true);
+        if (!onlyCalc) EditorGUI.PropertyField(rect, property, label, true);
+        rect.y += h;
+        return rect;
+    }
+
+    protected Rect DrawPropertyWithButton(SerializedProperty property, Rect rect, GUIContent label, Action onClick, string buttonLabel, bool onlyCalc = false)
+    {
+        float h = EditorGUI.GetPropertyHeight(property, true);
+        rect.height = h;
+        var buttonRect = rect;
+        if (!onlyCalc)
+        {
+            buttonRect.width = OverrideButtonWidth;
+            buttonRect.x = rect.xMin - OverrideButtonWidth - 2;
+            EditorGUI.PropertyField(rect, property, label, true);
+            if (GUI.Button(buttonRect, buttonLabel))
+            {
+                onClick?.Invoke();
+            }
+        }
         rect.y += h;
         return rect;
     }
@@ -265,7 +354,7 @@ public abstract class ReferenceDrawerBase<T> : PropertyDrawer where T : class, n
     /// <summary>
     /// 戻り値：この Property 全体の高さ
     /// </summary>
-    protected Rect DrawValueContents(Rect position, Rect contentRect, SerializedProperty property, bool isDraw)
+    protected Rect DrawValueContents(Rect position, SerializedProperty property, bool onlyCalc = false)
     {
         var props = new List<SerializedProperty>();
         foreach (var propName in PropertyNames)
@@ -273,11 +362,10 @@ public abstract class ReferenceDrawerBase<T> : PropertyDrawer where T : class, n
             props.Add(property.FindPropertyRelative(propName));
         }
 
-        var rect = BeginIndentedContent(position);
         foreach (var prop in props)
         {
-            rect = DrawProperty(prop, rect, isDraw);
+            position = DrawProperty(prop, position, null, onlyCalc);
         }
-        return rect;
+        return position;
     }
 }
