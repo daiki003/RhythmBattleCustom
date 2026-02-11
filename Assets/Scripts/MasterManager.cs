@@ -158,7 +158,7 @@ public static class MasterManager
     {
         SaveDataManager.ClearStateList = clearStateList;
     }
-    public static async UniTask UpdateStageMaster(SingleStageMaster stageMaster, bool isNewSave)
+    public static async UniTask UpdateStageMaster(SingleStageMaster stageMaster)
     {
         int index = CustomStageList.FindIndex(s => s.MusicId == stageMaster.StageHeader.MusicId && s.StageId == stageMaster.StageId);
         if (index >= 0)

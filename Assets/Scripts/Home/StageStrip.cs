@@ -19,7 +19,7 @@ public class StageStrip : MonoBehaviour
 
     private StageHeader _stageHeader;
     public int StageId { get; private set; }
-    public string MusicIdId => _stageHeader.MusicId;
+    public string MusicId => _stageHeader.MusicId;
     public float StartTime => _stageHeader.StripStartTime;
     public float EndTime => _stageHeader.StripEndTime;
     public HomePanelType PanelType => (HomePanelType)_stageHeader.PanelType;
@@ -43,7 +43,7 @@ public class StageStrip : MonoBehaviour
 
     public void UpdateScore(int stageId)
     {
-        var clearState = SaveDataManager.GetClearState(MusicIdId, stageId);
+        var clearState = SaveDataManager.GetClearState(MusicId, stageId);
         if (clearState == null)
         {
             return;

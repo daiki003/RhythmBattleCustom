@@ -75,8 +75,8 @@ public class ScoreMakerView : MonoBehaviour
 
     private Subject<float> _clickPracticeButton = new();
     public Observable<float> ClickPracticeButton => _clickPracticeButton;
-    private Subject<(string, bool)> _onSave = new();
-    public Observable<(string name, bool isNewSave)> OnSave => _onSave;
+    private Subject<string> _onSave = new();
+    public Observable<string> OnSave => _onSave;
     private Subject<bool> _clickSaveButton = new();
     public Observable<bool> ClickSaveButton => _clickSaveButton;
     private Subject<ChangeParameter> _onChangeParameter = new();
@@ -393,7 +393,7 @@ public class ScoreMakerView : MonoBehaviour
             }
             if (result.ResultType == DialogResultType.Ok)
             {
-                _onSave.OnNext((stageName, isNewSave));
+                _onSave.OnNext(stageName);
                 // 新規保存後は上書き保存可能にする
                 _controlPanel.ChangeCanOverriteSave(true);
             }

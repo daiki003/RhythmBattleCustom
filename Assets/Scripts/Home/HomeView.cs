@@ -34,13 +34,11 @@ public class GetStageKey
 {
     public string MusicId;
     public int StageId;
-    public HomePanelType PanelType;
     public bool IsMyMusic;
-    public GetStageKey(string musicId, int stageId, HomePanelType panelType, bool isMyMusic)
+    public GetStageKey(string musicId, int stageId, bool isMyMusic)
     {
         MusicId = musicId;
         StageId = stageId;
-        PanelType = panelType;
         IsMyMusic = isMyMusic;
     }
 }
@@ -56,8 +54,8 @@ public class HomeView : MonoBehaviour
 
     private Subject<(GetStageKey stageKey, bool isPractice)> _clickPlayStageButton = new();
     public Observable<(GetStageKey stageKey, bool isPractice)> ClickPlayStageButton => _clickPlayStageButton;
-    private Subject<(GetStageKey stageKey, bool isNewCreate)> _clickEditStageButton = new();
-    public Observable<(GetStageKey stageKey, bool isNewCreate)> ClickEditStageButton => _clickEditStageButton;
+    private Subject<(GetStageKey stageKey, bool isCopy)> _clickEditStageButton = new();
+    public Observable<(GetStageKey stageKey, bool isCopy)> ClickEditStageButton => _clickEditStageButton;
     private Subject<string> _clickNewCreateStageButton = new();
     public Observable<string> ClickNewCreateStageButton => _clickNewCreateStageButton;
 
@@ -144,9 +142,9 @@ public class HomeView : MonoBehaviour
             {
                 _selectedStrip?.SetSelected(false);
                 _selectedStrip = strip;
-                _currentStageKey = new GetStageKey(strip.MusicIdId, strip.StageId, strip.PanelType, strip.IsMyMusic);
+                _currentStageKey = new GetStageKey(strip.MusicId, strip.StageId, strip.IsMyMusic);
                 strip.SetSelected(true);
-                await BGMManager.instance.SetStageClip(strip.MusicIdId, isFade: true, startTime: strip.StartTime, endTime: strip.EndTime);
+                await BGMManager.instance.SetStageClip(strip.MusicId, isFade: true, startTime: strip.StartTime, endTime: strip.EndTime);
                 _homeViewInput.SetButtonInteractable(true);
             }
             else
@@ -199,7 +197,7 @@ public class HomeView : MonoBehaviour
         {
             if (result.ResultType == DialogResultType.Ok)
             {
-                await MasterManager.DeleteCustomStage(_selectedStrip.MusicIdId, _selectedStrip.StageId);
+                await MasterManager.DeleteCustomStage(_selectedStrip.MusicId, _selectedStrip.StageId);
                 // 短冊の選択をキャンセルしてからを削除
                 var selectedStrip = _selectedStrip;
                 CancelSelectStrip();

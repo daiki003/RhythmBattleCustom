@@ -41,8 +41,16 @@ public class HomeSceneInfo : SceneInfoBase
 
 public class ScoreMakerSceneInfo : SceneInfoBase
 {
+    public enum ScoreMakeType
+    {
+        Edit,
+        NewCreate,
+        Copy,
+    }
+
     public override SceneType SceneType => SceneType.ScoreMaker;
     public SingleStageMaster StageMaster;
+    public ScoreMakeType Type;
 }
 
 public static class SceneInfoExtension

@@ -22,7 +22,7 @@ public class ScoreMakerScene : SceneBase
         {
             _scoreMaker.PlayTutorialAsync(_scoreMakerSceneInfo.TutorialCommand).Forget();
         }
-        _scoreMaker.Init(_scoreMakerSceneInfo.StageMaster, isTutorial);
+        _scoreMaker.Init(_scoreMakerSceneInfo.StageMaster, isTutorial, _scoreMakerSceneInfo.Type);
     }
 
     public override async UniTask StartSceneAsync()

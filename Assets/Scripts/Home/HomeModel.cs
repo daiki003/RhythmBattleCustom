@@ -20,16 +20,16 @@ public class HomeModel
         _stageMasterList = MasterManager.CustomStageList.Concat(MasterManager.SampleStageList).ToList();
     }
 
-    public SingleStageMaster GetStageInfo(string musicId, int stageId, HomePanelType panelType, bool isMyMusic)
+    public SingleStageMaster GetStageInfo(string musicId, int stageId, bool isMyMusic, bool isCopy)
     {
-        var stageMaster = _stageMasterList.FirstOrDefault(s => s.MusicId == musicId && s.StageId == stageId && s.StageHeader.PanelType == (int)panelType);
-        if (stageMaster == null)
+        var stageMaster = _stageMasterList.FirstOrDefault(s => s.MusicId == musicId && s.StageId == stageId);
+        if (stageMaster == null || isCopy)
         {
             var stageHeader = new StageHeader
             {
                 MusicId = musicId,
                 StageName = "",
-                PanelType = (int)panelType,
+                PanelType = (int)HomePanelType.Custom,
                 IsMyMusic = isMyMusic,
                 BPM = 100,
                 StripStartTime = 0f,
@@ -44,8 +44,8 @@ public class HomeModel
             stageMaster = new SingleStageMaster
             {
                 StageHeader = stageHeader,
-                StageId = stageId,
-                Notes = new List<NoteMaster>(),
+                StageId = MasterManager.GetNextStageId(musicId),
+                Notes = stageMaster != null ? stageMaster.Notes.ToList() : new List<NoteMaster>(),
             };
         }
         return stageMaster;
