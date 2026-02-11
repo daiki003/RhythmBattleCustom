@@ -16,6 +16,7 @@ public class PlayFabController
     [SerializeField] static GetPlayerCombinedInfoRequestParams InfoRequestParams;
 
     private static bool _isLoginSuccess = false;
+    private static bool _isFirstLogin = true;
 
     private const string _customIdKey = "PlayFab_CustomId";
 
@@ -58,7 +59,13 @@ public class PlayFabController
         }, (error) =>
         {
             Debug.LogError(error.GenerateErrorReport());
-
+            // 初回の失敗ならカスタムキーを削除してやり直す
+            if (_isFirstLogin)
+            {
+                PlayerPrefs.DeleteKey(_customIdKey);
+                _isFirstLogin = false;
+                SimpleLogin();
+            }
         });
     }
 
