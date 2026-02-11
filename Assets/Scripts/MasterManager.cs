@@ -44,6 +44,7 @@ public class StageHeader
         {
             MusicId = MusicId,
             StageName = StageName,
+            IsMyMusic = IsMyMusic,
             StripStartTime = StripStartTime,
             StripEndTime = StripEndTime,
             BPM = BPM,

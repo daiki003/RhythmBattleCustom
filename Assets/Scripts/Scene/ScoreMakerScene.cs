@@ -18,11 +18,11 @@ public class ScoreMakerScene : SceneBase
         }
         await BGMManager.instance.SetStageClip(_scoreMakerSceneInfo.StageMaster.StageHeader.MusicId, immediatePlay: false);
         bool isTutorial = _scoreMakerSceneInfo.TutorialCommand != null;
-        _scoreMaker.Init(_scoreMakerSceneInfo.StageMaster, isTutorial);
         if (isTutorial)
         {
             _scoreMaker.PlayTutorialAsync(_scoreMakerSceneInfo.TutorialCommand).Forget();
         }
+        _scoreMaker.Init(_scoreMakerSceneInfo.StageMaster, isTutorial);
     }
 
     public override async UniTask StartSceneAsync()
@@ -34,6 +34,8 @@ public class ScoreMakerScene : SceneBase
     public override async UniTask Restart()
     {
         await base.Restart();
+        // 曲を再セット
+        await BGMManager.instance.SetStageClip(_scoreMakerSceneInfo.StageMaster.StageHeader.MusicId, immediatePlay: false);
         _scoreMaker.StartMake();
     }
 }
