@@ -98,7 +98,7 @@ public static class AdsManager
             });
         });
         await UniTask.WaitUntil(() => finishAds);
-        AudioSettings.Reset(AudioSettings.GetConfiguration());
+        // AudioSettings.Reset(AudioSettings.GetConfiguration());
         return rewardEarned;
     }
 }
