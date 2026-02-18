@@ -15,7 +15,7 @@ public class StageDuplicateDialogResult : DialogResultBase
     public List<NoteMaster> DuplicateNotes = new();
 }
 
-public class StageDuplicateDialog : DialogBase
+public class StageDuplicateDialog : DialogBase<StageDuplicateDialogResult>
 {
     [SerializeField] private Transform _normalStripTransform;
     [SerializeField] private Transform _customStripTransform;
@@ -50,18 +50,12 @@ public class StageDuplicateDialog : DialogBase
         }
     }
 
-    public override void ClosePanel(DialogResultType resultType)
+    protected override StageDuplicateDialogResult CreateDialogResult(DialogResultType resultType)
     {
-        if (resultType != DialogResultType.Ok)
-        {
-            SEManager.instance.PlaySe(SeName.Cancel);
-        }
-        int level = _selectedStrip?.StageId ?? 0;
-        _onCloseDialog.OnNext(new StageDuplicateDialogResult
+        return new StageDuplicateDialogResult
         {
             ResultType = resultType,
             DuplicateNotes = _stageMaster.Notes
-        });
-        Destroy(gameObject);
+        };
     }
 }

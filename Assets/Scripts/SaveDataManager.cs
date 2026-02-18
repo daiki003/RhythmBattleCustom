@@ -39,6 +39,9 @@ public static class SaveDataManager
 {
     public static List<ClearState> ClearStateList = new();
     public static SettingData SettingData = new();
+    public static int CurrentLife;
+    public static bool IsInfiniteLife;
+    public static string LifeText => IsInfiniteLife ? "∞" : CurrentLife.ToString();
 
     private const string _bgmVolumeKey = "BgmVolume";
     private const string _seVolumeKey = "SeVolume";

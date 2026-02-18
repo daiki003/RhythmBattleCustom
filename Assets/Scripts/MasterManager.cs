@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -102,7 +103,8 @@ public class TitleDataResult
 public class PlayerDataResult
 {
     public List<ClearState> ClearStateList = new();
-    public SettingData SettingData = new();
+    public int CurrentLife;
+    public bool IsInfiniteLife;
 }
 
 public static class MasterManager
@@ -125,7 +127,7 @@ public static class MasterManager
         }
         if (result.Item2 != null)
         {
-            SetPlayerData(result.Item2.ClearStateList);
+            SetPlayerData(result.Item2.ClearStateList, result.Item2.CurrentLife, result.Item2.IsInfiniteLife);
         }
         if (result.Item3 != null)
         {
@@ -154,9 +156,21 @@ public static class MasterManager
             }
         }
 	}
-    public static void SetPlayerData(List<ClearState> clearStateList)
+    public static void SetPlayerData(List<ClearState> clearStateList, int currentLife, bool isInfiniteLife)
     {
         SaveDataManager.ClearStateList = clearStateList;
+        SaveDataManager.CurrentLife = currentLife;
+        SaveDataManager.IsInfiniteLife = isInfiniteLife;
+    }
+    public static async UniTask AddLife(int addLife)
+    {
+        SaveDataManager.CurrentLife = Math.Max(0, SaveDataManager.CurrentLife + addLife);
+        await PlayFabController.UpdateLife(SaveDataManager.CurrentLife);
+    }
+    public static async UniTask PurchaseInfiniteLife()
+    {
+        SaveDataManager.IsInfiniteLife = true;
+        await PlayFabController.UpdateInfiniteLife(SaveDataManager.IsInfiniteLife);
     }
     public static async UniTask UpdateStageMaster(SingleStageMaster stageMaster)
     {

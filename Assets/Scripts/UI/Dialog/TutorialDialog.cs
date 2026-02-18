@@ -13,7 +13,7 @@ public class TutorialDialogResult : DialogResultBase
     public TutorialCommandList SelectedCommand;
 }
 
-public class TutorialDialog : DialogBase
+public class TutorialDialog : DialogBase<TutorialDialogResult>
 {
     [SerializeField] private Transform _stripTransform;
 
@@ -36,18 +36,12 @@ public class TutorialDialog : DialogBase
         }
     }
 
-    public override void ClosePanel(DialogResultType resultType)
+    protected override TutorialDialogResult CreateDialogResult(DialogResultType resultType)
     {
-        // Okの場合はボタン側で鳴らしたい
-        if (resultType != DialogResultType.Ok)
-        {
-            SEManager.instance.PlaySe(SeName.Cancel);
-        }
-        _onCloseDialog.OnNext(new TutorialDialogResult
+        return new TutorialDialogResult
         {
             ResultType = resultType,
             SelectedCommand = _selectedCommand
-        });
-        Destroy(gameObject);
+        };
     }
 }

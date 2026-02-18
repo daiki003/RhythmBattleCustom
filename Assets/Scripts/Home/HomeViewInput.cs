@@ -13,6 +13,7 @@ public class HomeViewInput : MonoBehaviour
     public TabGroup TabGroup => _tabGroup;
     [SerializeField] private Button _settingButton;
     [SerializeField] private Button _helpButton;
+    [SerializeField] private Button _purchaseLifeButton;
 
     [SerializeField] private Button _playStageButton;
     [SerializeField] private Toggle _practiceModeToggle;
@@ -65,6 +66,11 @@ public class HomeViewInput : MonoBehaviour
             _onClickButton.OnNext(new HelpButtonArgs());
         }).AddTo(this);
 
+        _purchaseLifeButton.OnClickAsObservable().Subscribe(_ =>
+        {
+            _onClickButton.OnNext(new PurchaseLifeButtonArgs());
+        }).AddTo(this);
+
         // 練習モード切替
         bool enableToggleSe = false;
         _practiceModeToggle.isOn = false;
@@ -94,6 +100,11 @@ public class HomeViewInput : MonoBehaviour
         _editStageButton.interactable = isInteractable;
         _deleteStageButton.interactable = isInteractable;
     }
+
+    public void SetPurchaseLifeButtonActive(bool isActive)
+    {
+        _purchaseLifeButton.gameObject.SetActive(isActive);
+    }
 }
 
 public abstract class HomeViewButtonEventArgs {}
@@ -117,3 +128,5 @@ public class NewCreateButtonArgs : HomeViewButtonEventArgs {}
 public class SettingButtonArgs : HomeViewButtonEventArgs {}
 
 public class HelpButtonArgs : HomeViewButtonEventArgs {}
+
+public class PurchaseLifeButtonArgs : HomeViewButtonEventArgs {}

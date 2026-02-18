@@ -38,9 +38,9 @@ public class ScoreMakerPresenter : MonoBehaviour
             };
             await GameManager.Instance.OpenAdditionalScene(SceneType.Battle, sceneInfo);
         }).AddTo(this);
-        _view.ClickSaveButton.Subscribe(isNewSave =>
+        _view.ClickSaveButton.Subscribe(async isNewSave =>
         {
-            _view.DisplaySaveDialog(_model.OriginalStageInfo.StageHeader.StageName, isNewSave);
+            await _view.DisplaySaveDialog(_model.OriginalStageInfo.StageHeader.StageName, isNewSave);
         }).AddTo(this);
         _view.OnSave.Subscribe(async name =>
         {
@@ -72,7 +72,7 @@ public class ScoreMakerPresenter : MonoBehaviour
     {
         // 現在のレベルの譜面を保存
         await _model.SaveScore(_view.CreateNoteList(), stageName, _view.GetTimeJumpDict());
-        _view.DisplaySaveFinishDialog();
+        await _view.DisplaySaveFinishDialog();
     }
 
     public void StartMake()

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using R3;
+using Cysharp.Threading.Tasks;
 
-public class SettingDialog : DialogBase
+public class SettingDialog : DialogBase<DialogResultBase>
 {
     [SerializeField] private Slider _bgmSlider;
     [SerializeField] private Slider _seSlider;
@@ -30,7 +31,8 @@ public class SettingDialog : DialogBase
         TitleText = "クレジット",
         MessageText = _creditMessage,
         HideOkButton = true,
-        CancelButtonText = "閉じる"
+        CancelButtonText = "閉じる",
+        SizeOffset = new Vector2(-150, 200),
     };
 
     public override void Init(DialogOptionBase dialogOption)
@@ -51,9 +53,9 @@ public class SettingDialog : DialogBase
         _offsetAdjuster.Init(SaveDataManager.SettingData.Offset, _changeOffsetUnit, 2);
         _speedAdjuster.Init(SaveDataManager.SettingData.BallSpeed, _changeSpeedUnit, 1);
 
-        _creditButton.OnClickAsObservable().Subscribe(_ =>
+        _creditButton.OnClickAsObservable().Subscribe(async _ =>
         {
-            DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.CreditDialogPrefabName, _creditDialogOption);
+            DialogManager.instance.ShowDialogAsync<MessageDialog, DialogResultBase>(_creditDialogOption).Forget();
         }).AddTo(this);
     }
 

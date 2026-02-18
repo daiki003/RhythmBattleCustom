@@ -169,12 +169,12 @@ public class BattleView : MonoBehaviour
                 MessageText = "始めからやり直しますか？",
                 OkButtonText = "やり直す",
             };
-            DisplayDialog(option, async () =>
+            DisplayDialogAsync(option, async () =>
             {
                 Pause(false);
                 await PrepareBattle();
                 BattleStart().Forget();
-            });
+            }).Forget();
         }).AddTo(this);
         // 戻るボタン
         _backButton.OnClickAsObservable().Subscribe(_ =>
@@ -190,10 +190,10 @@ public class BattleView : MonoBehaviour
                 MessageText = _isAdditional ? "ステージ作成に戻りますか？" : "ホームに戻りますか？",
                 OkButtonText = "戻る",
             };
-            DisplayDialog(option, () =>
+            DisplayDialogAsync(option, () =>
             {
                 OnWhenClickedBack.OnNext(default);
-            });
+            }).Forget();
         }).AddTo(this);
 
         // リザルトパネルのボタン
@@ -231,47 +231,37 @@ public class BattleView : MonoBehaviour
             {
                 _practiceUi.SetSlider(timeRate);
             }).AddTo(this);
-            _practiceUi.OnClickHelpButton.Subscribe(_ =>
+            _practiceUi.OnClickHelpButton.Subscribe(async _ =>
             {
                 var commandList =  TutorialManager.Instance.GetTutorialCommandLists(TutorialType.Practice);
-                var dialog = DialogManager.instance.OpenTutorialDialog(commandList);
-                dialog.OnCloseDialog.Subscribe(async result =>
+                var dialogResult = await DialogManager.instance.OpenTutorialDialogAsync(commandList);
+                switch (dialogResult.ResultType)
                 {
-                    if (result is not TutorialDialogResult tutorialResult)
-                    {
-                        return;
-                    }
-                    switch (result.ResultType)
-                    {
-                        case DialogResultType.Ok:
-                            OnClickPause(true);
-                            _ballTransform.gameObject.SetActive(false);
-                            await TutorialManager.Instance.StartTutorialAsync(tutorialResult.SelectedCommand);
-                            _ballTransform.gameObject.SetActive(true);
-                            break;
-                    }
-                }).AddTo(dialog);
+                    case DialogResultType.Ok:
+                        OnClickPause(true);
+                        _ballTransform.gameObject.SetActive(false);
+                        await TutorialManager.Instance.StartTutorialAsync(dialogResult.SelectedCommand);
+                        _ballTransform.gameObject.SetActive(true);
+                        break;
+                }
             }).AddTo(this);
         }
 
         _resultView.gameObject.SetActive(false);
     }
 
-    private void DisplayDialog(MessageDialogOption option, Action okAction)
+    private async UniTask DisplayDialogAsync(MessageDialogOption option, Action okAction)
     {
         Pause(isPause: true);
-        var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabName, option);
-        dialog.OnCloseDialog.Subscribe(result =>
+        var dialogResult = await DialogManager.instance.ShowDialogAsync<MessageDialog, DialogResultBase>(option);
+        if (dialogResult.ResultType == DialogResultType.Ok)
         {
-            if (result.ResultType == DialogResultType.Ok)
-            {
-                okAction();
-            }
-            else
-            {
-                Pause(isPause: false);
-            }
-        }).AddTo(this);
+            okAction();
+        }
+        else
+        {
+            Pause(isPause: false);
+        }
     }
 
     private void OnClickPause(bool isPause)

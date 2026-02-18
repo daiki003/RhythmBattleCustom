@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using System;
+using System.Threading.Tasks;
 
 public class ChangeParameter
 {
@@ -197,45 +198,36 @@ public class ScoreMakerView : MonoBehaviour
         {
             ChangePause(!_isPause);
         }).AddTo(this);
-        _helpButton.OnClickAsObservable().Subscribe(_ =>
+        _helpButton.OnClickAsObservable().Subscribe(async _ =>
         {
-            var commandList =  TutorialManager.Instance.GetTutorialCommandLists(TutorialType.ScoreMaker);
-            var dialog = DialogManager.instance.OpenTutorialDialog(commandList);
-            dialog.OnCloseDialog.Subscribe(async result =>
+            var commandList = TutorialManager.Instance.GetTutorialCommandLists(TutorialType.ScoreMaker);
+            var dialogResult = await DialogManager.instance.OpenTutorialDialogAsync(commandList);
+            switch (dialogResult.ResultType)
             {
-                if (result is not TutorialDialogResult tutorialResult)
-                {
-                    return;
-                }
-                switch (result.ResultType)
-                {
-                    case DialogResultType.Ok:
-                        _startTutorial.OnNext(tutorialResult.SelectedCommand);
-                        break;
-                }
-            }).AddTo(dialog);
+                case DialogResultType.Ok:
+                    _startTutorial.OnNext(dialogResult.SelectedCommand);
+                    break;
+            }
         }).AddTo(this);
-        _backButton.OnClickAsObservable().Subscribe(_ =>
+        _backButton.OnClickAsObservable().Subscribe(async _ =>
         {
             ChangePause(true);
             BGMManager.instance.Pause();
             if (_isEdited)
             {
                 // 編集が保存されていなかったら確認ダイアログを出す
-                var option = new MessageDialogOption
-                {
-                    TitleText = "ホームに戻る",
-                    MessageText = "変更が保存されていませんが、このままホームに戻りますか？",
-                    OkButtonText = "戻る",
-                };
-                var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabName, option);
-                dialog.OnCloseDialog.Subscribe(result =>
-                {
-                    if (result.ResultType == DialogResultType.Ok)
+                var dialogResult = await DialogManager.instance.ShowDialogAsync<MessageDialog, DialogResultBase>(
+                    new MessageDialogOption
                     {
-                        GameManager.Instance.OpenScene(SceneType.Home, new HomeSceneInfo()).Forget();
+                        TitleText = "ホームに戻る",
+                        MessageText = "変更が保存されていませんが、このままホームに戻りますか？",
+                        OkButtonText = "戻る",
                     }
-                });
+                );
+                if (dialogResult.ResultType == DialogResultType.Ok)
+                {
+                    GameManager.Instance.OpenScene(SceneType.Home, new HomeSceneInfo()).Forget();
+                }
                 return;
             }
             GameManager.Instance.OpenScene(SceneType.Home, new HomeSceneInfo()).Forget();
@@ -381,27 +373,23 @@ public class ScoreMakerView : MonoBehaviour
 
     #region ダイアログ系
     // セーブ確認のダイアログ表示
-    public void DisplaySaveDialog(string stageName, bool isNewSave)
+    public async UniTask DisplaySaveDialog(string stageName, bool isNewSave)
     {
-        var dialog = CreateSaveDialog(stageName, isNewSave);
-        dialog.OnCloseDialog.Subscribe(result =>
+        var dialogResult = await CreateSaveDialog(stageName, isNewSave);
+        if (dialogResult is InputDialogResult inputResult)
         {
-            string stageName = "";
-            if (result is InputDialogResult inputResult)
-            {
-                stageName = inputResult.StageName;
-            }
-            if (result.ResultType == DialogResultType.Ok)
-            {
-                _onSave.OnNext(stageName);
-                // 新規保存後は上書き保存可能にする
-                _controlPanel.ChangeCanOverriteSave(true);
-            }
-        }).AddTo(this);
+            stageName = inputResult.StageName;
+        }
+        if (dialogResult.ResultType == DialogResultType.Ok)
+        {
+            _onSave.OnNext(stageName);
+            // 新規保存後は上書き保存可能にする
+            _controlPanel.ChangeCanOverriteSave(true);
+        }
     }
 
     // セーブ確認のダイアログ作成
-    public DialogBase CreateSaveDialog(string stageName, bool isNewSave)
+    public async UniTask<DialogResultBase> CreateSaveDialog(string stageName, bool isNewSave)
     {
         if (isNewSave)
         {
@@ -414,7 +402,7 @@ public class ScoreMakerView : MonoBehaviour
                 PlaceHolderText = stageName,
                 InitialInputText = stageName,
             };
-            return DialogManager.instance.CreateDialog<InputDialog>(DialogManager.InputDialogPrefabName, option);
+            return await DialogManager.instance.ShowDialogAsync<InputDialog, InputDialogResult>(option);
         }
         else
         {
@@ -425,21 +413,22 @@ public class ScoreMakerView : MonoBehaviour
                 MessageText = "変更すると\nこのレベルのハイスコアは削除されます。\n変更を保存しますか？",
                 OkButtonText = "保存する",
             };
-            return DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabName, option);
+            return await DialogManager.instance.ShowDialogAsync<MessageDialog, DialogResultBase>(option);
         }
     }
 
     // セーブ完了通知ダイアログ
-    public void DisplaySaveFinishDialog()
+    public async UniTask DisplaySaveFinishDialog()
     {
-        var option = new MessageDialogOption
-        {
-            TitleText = "保存完了",
-            OkButtonText = "OK",
-            HideCancelButton = true,
-            MessageText = "保存しました",
-        };
-        DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabName, option);
+        await DialogManager.instance.ShowDialogAsync<MessageDialog, DialogResultBase>(
+            new MessageDialogOption
+            {
+                TitleText = "保存完了",
+                OkButtonText = "OK",
+                HideCancelButton = true,
+                MessageText = "保存しました",
+            }
+        );
         _isEdited = false;
     }
     #endregion

@@ -17,7 +17,7 @@ public class InputDialogResult : DialogResultBase
     public string StageName;
 }
 
-public class InputDialog : DialogBase
+public class InputDialog : DialogBase<InputDialogResult>
 {
     [SerializeField] private Text _messageText;
     [SerializeField] private InputField _inputField;
@@ -34,18 +34,12 @@ public class InputDialog : DialogBase
         }
     }
 
-    public override void ClosePanel(DialogResultType resultType)
+    protected override InputDialogResult CreateDialogResult(DialogResultType resultType)
     {
-        // Okの場合はボタン側で鳴らしたい
-        if (resultType != DialogResultType.Ok)
-        {
-            SEManager.instance.PlaySe(SeName.Cancel);
-        }
-        _onCloseDialog.OnNext(new InputDialogResult
+        return new InputDialogResult
         {
             ResultType = resultType,
             StageName = _inputField.text
-        });
-        Destroy(gameObject);
+        };
     }
 }

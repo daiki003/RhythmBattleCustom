@@ -10,7 +10,7 @@ public class MessageDialogOption : DialogOptionBase
     public string MessageText;
 }
 
-public class MessageDialog : DialogBase
+public class MessageDialog : DialogBase<DialogResultBase>
 {
     [SerializeField] private Text _messageText;
 

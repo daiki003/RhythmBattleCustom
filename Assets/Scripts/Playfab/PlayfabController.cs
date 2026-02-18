@@ -126,17 +126,13 @@ public class PlayFabController
                 clearStates.Add(clearState);
             }
         }
-        var settingData = new SettingData
-        {
-            BgmVolume = 0.5f,
-            SeVolume = 0.5f,
-        };
         var request = new UpdateUserDataRequest()
         {
             Data = new Dictionary<string, string>
             {
                 { "ClearStates", PlayFabSimpleJson.SerializeObject(clearStates) },
-                { "SettingData", PlayFabSimpleJson.SerializeObject(settingData) }
+                { "Life", PlayFabSimpleJson.SerializeObject(0) },
+                { "IsInfiniteLife", PlayFabSimpleJson.SerializeObject(false) },
             },
             Permission = UserDataPermission.Public
         };
@@ -172,13 +168,14 @@ public class PlayFabController
         if (result != null)
         {
             Debug.Log("GetUserData: Success!");
-            if (result.Data.ContainsKey("ClearStates") && result.Data.ContainsKey("SettingData"))
+            if (result.Data.ContainsKey("ClearStates") && result.Data.ContainsKey("Life"))
             {
                 var clearStateList = PlayFabSimpleJson.DeserializeObject<List<ClearState>>(result.Data["ClearStates"].Value);
-                var customStageList = new List<SingleStageMaster>();
                 return new PlayerDataResult
                 {
                     ClearStateList = clearStateList,
+                    CurrentLife = int.Parse(result.Data["Life"].Value),
+                    IsInfiniteLife = bool.Parse(result.Data.ContainsKey("IsInfiniteLife") ? result.Data["IsInfiniteLife"].Value : "false")
                 };
             }
             else
@@ -258,9 +255,9 @@ public class PlayFabController
             return www.downloadHandler.text;
         }
     }
-#endregion
+    #endregion
 
-#region プレイヤーデータ操作
+    #region プレイヤーデータ操作
     public static async UniTask UpdateClearState(List<ClearState> clearStates)
     {
         var request = new UpdateUserDataRequest()
@@ -268,6 +265,60 @@ public class PlayFabController
             Data = new Dictionary<string, string>
             {
                 { "ClearStates", PlayFabSimpleJson.SerializeObject(clearStates) }
+            }
+        };
+
+        bool isSuccess = false;
+        PlayFabClientAPI.UpdateUserData(request, OnSuccess, OnError);
+        await UniTask.WaitUntil(() => isSuccess);
+
+        void OnSuccess(UpdateUserDataResult result)
+        {
+            isSuccess = true;
+            Debug.Log("UpdateUserData: Success!");
+        }
+
+        void OnError(PlayFabError error)
+        {
+            Debug.Log("UpdateUserData: Fail...");
+            Debug.Log(error.GenerateErrorReport());
+        }
+    }
+
+    public static async UniTask UpdateLife(int life)
+    {
+        var request = new UpdateUserDataRequest()
+        {
+            Data = new Dictionary<string, string>
+            {
+                { "Life", life.ToString() }
+            }
+        };
+
+        bool isSuccess = false;
+        PlayFabClientAPI.UpdateUserData(request, OnSuccess, OnError);
+        await UniTask.WaitUntil(() => isSuccess);
+
+        void OnSuccess(UpdateUserDataResult result)
+        {
+            isSuccess = true;
+            Debug.Log("UpdateUserData: Success!");
+        }
+
+        void OnError(PlayFabError error)
+        {
+            Debug.Log("UpdateUserData: Fail...");
+            Debug.Log(error.GenerateErrorReport());
+        }
+    }
+    
+    public static async UniTask UpdateInfiniteLife(bool isInfinitLife)
+    {
+        var request = new UpdateUserDataRequest()
+        {
+            Data = new Dictionary<string, string>
+            {
+                { "IsInfiniteLife", isInfinitLife.ToString() }
             }
         };
 

@@ -47,6 +47,7 @@ public class HomeView : MonoBehaviour
 {
     [SerializeField] private StageStrip _stageStripPrefab;
     [SerializeField] private Transform _customStripTransform;
+    [SerializeField] private Text _lifeText;
 
     [SerializeField] private HomeViewInput _homeViewInput;
 
@@ -67,8 +68,9 @@ public class HomeView : MonoBehaviour
     {
         CreateStripList(stageList);
         BGMManager.instance.SetClip(BgmName.WanderersCity, isLoop: true, isFade: true);
+        UpdateLife();
 
-        _homeViewInput.OnClickButton.Subscribe(args =>
+        _homeViewInput.OnClickButton.Subscribe(async args =>
         {
             switch (args)
             {
@@ -82,7 +84,7 @@ public class HomeView : MonoBehaviour
                     _clickEditStageButton.OnNext((_currentStageKey, _currentPanelType.IsSample()));
                     break;
                 case DeleteStageButtonArgs deleteStageArgs:
-                    DeleteStage();
+                    DeleteStageAsync().Forget();
                     break;
                 case NewCreateButtonArgs newCreateArgs:
                     CreateStage().Forget();
@@ -91,26 +93,33 @@ public class HomeView : MonoBehaviour
                     DialogManager.instance.OpenSettingDialog();
                     break;
                 case HelpButtonArgs helpArgs:
-                    var commandList =  TutorialManager.Instance.GetTutorialCommandLists(TutorialType.Home);
-                    var dialog = DialogManager.instance.OpenTutorialDialog(commandList);
-                    dialog.OnCloseDialog.Subscribe(async result =>
+                    var commandList = TutorialManager.Instance.GetTutorialCommandLists(TutorialType.Home);
+                    var dialogResult = await DialogManager.instance.OpenTutorialDialogAsync(commandList);
+                    switch (dialogResult.ResultType)
                     {
-                        if (result is not TutorialDialogResult tutorialResult)
-                        {
-                            return;
-                        }
-                        switch (result.ResultType)
-                        {
-                            case DialogResultType.Ok:
-                                CancelSelectStrip();
-                                await TutorialManager.Instance.StartTutorialAsync(tutorialResult.SelectedCommand);
-                                break;
-                        }
-                    }).AddTo(dialog);
+                        case DialogResultType.Ok:
+                            CancelSelectStrip();
+                            await TutorialManager.Instance.StartTutorialAsync(dialogResult.SelectedCommand);
+                            break;
+                    }
+                    break;
+                case PurchaseLifeButtonArgs purchaseLifeArgs:
+                    await DialogManager.instance.OpenPurchaseLifeDialogAsync(
+                        title: "ライフ獲得",
+                        message: "広告を視聴してライフを1つ獲得しますか？",
+                        isShortage: false
+                    );
+                    UpdateLife();
                     break;
             }
         }).AddTo(this);
         _homeViewInput.Init(firstPanelType);
+    }
+
+    private void UpdateLife()
+    {
+        _lifeText.text = SaveDataManager.LifeText;
+        _homeViewInput.SetPurchaseLifeButtonActive(!SaveDataManager.IsInfiniteLife);
     }
 
     // ステージの短冊を全て作成
@@ -182,48 +191,58 @@ public class HomeView : MonoBehaviour
         Destroy(strip.gameObject);
     }
 
-    private void DeleteStage()
+    private async UniTask DeleteStageAsync()
     {
         // 確認ダイアログ
-        var option = new MessageDialogOption
-        {
-            TitleText = "ステージ削除",
-            MessageText = "本当に削除しますか？",
-            OkButtonText = "削除",
-            CancelButtonText = "キャンセル"
-        };
-        var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabName, option);
-        dialog.OnCloseDialog.Subscribe(async result =>
-        {
-            if (result.ResultType == DialogResultType.Ok)
+        var dialogResult = await DialogManager.instance.ShowDialogAsync<MessageDialog, DialogResultBase>(
+            new MessageDialogOption
             {
-                await MasterManager.DeleteCustomStage(_selectedStrip.MusicId, _selectedStrip.StageId);
-                // 短冊の選択をキャンセルしてからを削除
-                var selectedStrip = _selectedStrip;
-                CancelSelectStrip();
-                DestroyStrip(selectedStrip);
-                // 削除通知ダイアログ
-                var option = new MessageDialogOption
+                TitleText = "ステージ削除",
+                MessageText = "本当に削除しますか？",
+                OkButtonText = "削除",
+                CancelButtonText = "キャンセル"
+            }
+        );
+        if (dialogResult.ResultType == DialogResultType.Ok)
+        {
+            await MasterManager.DeleteCustomStage(_selectedStrip.MusicId, _selectedStrip.StageId);
+            // 短冊の選択をキャンセルしてからを削除
+            var selectedStrip = _selectedStrip;
+            CancelSelectStrip();
+            DestroyStrip(selectedStrip);
+            // 削除通知ダイアログ
+            DialogManager.instance.ShowDialogAsync<MessageDialog, DialogResultBase>(
+                new MessageDialogOption
                 {
                     TitleText = "ステージ削除",
                     MessageText = "削除しました",
                     OkButtonText = "OK",
                     HideCancelButton = true
-                };
-                var dialog = DialogManager.instance.CreateDialog<MessageDialog>(DialogManager.MessageDialogPrefabName, option);
-            }
-        }).AddTo(this);
+                }
+            ).Forget();
+        }
     }
 
     private async UniTask CreateStage()
     {
         CancelSelectStrip();
+        // 曲選択
         string musicId = await MediaController.instance.MusicExpote();
         if (string.IsNullOrEmpty(musicId))
         {
             // 曲選択がキャンセルされた場合は何もしない
             return;
         }
+
+        // ライフ消費確認
+        var isConsumed = await DialogManager.instance.ConfirmConsumeLifeDialogAsync(
+             title: "ステージ作成",
+             message: "ステージ作成にはライフを1つ消費します。\n作成しますか？",
+             buttonText: "作成する",
+            shortageText: "ステージを作成しますか？"
+        );
+        if (!isConsumed) return;
+
         _clickNewCreateStageButton.OnNext(musicId);
     }
 

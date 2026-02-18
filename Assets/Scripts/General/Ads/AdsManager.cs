@@ -14,7 +14,6 @@ public static class AdsManager
     private const int _rewardInterval = 1; // リワード広告表示の間隔
 
     private static int _interstitialCount;
-    private static int _rewardCount;
 
     public static void InitAds()
     {
@@ -65,14 +64,10 @@ public static class AdsManager
         });
     }
 
-    public static async UniTask ShowReward()
+    public static async UniTask<bool> ShowRewardAsync()
     {
-        _rewardCount++;
-        if (_rewardCount < _rewardInterval)
-        {
-            return;
-        }
         bool finishAds = false;
+        bool rewardEarned = false;
         RewardedAd.Load(_testRewardUnitId, new AdRequest(), (ad, error) =>
         {
             if (error != null)
@@ -94,10 +89,16 @@ public static class AdsManager
                 finishAds = true;
             };
             // 広告がロードされたら表示
-            ad.Show(_ => {});
-            _rewardCount = 0;
+            ad.Show(reward =>
+            {
+                if (reward != null)
+                {
+                    rewardEarned = true;
+                }
+            });
         });
         await UniTask.WaitUntil(() => finishAds);
         AudioSettings.Reset(AudioSettings.GetConfiguration());
+        return rewardEarned;
     }
 }
