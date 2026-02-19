@@ -23,7 +23,7 @@ public class HomeViewInput : MonoBehaviour
     [SerializeField] private Button _newCreateButton;
 
     private const string _editText = "編集";
-    private const string _copyText = "コピー";
+    private const string _copyText = "作成";
 
     private Subject<HomeViewButtonEventArgs> _onClickButton = new();
     public Observable<HomeViewButtonEventArgs> OnClickButton => _onClickButton;
