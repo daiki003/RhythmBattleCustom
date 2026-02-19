@@ -86,12 +86,12 @@ public class ControlPanelPageBpm : ControlPanelPageBase
         SetMessageMask(false);
     }
 
-    public override void SetParameter(StageHeader stageHeader)
+    public override void SetParameter(StageHeader stageHeader, bool isTutorial)
     {
         _bpmInput.SetValue(stageHeader.BPM);
         _startTimeInput.SetValue(stageHeader.StartTime);
         _endTimeInput.SetValue(stageHeader.EndTime);
-        bool canEstimate = stageHeader.IsMyMusic || TutorialManager.Instance.IsDuringTutorial;
+        bool canEstimate = stageHeader.IsMyMusic || isTutorial;
         _estimateBpmButton.gameObject.SetActive(canEstimate);
     }
 

@@ -157,7 +157,7 @@ public class ScoreMakerView : MonoBehaviour
         _beatsNumber = stageHeader.BeatsNumber;
         _modulationDict = stageHeader.ModulationDict?.Where(kv => int.TryParse(kv.Key, out _))
             .ToDictionary(kv => int.Parse(kv.Key), kv => kv.Value) ?? new Dictionary<int, int>();
-        _controlPanel.SetParameter(stageHeader);
+        _controlPanel.SetParameter(stageHeader, _isTutorial);
         foreach (var timeJump in stageHeader.TimeJumpDict)
         {
             if (int.TryParse(timeJump.Key, out var index))
@@ -222,6 +222,7 @@ public class ScoreMakerView : MonoBehaviour
                         TitleText = "ホームに戻る",
                         MessageText = "変更が保存されていませんが、このままホームに戻りますか？",
                         OkButtonText = "戻る",
+                        IsBgCancel = false,
                     }
                 );
                 if (dialogResult.ResultType == DialogResultType.Ok)
@@ -401,6 +402,7 @@ public class ScoreMakerView : MonoBehaviour
                 MessageText = "ステージ名を入力してください",
                 PlaceHolderText = stageName,
                 InitialInputText = stageName,
+                IsBgCancel = false,
             };
             return await DialogManager.instance.ShowDialogAsync<InputDialog, InputDialogResult>(option);
         }
@@ -412,6 +414,7 @@ public class ScoreMakerView : MonoBehaviour
                 TitleText = "上書き保存",
                 MessageText = "変更すると\nこのレベルのハイスコアは削除されます。\n変更を保存しますか？",
                 OkButtonText = "保存する",
+                IsBgCancel = false,
             };
             return await DialogManager.instance.ShowDialogAsync<MessageDialog, DialogResultBase>(option);
         }

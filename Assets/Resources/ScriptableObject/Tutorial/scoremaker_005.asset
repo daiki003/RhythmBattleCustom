@@ -17,6 +17,7 @@ MonoBehaviour:
   ScoreMakerStartParam:
     ScrollPositionY: -1580
     BallArrangementList: []
+    TimeJumpList: []
   Commands:
   - AdvanceType: 0
     MaskTarget:
@@ -29,7 +30,7 @@ MonoBehaviour:
     IsEmphasis: 0
     AdvanceId: 
     Message: "\u4ECA\u56DE\u306F\u914D\u7F6E\u30E2\u30FC\u30C9\u306B\u3064\u3044\u3066\u8AAC\u660E\u3057\u307E\u3059\u3002"
-    MessagePositionY: -850
+    MessagePositionY: -400
   - AdvanceType: 0
     MaskTarget:
       rid: 1467536454988333084
@@ -41,7 +42,7 @@ MonoBehaviour:
     IsEmphasis: 1
     AdvanceId: ClickLine
     Message: "\u3053\u308C\u304C\u914D\u7F6E\u30E2\u30FC\u30C9\u3067\u3059\u3002\n\u73FE\u5728\u306F\u30CF\u30A4\u30D6\u30EA\u30C3\u30C9\u578B\u306B\u306A\u3063\u3066\u3044\u307E\u3059\u3002"
-    MessagePositionY: -850
+    MessagePositionY: -400
   - AdvanceType: 2
     MaskTarget:
       rid: 1467536454988333096
@@ -53,7 +54,7 @@ MonoBehaviour:
     IsEmphasis: 0
     AdvanceId: ClickLineRight
     Message: "\u3053\u306E\u72B6\u614B\u3067\u306F\u3001\u30DC\u30FC\u30EB\u306E\u4F4D\u7F6E\u3092\u30BF\u30C3\u30D7\u3059\u308B\u3068\u30DC\u30FC\u30EB\u304C\u914D\u7F6E\u3055\u308C\u307E\u3059\u3002"
-    MessagePositionY: -850
+    MessagePositionY: -400
   - AdvanceType: 2
     MaskTarget:
       rid: 1467536432002236440
@@ -65,7 +66,7 @@ MonoBehaviour:
     IsEmphasis: 0
     AdvanceId: ClickLine
     Message: "\u30E9\u30A4\u30F3\u306E\u4E2D\u592E\u90E8\u5206\u306A\u3069\u3001\u30DC\u30FC\u30EB\u306E\u4F4D\u7F6E\u4EE5\u5916\u3092\u30BF\u30C3\u30D7\u3059\u308B\u3068\u30E9\u30A4\u30F3\u304C\u9078\u629E\u3055\u308C\u307E\u3059\u3002"
-    MessagePositionY: -850
+    MessagePositionY: -400
   - AdvanceType: 1
     MaskTarget:
       rid: 1467536454988333104
@@ -77,7 +78,7 @@ MonoBehaviour:
     IsEmphasis: 0
     AdvanceId: OperationTypeButton
     Message: "\u3053\u306E\u30DC\u30BF\u30F3\u3067\u3001\u914D\u7F6E\u30E2\u30FC\u30C9\u306E\u5207\u308A\u66FF\u3048\u304C\u3067\u304D\u307E\u3059\u3002"
-    MessagePositionY: -850
+    MessagePositionY: -400
   - AdvanceType: 0
     MaskTarget:
       rid: 1467536454988333109
@@ -89,7 +90,7 @@ MonoBehaviour:
     IsEmphasis: 1
     AdvanceId: PasteButton
     Message: "\u30DC\u30FC\u30EB\u914D\u7F6E\u30E2\u30FC\u30C9\u306B\u306A\u308A\u307E\u3057\u305F\u3002"
-    MessagePositionY: -850
+    MessagePositionY: -400
   - AdvanceType: 0
     MaskTarget:
       rid: 1467536432002236441
@@ -101,7 +102,7 @@ MonoBehaviour:
     IsEmphasis: 0
     AdvanceId: Paste
     Message: "\u3053\u306E\u72B6\u614B\u3067\u306F\u3001\u30DC\u30FC\u30EB\u306E\u914D\u7F6E\u306E\u307F\u304C\u53EF\u80FD\u3067\u3001\u30DC\u30FC\u30EB\u306E\u4F4D\u7F6E\u4EE5\u5916\u3092\u30BF\u30C3\u30D7\u3057\u3066\u3082\u4F55\u3082\u8D77\u3053\u308A\u307E\u305B\u3093\u3002\n\uFF08\u305D\u306E\u5206\u30DC\u30FC\u30EB\u304C\u914D\u7F6E\u3067\u304D\u308B\u5224\u5B9A\u304C\u5C11\u3057\u5E83\u304C\u308A\u307E\u3059\uFF09"
-    MessagePositionY: -850
+    MessagePositionY: -400
   - AdvanceType: 1
     MaskTarget:
       rid: 1467536432002236443
@@ -113,7 +114,7 @@ MonoBehaviour:
     IsEmphasis: 0
     AdvanceId: OperationTypeButton
     Message: "\u518D\u5EA6\u914D\u7F6E\u30E2\u30FC\u30C9\u3092\u5207\u308A\u66FF\u3048\u3066\u307F\u307E\u3057\u3087\u3046\u3002"
-    MessagePositionY: -850
+    MessagePositionY: -400
   - AdvanceType: 0
     MaskTarget:
       rid: 1467536454988333107
@@ -125,31 +126,31 @@ MonoBehaviour:
     IsEmphasis: 1
     AdvanceId: ClickLineRight
     Message: "\u30E9\u30A4\u30F3\u9078\u629E\u30E2\u30FC\u30C9\u306B\u306A\u308A\u307E\u3057\u305F\u3002"
-    MessagePositionY: -850
+    MessagePositionY: -400
   - AdvanceType: 0
     MaskTarget:
       rid: 1467536454988333118
     ArrowTarget:
-      rid: -2
+      rid: 337954034408751118
     TargetArrowVector: 1
     TouchableTarget:
-      rid: -2
+      rid: 337954034408751119
     IsEmphasis: 0
-    AdvanceId: ClickLineRight
+    AdvanceId: ClickLine
     Message: "\u3053\u306E\u72B6\u614B\u3067\u306F\u3001\u30DC\u30FC\u30EB\u306E\u4F4D\u7F6E\u3092\u30BF\u30C3\u30D7\u3057\u3066\u3082\u30E9\u30A4\u30F3\u304C\u9078\u629E\u3055\u308C\u307E\u3059\u3002"
-    MessagePositionY: -850
-  - AdvanceType: 0
+    MessagePositionY: -400
+  - AdvanceType: 1
     MaskTarget:
       rid: 1467536454988333119
     ArrowTarget:
       rid: 1467536454988333121
-    TargetArrowVector: 1
+    TargetArrowVector: 4
     TouchableTarget:
       rid: 1467536454988333122
-    IsEmphasis: 1
+    IsEmphasis: 0
     AdvanceId: OperationTypeButton
     Message: "\u518D\u5EA6\u5207\u308A\u66FF\u3048\u30DC\u30BF\u30F3\u3092\u62BC\u3059\u3068\u3001\u30CF\u30A4\u30D6\u30EA\u30C3\u30C9\u30E2\u30FC\u30C9\u306B\u623B\u308A\u307E\u3059\u3002"
-    MessagePositionY: -850
+    MessagePositionY: -400
   - AdvanceType: 0
     MaskTarget:
       rid: 1467536454988333120
@@ -161,12 +162,72 @@ MonoBehaviour:
     IsEmphasis: 0
     AdvanceId: ClickLineRight
     Message: "\u4ECA\u56DE\u306E\u8AAC\u660E\u306F\u4EE5\u4E0A\u3067\u3059\u3002"
-    MessagePositionY: -850
+    MessagePositionY: -400
   references:
     version: 2
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
+    - rid: 337954034408751118
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 337954034408751119
+      type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
+      data:
+        TargetId: 
+        OverrideParam:
+          rid: -2
+    - rid: 337954034408751120
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 50
+        Height: 100
+        PositionOffset: {x: 0, y: 0}
+    - rid: 337954034408751121
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 0
+        Height: 0
+        PositionOffset: {x: 0, y: 0}
+    - rid: 337954034408751122
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 0
+        Height: 0
+        PositionOffset: {x: -50, y: 50}
+    - rid: 337954034408751123
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 0
+        Height: 0
+        PositionOffset: {x: 0, y: 0}
+    - rid: 337954034408751132
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 0
+        Height: 0
+        PositionOffset: {x: 0, y: 0}
+    - rid: 337954034408751134
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 0
+        Height: 0
+        PositionOffset: {x: 0, y: 0}
+    - rid: 337954034408751135
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 0
+        Height: 0
+        PositionOffset: {x: -50, y: 50}
+    - rid: 337954034408751136
+      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
+      data:
+        Width: 0
+        Height: 0
+        PositionOffset: {x: -50, y: 50}
     - rid: 1467536432002236437
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
@@ -188,7 +249,7 @@ MonoBehaviour:
     - rid: 1467536432002236442
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
-        TargetId: ScoreMakerLine4
+        TargetId: 
         OverrideParam:
           rid: 1467536454988333065
     - rid: 1467536432002236443
@@ -200,7 +261,7 @@ MonoBehaviour:
     - rid: 1467536454988333059
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
-        TargetId: ScoreMakerLine4
+        TargetId: 
         OverrideParam:
           rid: 1467536454988333066
     - rid: 1467536454988333065
@@ -280,19 +341,19 @@ MonoBehaviour:
       data:
         TargetId: OperationTypeButton
         OverrideParam:
-          rid: -2
+          rid: 337954034408751121
     - rid: 1467536454988333105
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
         TargetId: OperationTypeButton
         OverrideParam:
-          rid: 1467536454988333125
+          rid: 337954034408751122
     - rid: 1467536454988333106
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
         TargetId: OperationTypeButton
         OverrideParam:
-          rid: 1467536454988333126
+          rid: 337954034408751123
     - rid: 1467536454988333107
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
@@ -340,7 +401,7 @@ MonoBehaviour:
       data:
         TargetId: OperationTypeButton
         OverrideParam:
-          rid: -2
+          rid: 337954034408751136
     - rid: 1467536454988333117
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
@@ -352,13 +413,13 @@ MonoBehaviour:
       data:
         TargetId: 
         OverrideParam:
-          rid: -2
+          rid: 337954034408751120
     - rid: 1467536454988333119
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
         TargetId: OperationTypeButton
         OverrideParam:
-          rid: -2
+          rid: 337954034408751132
     - rid: 1467536454988333120
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
@@ -368,30 +429,18 @@ MonoBehaviour:
     - rid: 1467536454988333121
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
-        TargetId: 
+        TargetId: OperationTypeButton
         OverrideParam:
-          rid: -2
+          rid: 337954034408751135
     - rid: 1467536454988333122
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
-        TargetId: 
+        TargetId: OperationTypeButton
         OverrideParam:
-          rid: -2
+          rid: 337954034408751134
     - rid: 1467536454988333124
       type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
       data:
         Width: 20
         Height: 20
         PositionOffset: {x: 0, y: 0}
-    - rid: 1467536454988333125
-      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
-      data:
-        Width: 0
-        Height: 0
-        PositionOffset: {x: 0, y: 50}
-    - rid: 1467536454988333126
-      type: {class: OverrideTargetParam, ns: , asm: Assembly-CSharp}
-      data:
-        Width: 0
-        Height: 0
-        PositionOffset: {x: 0, y: 50}

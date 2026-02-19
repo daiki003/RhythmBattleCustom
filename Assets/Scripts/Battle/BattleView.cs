@@ -168,6 +168,7 @@ public class BattleView : MonoBehaviour
                 TitleText = "やり直す",
                 MessageText = "始めからやり直しますか？",
                 OkButtonText = "やり直す",
+                IsBgCancel = false,
             };
             DisplayDialogAsync(option, async () =>
             {
@@ -189,6 +190,7 @@ public class BattleView : MonoBehaviour
                 TitleText = "戻る",
                 MessageText = _isAdditional ? "ステージ作成に戻りますか？" : "ホームに戻りますか？",
                 OkButtonText = "戻る",
+                IsBgCancel = false
             };
             DisplayDialogAsync(option, () =>
             {

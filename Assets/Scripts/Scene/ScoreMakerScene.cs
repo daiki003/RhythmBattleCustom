@@ -18,11 +18,11 @@ public class ScoreMakerScene : SceneBase
         }
         await BGMManager.instance.SetStageClip(_scoreMakerSceneInfo.StageMaster.StageHeader.MusicId, immediatePlay: false);
         bool isTutorial = _scoreMakerSceneInfo.TutorialCommand != null;
+        _scoreMaker.Init(_scoreMakerSceneInfo.StageMaster, isTutorial, _scoreMakerSceneInfo.Type);
         if (isTutorial)
         {
             _scoreMaker.PlayTutorialAsync(_scoreMakerSceneInfo.TutorialCommand).Forget();
         }
-        _scoreMaker.Init(_scoreMakerSceneInfo.StageMaster, isTutorial, _scoreMakerSceneInfo.Type);
     }
 
     public override async UniTask StartSceneAsync()

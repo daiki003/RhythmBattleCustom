@@ -50,7 +50,7 @@ public class ControlPanelPageModulation : ControlPanelPageBase
         }).AddTo(this);
     }
 
-    public override void SetParameter(StageHeader stageHeader)
+    public override void SetParameter(StageHeader stageHeader, bool isTutorial)
     {
         _beatsNumber.Value = stageHeader.BeatsNumber;
     }

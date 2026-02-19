@@ -27,6 +27,10 @@ public class TargetArrow : MonoBehaviour
         gameObject.SetActive(true);
         // 本体のポジションを設定
         transform.position = GetArrowFirstPosition(target, vector);
+        if (target.OverrideParam != null)
+        {
+            transform.localPosition += new Vector3(target.OverrideParam.PositionOffset.x, target.OverrideParam.PositionOffset.y, 0f);
+        }
         // 矢印の向きを変える
         _arrowRect.localEulerAngles = GetRotation(vector);
 

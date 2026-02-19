@@ -120,11 +120,11 @@ public class ScoreMakerControlPanel : MonoBehaviour
         _undoButton.interactable = isExsistPastLine;
     }
 
-    public void SetParameter(StageHeader stageHeader)
+    public void SetParameter(StageHeader stageHeader, bool isTutorial)
     {
         foreach (var page in _menuPageList)
         {
-            page.SetParameter(stageHeader);
+            page.SetParameter(stageHeader, isTutorial);
         }
     }
 

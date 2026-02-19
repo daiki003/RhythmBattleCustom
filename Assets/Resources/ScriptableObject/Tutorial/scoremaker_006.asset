@@ -17,6 +17,7 @@ MonoBehaviour:
   ScoreMakerStartParam:
     ScrollPositionY: -1580
     BallArrangementList: []
+    TimeJumpList: []
   Commands:
   - AdvanceType: 0
     MaskTarget:
@@ -50,7 +51,7 @@ MonoBehaviour:
     TargetArrowVector: 1
     TouchableTarget:
       rid: 1467536454988333098
-    IsEmphasis: 0
+    IsEmphasis: 1
     AdvanceId: PlayMakePanel
     Message: "\u3053\u306E\u72B6\u614B\u3067\u306F\u3001\u753B\u9762\u4E0B\u90E8\u3092\u30BF\u30C3\u30D7\u3059\u308B\u3053\u3068\u3067\u30DC\u30FC\u30EB\u3092\u914D\u7F6E\u3067\u304D\u307E\u3059\u3002"
     MessagePositionY: -120

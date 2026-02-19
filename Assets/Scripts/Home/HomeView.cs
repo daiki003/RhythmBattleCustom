@@ -211,7 +211,8 @@ public class HomeView : MonoBehaviour
                 TitleText = "ステージ削除",
                 MessageText = "本当に削除しますか？",
                 OkButtonText = "削除",
-                CancelButtonText = "キャンセル"
+                CancelButtonText = "キャンセル",
+                IsBgCancel = false,
             }
         );
         if (dialogResult.ResultType == DialogResultType.Ok)

@@ -80,6 +80,7 @@ public class DialogManager : MonoBehaviour
                 TitleText = title,
                 MessageText = message + currentLifeText,
                 OkButtonText = buttonText,
+                IsBgCancel = false,
             });
             if (dialogResult.ResultType != DialogResultType.Ok) return false;
             // ライフ消費までする
@@ -99,6 +100,7 @@ public class DialogManager : MonoBehaviour
             OkButton2Text = "無限ライフ\n(120円)",
             CancelButtonText = "キャンセル",
             HideOkButton2 = false,
+            IsBgCancel = false,
         });
 
         switch (dialogResult.ResultType)
@@ -128,7 +130,8 @@ public class DialogManager : MonoBehaviour
                             TitleText = "エラー",
                             MessageText = "広告を視聴できませんでした。",
                             OkButtonText = "OK",
-                            HideCancelButton = true
+                            HideCancelButton = true,
+                            IsBgCancel = false,
                         }
                     );
                 }

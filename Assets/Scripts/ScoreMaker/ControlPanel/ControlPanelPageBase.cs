@@ -15,7 +15,7 @@ public class ControlPanelPageBase : MonoBehaviour
         
     }
 
-    public virtual void SetParameter(StageHeader stageHeader)
+    public virtual void SetParameter(StageHeader stageHeader, bool isTutorial)
     {
         
     }

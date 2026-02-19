@@ -18,6 +18,7 @@ public class DialogOptionBase
     public bool HideOkButton;
     public bool HideOkButton2 = true;
     public bool UseYellowCancelButton;
+    public bool IsBgCancel = true;
     public Vector2 PositionOffset;
     public Vector2 SizeOffset;
 }
@@ -63,10 +64,13 @@ public class DialogBase<T> : MonoBehaviour where T : DialogResultBase
         {
             ClosePanel(DialogResultType.None);
         }).AddTo(this);
-        _bgButton.OnClickAsObservable().Subscribe(_ =>
+        if (dialogOption.IsBgCancel)
         {
-            ClosePanel(DialogResultType.None);
-        }).AddTo(this);
+            _bgButton.OnClickAsObservable().Subscribe(_ =>
+            {
+                ClosePanel(DialogResultType.None);
+            }).AddTo(this);
+        }
 
         _dialogCommonParts.CancelButton.gameObject.SetActive(!dialogOption.HideCancelButton);
         _dialogCommonParts.OkButton.gameObject.SetActive(!dialogOption.HideOkButton);
