@@ -42,10 +42,10 @@ public class ScoreMakerPresenter : MonoBehaviour
         {
             await _view.DisplaySaveDialog(_model.OriginalStageInfo.StageHeader.StageName, isNewSave);
         }).AddTo(this);
-        _view.OnSave.Subscribe(async name =>
+        _view.OnSave.Subscribe(async param =>
         {
             // 現在のレベルの譜面を保存
-            await SaveScore(name);
+            await SaveScore(param.Item1, param.Item2);
         }).AddTo(this);
         _view.OnChangeParameter.Subscribe(param =>
         {
@@ -68,10 +68,10 @@ public class ScoreMakerPresenter : MonoBehaviour
         _view.SetHeaderParameter(_model.CurrentMaster.StageHeader);
     }
 
-    private async UniTask SaveScore(string stageName)
+    private async UniTask SaveScore(string stageName, bool isNewSave)
     {
         // 現在のレベルの譜面を保存
-        await _model.SaveScore(_view.CreateNoteList(), stageName, _view.GetTimeJumpDict());
+        await _model.SaveScore(_view.CreateNoteList(), stageName, _view.GetTimeJumpDict(), isNewSave);
         await _view.DisplaySaveFinishDialog();
     }
 

@@ -70,10 +70,15 @@ public class ScoreMakerModel
         ChangeParameterWithLine();
     }
 
-    public async UniTask SaveScore(List<NoteMaster> notes, string stageName, Dictionary<int, float> timeJumpDict)
+    public async UniTask SaveScore(List<NoteMaster> notes, string stageName, Dictionary<int, float> timeJumpDict, bool isNewSave)
     {
         // 現在のレベルの譜面を保存
         UpdateCurrentLevelNotes(notes);
+        // 新規保存ならステージIDを新規採番
+        if (isNewSave)
+        {
+            _currentMaster.StageId = MasterManager.GetNextStageId(_currentMaster.MusicId);
+        }
         if (!string.IsNullOrEmpty(stageName))
         {
             _currentMaster.StageHeader.StageName = stageName;

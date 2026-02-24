@@ -87,9 +87,6 @@ public class BattleView : MonoBehaviour
     private CancellationTokenSource _bgmStartCts;
     private StageHeader _stageHeader;
     private List<NoteMaster> _notes;
-    // これが大きいと全体的に叩くのが遅い
-    private float _beatDiffTime;
-    private float[] _beatDiffTimeList = new float[10];
     private float _endTime => _stageHeader.EndTime > 0 ? _stageHeader.EndTime : BGMManager.instance.Length;
 
     private float _stageLength => _endTime - _stageHeader.StartTime;
@@ -375,8 +372,6 @@ public class BattleView : MonoBehaviour
         _leftTargetImage.color = new Color(1, 1, 1, 0.5f);
         _rightTargetImage.color = new Color(1, 1, 1, 0.5f);
         _currentState = BattleState.StartBattle;
-        _beatDiffTime = 0f;
-        _beatDiffTimeList = new float[10];
         // BallTimeOffset分遅れてBGMスタート
         _startBgmTime = Time.time + _ballTimeOffset;
         _bgmStartCts = new CancellationTokenSource();
@@ -563,8 +558,6 @@ public class BattleView : MonoBehaviour
 
     public async UniTask StartResultAsync(ClearState clearState, ClearState highScoreClearState, float criticalMultiple, float hitMultiple, float missMultiple)
     {
-        DebugPanel.instance.AddLog("BeatDiffTime " + _beatDiffTime);
-        DebugPanel.instance.AddLog("BDTs " + _beatDiffTimeList[0].RoundDown(5) + " " + _beatDiffTimeList[1].RoundDown(5) + " " + _beatDiffTimeList[2].RoundDown(5) + " " + _beatDiffTimeList[3].RoundDown(5) + " " + _beatDiffTimeList[4].RoundDown(5) + " " + _beatDiffTimeList[5].RoundDown(5) + " " + _beatDiffTimeList[6].RoundDown(5) + " " + _beatDiffTimeList[7].RoundDown(5) + " " + _beatDiffTimeList[8].RoundDown(5) + " " + _beatDiffTimeList[9].RoundDown(5));
         await UniTask.WaitForSeconds(_beforeReultWaitTime, cancellationToken: _cts.Token);
         _resultView.SetScore(clearState, highScoreClearState, criticalMultiple, hitMultiple, missMultiple);
         _resultView.gameObject.SetActive(true);
@@ -623,9 +616,6 @@ public class BattleView : MonoBehaviour
             SEManager.instance.PlaySe(SeName.Beat);
         }
         _lastBeatTime = ball.CriticalTime;
-        float diffTime = _currentTime - ball.CriticalTime;
-        _beatDiffTime += diffTime;
-        _beatDiffTimeList[(int)_currentTime / 15] += diffTime;
         CreateLetter(ball.IsLeft, ball.JudgeBall(_currentTime));
         _currentScore.CountUp(ball.JudgeBall(_currentTime));
         UpdateScoreText(_currentScore);

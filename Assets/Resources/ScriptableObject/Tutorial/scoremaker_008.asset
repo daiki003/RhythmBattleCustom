@@ -196,7 +196,7 @@ MonoBehaviour:
     - rid: 337954034408751105
       type: {class: TutorialTarget, ns: , asm: Assembly-CSharp}
       data:
-        TargetId: 
+        TargetId: Estimate
         OverrideParam:
           rid: -2
     - rid: 1467536432002236437

@@ -76,8 +76,8 @@ public class ScoreMakerView : MonoBehaviour
 
     private Subject<float> _clickPracticeButton = new();
     public Observable<float> ClickPracticeButton => _clickPracticeButton;
-    private Subject<string> _onSave = new();
-    public Observable<string> OnSave => _onSave;
+    private Subject<(string, bool)> _onSave = new();
+    public Observable<(string, bool)> OnSave => _onSave;
     private Subject<bool> _clickSaveButton = new();
     public Observable<bool> ClickSaveButton => _clickSaveButton;
     private Subject<ChangeParameter> _onChangeParameter = new();
@@ -383,7 +383,7 @@ public class ScoreMakerView : MonoBehaviour
         }
         if (dialogResult.ResultType == DialogResultType.Ok)
         {
-            _onSave.OnNext(stageName);
+            _onSave.OnNext((stageName, isNewSave));
             // 新規保存後は上書き保存可能にする
             _controlPanel.ChangeCanOverriteSave(true);
         }
@@ -1121,11 +1121,16 @@ public class ScoreMakerView : MonoBehaviour
         }
         if (!_isPause)
         {
-            if (BGMManager.instance.IsFinishBgm)
+            if (BGMManager.instance.IsFinishBgm || BGMManager.instance.CurrentTime >= _currentEndTime)
             {
                 // BGMが終わったら自動で止める
                 ChangePause(true);
                 return;
+            }
+            // 終了1秒前になったらフェードアウト開始
+            else if (BGMManager.instance.CurrentTime >= _currentEndTime - 1f)
+            {
+                BGMManager.instance.FadeOut(1f).Forget();
             }
             float currentLineNumber = GetCurrentLineNumber();
             float anchorY = _scoreAreaBottom - (_scoreAreaLayoutGroup.spacing + _scoreLineHeight) * currentLineNumber;
