@@ -2607,7 +2607,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2980374640039941190, guid: fa0e0c49ccb035b4192a4f12d1ae6629, type: 3}
       propertyPath: _seType
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7023448352696945794, guid: fa0e0c49ccb035b4192a4f12d1ae6629, type: 3}
       propertyPath: m_Text

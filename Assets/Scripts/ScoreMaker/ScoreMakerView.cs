@@ -297,9 +297,34 @@ public class ScoreMakerView : MonoBehaviour
         else if (_selectedBallPocket != null)
         {
             UpdatePastScoreLineList();
+            ScoreMakerBall pairBall = null;
+            if (_selectedBallPocket.InstalledBall.BallType == ScoreMakerBallType.Long)
+            {
+                // 選択中のボールがロングだった場合は、後でつなぎなおすのでペアを保存
+                pairBall = _selectedBallPocket.InstalledBall.PairBall;
+                pairBall.ResetPair(isForce: true);
+            }
             // ボール選択中なら、そのボールをここに移動する
             _selectedBallPocket.Clicked(ScoreMakerBallType.None);
-            CreateBall(lineNumber, isLeft, ScoreMakerBallType.Single);
+            // クリックした列にペアがあるならつなぎなおし
+            if (pairBall != null && pairBall.IsLeft == isLeft)
+            {
+                var newBall = CreateBall(lineNumber, isLeft, ScoreMakerBallType.Long);
+                pairBall.ChangeBallType(ScoreMakerBallType.Long);
+                ConnectBall(newBall, pairBall);
+                // UniTask.Void(async () =>
+                // {
+                //     // ペア解消がOnDestroyで行われるので1フレーム待つ
+                //     await UniTask.NextFrame();
+                //     var newBall = CreateBall(lineNumber, isLeft, ScoreMakerBallType.Long);
+                //     pairBall.ChangeBallType(ScoreMakerBallType.Long);
+                //     ConnectBall(newBall, pairBall);
+                // });
+            }
+            else
+            {
+                CreateBall(lineNumber, isLeft, ScoreMakerBallType.Single);
+            }
             _selectedBallPocket.SelectBall(false);
             _selectedBallPocket = null;
         }
@@ -739,15 +764,16 @@ public class ScoreMakerView : MonoBehaviour
         }
     }
 
-    private void CreateBall(int lineNumber, bool isLeft, ScoreMakerBallType ballType)
+    private ScoreMakerBall CreateBall(int lineNumber, bool isLeft, ScoreMakerBallType ballType)
     {
         if (lineNumber < 0 || lineNumber >= _scoreLineList.Count)
         {
-            return;
+            return null;
         }
         _isEdited = true;
         var createdBall = _scoreLineList[lineNumber].CreateBall(ballType, isLeft);
         ConnectLongBall(lineNumber, isLeft, createdBall);
+        return createdBall;
     }
 
     // ロングボールを線で繋げる

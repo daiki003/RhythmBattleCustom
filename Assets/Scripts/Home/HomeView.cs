@@ -81,17 +81,15 @@ public class HomeView : MonoBehaviour
                     _clickPlayStageButton.OnNext((_currentStageKey, playStageArgs.IsPracticeMode));
                     break;
                 case EditStageButtonArgs editStageArgs:
-                    if (_currentPanelType.IsSample())
-                    {
-                        // ライフ消費確認
-                        var isConsumed = await DialogManager.instance.ConfirmConsumeLifeDialogAsync(
-                            title: "ステージ作成",
-                            message: "ステージ作成にはライフを1つ消費します。\n作成しますか？",
-                            buttonText: "作成する",
-                            shortageText: "ステージを作成しますか？"
-                        );
-                        if (!isConsumed) return;
-                    }
+                    string title = _currentPanelType.IsSample() ? "作成" : "編集";
+                    // ライフ消費確認
+                    var isConsumed = await DialogManager.instance.ConfirmConsumeLifeDialogAsync(
+                        title: $"ステージ{title}",
+                        message: $"{title}にはライフを1つ消費します。\n{title}しますか？",
+                        buttonText: $"{title}する",
+                        shortageText: $"ステージを{title}しますか？"
+                    );
+                    if (!isConsumed) return;
                     _clickEditStageButton.OnNext((_currentStageKey, _currentPanelType.IsSample()));
                     break;
                 case DeleteStageButtonArgs deleteStageArgs:

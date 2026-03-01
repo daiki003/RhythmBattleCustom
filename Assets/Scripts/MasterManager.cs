@@ -160,8 +160,7 @@ public static class MasterManager
     {
         SaveDataManager.ClearStateList = clearStateList;
         SaveDataManager.CurrentLife = currentLife;
-        // SaveDataManager.IsInfiniteLife = isInfiniteLife;
-        SaveDataManager.IsInfiniteLife = false;
+        SaveDataManager.IsInfiniteLife = isInfiniteLife;
     }
     public static async UniTask AddLife(int addLife)
     {

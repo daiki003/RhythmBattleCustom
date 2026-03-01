@@ -44,11 +44,13 @@ public class ScoreMakerBallLine : MonoBehaviour
         {
             _headBall.ChangeBallType(ScoreMakerView.ScoreMakerBallType.Single);
             _headBall.ResetPair();
+            _headBall = null;
         }
         if (_lastBall != null)
         {
             _lastBall.ChangeBallType(ScoreMakerView.ScoreMakerBallType.Single);
             _lastBall.ResetPair();
+            _lastBall = null;
         }
         Destroy(gameObject);
     }

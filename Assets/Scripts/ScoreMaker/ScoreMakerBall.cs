@@ -48,8 +48,12 @@ public class ScoreMakerBall : MonoBehaviour
         }
     }
 
-    public void ResetPair()
+    public void ResetPair(bool isForce = false)
     {
+        if (isForce && AttachedLine != null)
+        {
+            AttachedLine.DestroyLine();
+        }
         AttachedLine = null;
         PairBall = null;
         IsLongLast = false;
