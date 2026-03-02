@@ -340,6 +340,12 @@ PlayerSettings:
       m_Height: 40
       m_Kind: 3
       m_SubKind: iPad
+    - m_Textures:
+      - {fileID: 2800000, guid: 9f6cdccd1d7712b41bb43836ee8ff0ea, type: 3}
+      m_Width: 1024
+      m_Height: 1024
+      m_Kind: 4
+      m_SubKind: App Store
     - m_Textures: []
       m_Width: 60
       m_Height: 60
@@ -385,12 +391,6 @@ PlayerSettings:
       m_Height: 29
       m_Kind: 1
       m_SubKind: iPad
-    - m_Textures:
-      - {fileID: 2800000, guid: 9f6cdccd1d7712b41bb43836ee8ff0ea, type: 3}
-      m_Width: 1024
-      m_Height: 1024
-      m_Kind: 4
-      m_SubKind: App Store
   m_BuildTargetBatching: []
   m_BuildTargetShaderSettings: []
   m_BuildTargetGraphicsJobs:
