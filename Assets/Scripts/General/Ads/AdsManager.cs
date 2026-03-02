@@ -71,7 +71,6 @@ public static class AdsManager
     {
         bool finishAds = false;
         bool rewardEarned = false;
-        BGMManager.instance.Pause();
         RewardedAd.Load(_testRewardUnitId, new AdRequest(), (ad, error) =>
         {
             if (error != null)
@@ -92,6 +91,7 @@ public static class AdsManager
                 ad.Destroy();
                 finishAds = true;
             };
+            BGMManager.instance.Pause();
             // 広告がロードされたら表示
             ad.Show(reward =>
             {
