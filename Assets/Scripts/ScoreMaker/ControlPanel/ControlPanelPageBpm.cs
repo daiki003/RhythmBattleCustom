@@ -56,15 +56,27 @@ public class ControlPanelPageBpm : ControlPanelPageBase
             var audioClip = BGMManager.instance.CurrentClip;
             // EstimateBPMに時間がかかるので先にSEを鳴らす
             SEManager.instance.PlaySe(SeName.Button1);
-            // ライフ消費確認
-            var isConsumed = await DialogManager.instance.ConfirmConsumeLifeDialogAsync(
-                title: "BPM計測",
-                message: "BPM計測にはライフを1つ消費します。\n計測しますか？",
-                buttonText: "計測する",
-                shortageText: "BPMを計測しますか？"
-            );
-            if (!isConsumed) return;
 
+            // ライフ消費確認
+            // var isConsumed = await DialogManager.instance.ConfirmConsumeLifeDialogAsync(
+            //     title: "BPM計測",
+            //     message: "BPM計測にはライフを1つ消費します。\n計測しますか？",
+            //     buttonText: "計測する",
+            //     shortageText: "BPMを計測しますか？"
+            // );
+            // if (!isConsumed) return;
+
+            // 広告再生確認
+            var dialogResult = await DialogManager.instance.ShowDialogAsync<MessageDialog, DialogResultBase>(
+                new MessageDialogOption
+                {
+                    TitleText = "BPM計測",
+                    MessageText = "BPMを計測しますか？\n（計測中に広告が流れます）",
+                    OkButtonText = "計測する",
+                }
+            );
+            if (dialogResult.ResultType != DialogResultType.Ok) return;
+            var adsTask = AdsManager.ShowInterstitialAsync();
             SetMessageMask(true, "計測中...");
             await UniTask.NextFrame();
             var bpm = AudioClipUtility.EstimateBPM(audioClip);
@@ -72,6 +84,7 @@ public class ControlPanelPageBpm : ControlPanelPageBase
             _bpmInput.SetValue(bpm);
             _startTimeInput.SetValue(startTime);
             SetMessageMask(false);
+            await adsTask;
             await DialogManager.instance.ShowDialogAsync<MessageDialog, DialogResultBase>(
                 new MessageDialogOption
                 {

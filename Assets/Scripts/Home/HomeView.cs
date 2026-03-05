@@ -83,13 +83,16 @@ public class HomeView : MonoBehaviour
                 case EditStageButtonArgs editStageArgs:
                     string title = _currentPanelType.IsSample() ? "作成" : "編集";
                     // ライフ消費確認
-                    var isConsumed = await DialogManager.instance.ConfirmConsumeLifeDialogAsync(
-                        title: $"ステージ{title}",
-                        message: $"{title}にはライフを1つ消費します。\n{title}しますか？",
-                        buttonText: $"{title}する",
-                        shortageText: $"ステージを{title}しますか？"
-                    );
-                    if (!isConsumed) return;
+                    // var isConsumed = await DialogManager.instance.ConfirmConsumeLifeDialogAsync(
+                    //     title: $"ステージ{title}",
+                    //     message: $"{title}にはライフを1つ消費します。\n{title}しますか？",
+                    //     buttonText: $"{title}する",
+                    //     shortageText: $"ステージを{title}しますか？"
+                    // );
+                    // if (!isConsumed) return;
+
+                    // 広告再生
+                    await AdsManager.ShowInterstitialAsync();
                     _clickEditStageButton.OnNext((_currentStageKey, _currentPanelType.IsSample()));
                     break;
                 case DeleteStageButtonArgs deleteStageArgs:
@@ -245,13 +248,16 @@ public class HomeView : MonoBehaviour
         }
 
         // ライフ消費確認
-        var isConsumed = await DialogManager.instance.ConfirmConsumeLifeDialogAsync(
-             title: "ステージ作成",
-             message: "ステージ作成にはライフを1つ消費します。\n作成しますか？",
-             buttonText: "作成する",
-            shortageText: "ステージを作成しますか？"
-        );
-        if (!isConsumed) return;
+        // var isConsumed = await DialogManager.instance.ConfirmConsumeLifeDialogAsync(
+        //      title: "ステージ作成",
+        //      message: "ステージ作成にはライフを1つ消費します。\n作成しますか？",
+        //      buttonText: "作成する",
+        //     shortageText: "ステージを作成しますか？"
+        // );
+        // if (!isConsumed) return;
+
+        // 広告再生
+        await AdsManager.ShowInterstitialAsync();
 
         _clickNewCreateStageButton.OnNext(musicId);
     }

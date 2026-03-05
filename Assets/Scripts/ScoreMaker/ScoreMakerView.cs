@@ -312,14 +312,6 @@ public class ScoreMakerView : MonoBehaviour
                 var newBall = CreateBall(lineNumber, isLeft, ScoreMakerBallType.Long);
                 pairBall.ChangeBallType(ScoreMakerBallType.Long);
                 ConnectBall(newBall, pairBall);
-                // UniTask.Void(async () =>
-                // {
-                //     // ペア解消がOnDestroyで行われるので1フレーム待つ
-                //     await UniTask.NextFrame();
-                //     var newBall = CreateBall(lineNumber, isLeft, ScoreMakerBallType.Long);
-                //     pairBall.ChangeBallType(ScoreMakerBallType.Long);
-                //     ConnectBall(newBall, pairBall);
-                // });
             }
             else
             {
