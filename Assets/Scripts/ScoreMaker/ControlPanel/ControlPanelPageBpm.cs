@@ -71,12 +71,14 @@ public class ControlPanelPageBpm : ControlPanelPageBase
                 new MessageDialogOption
                 {
                     TitleText = "BPM計測",
-                    MessageText = "BPMを計測しますか？\n（計測中に広告が流れます）",
+                    MessageText = "BPMを計測しますか？\n（広告が流れます）",
                     OkButtonText = "計測する",
+                    IsBgCancel = false
                 }
             );
             if (dialogResult.ResultType != DialogResultType.Ok) return;
-            var adsTask = AdsManager.ShowInterstitialAsync();
+            await AdsManager.ShowInterstitialAsync();
+
             SetMessageMask(true, "計測中...");
             await UniTask.NextFrame();
             var bpm = AudioClipUtility.EstimateBPM(audioClip);
@@ -84,7 +86,6 @@ public class ControlPanelPageBpm : ControlPanelPageBase
             _bpmInput.SetValue(bpm);
             _startTimeInput.SetValue(startTime);
             SetMessageMask(false);
-            await adsTask;
             await DialogManager.instance.ShowDialogAsync<MessageDialog, DialogResultBase>(
                 new MessageDialogOption
                 {
