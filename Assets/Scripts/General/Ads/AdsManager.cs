@@ -40,7 +40,7 @@ public static class AdsManager
     {
         bool finishAds = false;
         bool isPlayingBgm = BGMManager.instance.IsPlaying;
-        InterstitialAd.Load(_testInterstitialUnitId, new AdRequest(), (ad, error) =>
+        InterstitialAd.Load(_interstitialUnitId, new AdRequest(), (ad, error) =>
         {
             if (error != null)
             {
