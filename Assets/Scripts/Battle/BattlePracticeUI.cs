@@ -19,7 +19,7 @@ public class BattlePracticeUI : MonoBehaviour
     [SerializeField] private Slider _timeSlider;
 
     private bool _isPause;
-    public bool IsAuto { get; private set; }
+    public bool IsAuto { get; private set; } = true;
     private const string _buttonIconPrefabPath = "JumpButtonIcon";
     private const float _sliderWidth = 780;
     private Dictionary<int, JumpButtonIcon> _buttonIconDict = new();
