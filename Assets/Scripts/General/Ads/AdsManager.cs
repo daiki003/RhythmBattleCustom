@@ -38,6 +38,7 @@ public static class AdsManager
 
     public static async UniTask ShowInterstitialAsync()
     {
+        return;
         bool finishAds = false;
         bool isPlayingBgm = BGMManager.instance.IsPlaying;
         InterstitialAd.Load(_interstitialUnitId, new AdRequest(), (ad, error) =>
